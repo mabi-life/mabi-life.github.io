@@ -239,7 +239,7 @@ button.r1:hover .fi{color:#f7d98b}
     <button class="btn gold" data-act="add">＋ 캐릭터 추가</button>
     <button class="btn" data-act="undo" id="undoBtn" title="마지막 변경 되돌리기 (Ctrl+Z)" disabled>↶ 되돌리기</button>
     <button class="btn danger" data-act="resetWeek">↺ 이번 주 초기화</button>
-    <button class="btn" data-act="feed" title="공유 시세(mabi-life.github.io)에서 균열의 편린 최저가 불러오기">📈 편린 시세</button>
+    <button class="btn" data-act="feed" title="공유 시세에서 균열의 편린 최저가 불러오기">📈 편린 시세</button>
     <button class="btn" data-act="openSettings">⚙️ 설정 · 사용법</button>
   </div>
   <div class="banner" id="banner" hidden></div>
@@ -306,7 +306,7 @@ var KST_OFFSET_MS = 9 * 3600 * 1000;
 var STORAGE_KEY = 'mabiPassTracker.wealth.v1';        // 전재산 버전 전용 (기본 버전과 따로 저장)
 var MAIN_KEY = 'mabiPassTracker.v1';                  // 기본 버전 저장 키 (읽기 전용으로 가져오기만)
 var DEFAULT_CHARS = ['캐릭터 1'];  /* 저장 데이터가 없을 때 기본 캐릭터 (배포본은 publish.py가 1명으로 바꿈) */
-var FEED = 'https://mabi-life.github.io/prices.json';
+var FEED = '/prices.json';
 var MAIN_ASKED_KEY = 'mabiPassTracker.wealth.mainImportAsked';
 var WEALTH_MAX = 1e13;
 var WH_MAX = 100;                                      // 캐릭터별 전재산 변경 내역 최대 개수

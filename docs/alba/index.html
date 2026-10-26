@@ -172,7 +172,7 @@ function renderPrice(){const list=[];S.jobs.forEach(j=>j.rewards.forEach(r=>{if(
  <table><thead><tr><th>NPC</th><th>보상</th><th class="n">시트/수동</th><th>경매장 이름</th><th class="n">경매장 최저가</th><th>사용</th></tr></thead><tbody>${list.map(([j,r])=>`<tr data-rid="${r.id}"><td class="mu">${j.npc}</td><td>${r.item}${verifyBadge(r)}</td><td class="n"><input data-pf="price" type="number" value="${r.price??''}" placeholder="—" style="width:90px"></td><td><input data-pf="api" value="${r.api||''}" placeholder="경매 없음" style="width:190px"></td><td class="n">${r.apiPrice!=null?fmt(r.apiPrice):'<span class="mu">—</span>'}</td><td><button class="tg${(r.useApi||r.price==null)?' api':''}" data-use="${r.id}" ${(r.apiPrice==null||r.price==null)?'disabled':''}>${(r.useApi||r.price==null)&&r.apiPrice!=null?'경매장':'시트'}</button></td></tr>`).join('')}</tbody></table>`;
  const q=$('#pq');if(q&&document.activeElement!==q&&pq){q.focus();q.setSelectionRange(pq.length,pq.length)}}
 const apiKey=()=>localStorage.getItem(KEY+'.key')||localStorage.getItem(V1KEY+'.key')||'';
-const FEED='https://mabi-life.github.io/prices.json';
+const FEED='/prices.json';
 /* HOT: 체결물량 기준 (listing count 아님). prices.json volume24(없으면 volume).
    history API는 ~1h만 제공 → 피드가 auction_buy_id로 24h 근사 누적. hotMinVolume=피드 p80.
    history 실패 시 volume 없음 → 🔥만 끄고 최저가(min)는 유지. */
