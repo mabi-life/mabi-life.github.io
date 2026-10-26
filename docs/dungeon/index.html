@@ -270,7 +270,18 @@ button.r1:hover .fi{color:#f7d98b}
 #pcSvg .vt{fill:#7ee0b5;font-size:9.5px;font-weight:700}
 .pcNote{font-size:11.5px;color:#a9a2d4;margin-top:4px}
 </style>
-<section class="pcCard" id="pcCard"><div class="pcHd"><h3>📈 균열의 편린 시세</h3><span class="cur" id="pcCur">-</span><span class="sub" id="pcUpd"></span><div class="pcTg"><button data-r="24">24시간</button><button data-r="all" class="on">전체</button></div></div><svg id="pcSvg" viewBox="0 0 640 220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="균열의 편린 최저가 추이"></svg><div class="pcNote" id="pcNote">경매장 최저가 기록 · 아래 타임라인 ▽ = 골짜기(국소 저점) · ○ 급변동</div></section<script src="pyeollin-chart.js" defer></script>
+<section class="pcCard" id="pcCard"><div class="pcHd"><h3>📈 균열의 편린 시세</h3><span class="cur" id="pcCur">-</span><span class="sub" id="pcUpd"></span><div class="pcTg"><button data-r="24">24시간</button><button data-r="all" class="on">전체</button></div></div><svg id="pcSvg" viewBox="0 0 640 220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="균열의 편린 최저가 추이"></svg><div class="pcNote" id="pcNote">경매장 최저가 기록 · 아래 타임라인 ▽ = 골짜기(국소 저점) · ○ 급변동</div></section<script>
+(function(){
+  var s=document.createElement('script');
+  s.src='/dungeon/pyeollin-chart.js?v=4';
+  s.async=false;
+  s.onerror=function(){
+    var n=document.getElementById('pcNote');
+    if(n) n.textContent='차트 스크립트를 불러오지 못했어요 (/dungeon/pyeollin-chart.js)';
+  };
+  document.head.appendChild(s);
+})();
+</script>
 
   <details class="settings">
     <summary>⚙️ 설정 · 사용법 · 데이터</summary>

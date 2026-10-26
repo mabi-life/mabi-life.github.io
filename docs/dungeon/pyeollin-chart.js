@@ -1,4 +1,5 @@
 (function () {
+  try { document.documentElement.setAttribute('data-pc-chart', 'loaded'); } catch (e) {}
   var R = 'all', P = [], U = '';
   function f(v) { return Math.round(v / 1e4).toLocaleString('ko-KR') + '만'; }
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
