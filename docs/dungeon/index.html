@@ -270,59 +270,7 @@ button.r1:hover .fi{color:#f7d98b}
 #pcSvg .vt{fill:#7ee0b5;font-size:9.5px;font-weight:700}
 .pcNote{font-size:11.5px;color:#a9a2d4;margin-top:4px}
 </style>
-<section class="pcCard" id="pcCard"><div class="pcHd"><h3>📈 균열의 편린 시세</h3><span class="cur" id="pcCur">-</span><span class="sub" id="pcUpd"></span><div class="pcTg"><button data-r="24">24시간</button><button data-r="all" class="on">전체</button></div></div><svg id="pcSvg" viewBox="0 0 640 220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="균열의 편린 최저가 추이"></svg><div class="pcNote" id="pcNote">경매장 최저가 기록 · 아래 타임라인 ▽ = 골짜기(국소 저점) · ○ 급변동</div></section<script>(function(){var R='all',P=[],U='';
-function f(v){return Math.round(v/1e4).toLocaleString('ko-KR')+'만'}
-function pad(n){return n<10?'0'+n:''+n}
-function kt(t){var d=new Date(new Date(t).toLocaleString('en-US',{timeZone:'Asia/Seoul'}));return pad(d.getMonth()+1)+'.'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())}
-function k(t){return kt(t)}
-function draw(){
-  var s=document.getElementById('pcSvg'),now=Date.now(),a=P.filter(function(p){return R==='all'||now-new Date(p.t)<=864e5});
-  if(a.length<2&&P.length)a=P.slice(-2);if(!a.length){s.innerHTML='';return}
-  var W=640,H=220,L=48,T=12,B=40;
-  var xs=a.map(function(p){return +new Date(p.t)}),ys=a.map(function(p){return p.min});
-  var x0=Math.min.apply(0,xs),x1=Math.max.apply(0,xs)||x0+1,y0=Math.min.apply(0,ys),y1=Math.max.apply(0,ys);
-  if(y1===y0){y0-=1e5;y1+=1e5}var padY=(y1-y0)*.08;y0-=padY;y1+=padY;
-  function X(v){return L+(W-L-8)*(x1===x0?.5:(v-x0)/(x1-x0))}
-  function Y(v){return T+(H-T-B)*(1-(v-y0)/(y1-y0))}
-  var g='',baseY=H-B+2;
-  for(var i=0;i<=3;i++){var v=y0+(y1-y0)*i/3;g+='<line x1="'+L+'" x2="'+W+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="rgba(255,255,255,.08)"/><text class="ax" x="4" y="'+(Y(v)+3.5)+'">'+f(v)+'</text>'}
-  g+='<line x1="'+L+'" x2="'+W+'" y1="'+baseY+'" y2="'+baseY+'" stroke="rgba(255,255,255,.14)"/>';
-  var d=a.map(function(p,i){return(i?'L':'M')+X(xs[i]).toFixed(1)+' '+Y(p.min).toFixed(1)}).join('');
-  g+='<path d="'+d+'L'+X(x1)+' '+(H-B)+'L'+X(x0)+' '+(H-B)+'Z" fill="rgba(247,217,139,.1)"/>';
-  g+='<path d="'+d+'" fill="none" stroke="#f7d98b" stroke-width="2" vector-effect="non-scaling-stroke"/>';
-  var valleys=[];
-  var w=Math.max(1,Math.min(4,Math.floor(a.length/12)||1));
-  for(var i=w;i<a.length-w;i++){
-    var ok=true,mn=a[i].min;
-    for(var j=i-w;j<=i+w;j++){if(j!==i&&a[j].min<=mn){ok=false;break}}
-    if(!ok)continue;
-    var hi=a[i-w].min;for(var j=i-w;j<=i+w;j++)if(a[j].min>hi)hi=a[j].min;
-    if((hi-mn)/hi<.03)continue;
-    valleys.push({i:i,cx:X(xs[i]),cy:Y(mn),t:a[i].t,min:mn});
-  }
-  valleys.sort(function(A,B){return A.cx-B.cx});
-  var lastX=-1e9,shown=[];
-  valleys.forEach(function(v){if(v.cx-lastX<54)return;lastX=v.cx;shown.push(v)});
-  shown.forEach(function(v){
-    g+='<line x1="'+v.cx+'" x2="'+v.cx+'" y1="'+v.cy+'" y2="'+baseY+'" stroke="#7ee0b5" stroke-width="1" stroke-dasharray="3 3" opacity=".55"/>';
-    g+='<path d="M'+v.cx+' '+(v.cy+1)+' l-3.5 5.5 h7 z" fill="#7ee0b5"><title>골짜기 '+kt(v.t)+' · '+f(v.min)+'</title></path>';
-    g+='<path d="M'+v.cx+' '+(baseY-1)+' l-3.5 -5.5 h7 z" fill="#7ee0b5"/>';
-    g+='<text class="vt" x="'+v.cx+'" y="'+(baseY+12)+'" text-anchor="middle">'+kt(v.t)+'</text>';
-  });
-  // endpoints on timeline (only if not crowding a valley label)
-  function nearValley(x){return shown.some(function(v){return Math.abs(v.cx-x)<50})}
-  var xL=X(xs[0]),xR=X(xs[xs.length-1]);
-  if(!nearValley(xL))g+='<text class="ax" x="'+xL+'" y="'+(baseY+12)+'" text-anchor="start">'+kt(a[0].t)+'</text>';
-  if(!nearValley(xR))g+='<text class="ax" x="'+xR+'" y="'+(baseY+12)+'" text-anchor="end">'+kt(a[a.length-1].t)+'</text>';
-  a.forEach(function(p,i){if(i>0&&Math.abs(p.min-a[i-1].min)/a[i-1].min>=.1)g+='<circle cx="'+X(xs[i])+'" cy="'+Y(p.min)+'" r="3.5" fill="#1b1636" stroke="#ff7a8a" stroke-width="2"><title>'+kt(p.t)+' '+f(p.min)+' (급변동)</title></circle>'});
-  var l=a[a.length-1];g+='<circle cx="'+X(xs[xs.length-1])+'" cy="'+Y(l.min)+'" r="3.5" fill="#f7d98b"/>';
-  s.setAttribute('viewBox','0 0 '+W+' '+H);s.innerHTML=g;
-}
-function hd(){var l=P[P.length-1];if(l)document.getElementById('pcCur').textContent='현재 최저 '+f(l.min);if(U)document.getElementById('pcUpd').textContent=kt(U)+' 기준 (한국 시간)'}
-document.querySelectorAll('#pcCard .pcTg button').forEach(function(b){b.onclick=function(){R=b.dataset.r;document.querySelectorAll('#pcCard .pcTg button').forEach(function(x){x.classList.toggle('on',x===b)});draw()}});
-fetch('/pyeollin_history.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(j){P=j.points||[];U=j.updated;return fetch('/prices.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(q){var e=q.prices&&q.prices['균열의 편린'];if(e&&e.min>0&&new Date(q.updated)>new Date(P.length?P[P.length-1].t:0)){if(!P.length||P[P.length-1].min!==e.min)P.push({t:q.updated,min:e.min});U=q.updated}}).catch(function(){})}).then(function(){hd();draw()}).catch(function(){document.getElementById('pcNote').textContent='시세 기록을 불러오지 못했어요'});
-window.addEventListener('resize',function(){if(P.length)draw()});
-})();</script>t>
+<section class="pcCard" id="pcCard"><div class="pcHd"><h3>📈 균열의 편린 시세</h3><span class="cur" id="pcCur">-</span><span class="sub" id="pcUpd"></span><div class="pcTg"><button data-r="24">24시간</button><button data-r="all" class="on">전체</button></div></div><svg id="pcSvg" viewBox="0 0 640 220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="균열의 편린 최저가 추이"></svg><div class="pcNote" id="pcNote">경매장 최저가 기록 · 아래 타임라인 ▽ = 골짜기(국소 저점) · ○ 급변동</div></section<script src="pyeollin-chart.js" defer></script>t>
   <details class="settings">
     <summary>⚙️ 설정 · 사용법 · 데이터</summary>
     <div class="sbody">
