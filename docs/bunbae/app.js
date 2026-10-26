@@ -1,4 +1,4 @@
-/* 분배 도우미 v1.2 */
+/* 분배 도우미 v1.3 */
 (function(){
 var KEY='mabi.bunbae.v1',$=function(id){return document.getElementById(id)};
 var posts=[],filt='all',names=[],items=[],queue=[],zIdx=-1,big='',dist=null,thumb='',editIdx=-1,titleEdited=false,worker=null,busy=0;
@@ -7,8 +7,8 @@ function load(){try{posts=JSON.parse(localStorage.getItem(KEY)||'[]')||[]}catch(
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(posts))}catch(e){alert('저장 공간이 부족해요. 오래된 기록을 지워 주세요.')}}
 function today(){var d=new Date();return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')}
 function render(){var L=posts.map(function(p,i){return [p,i]}).filter(function(x){return filt==='all'||(filt==='done')===!!x[0].done});
- $('cnt').textContent='진행중 '+posts.filter(function(p){return !p.done}).length+' · [완] '+posts.filter(function(p){return p.done}).length;
- $('list').innerHTML=L.map(function(x){var p=x[0],i=x[1];return '<div class="post'+(p.done?' isdone':'')+'"><div class="thumb" data-z="'+i+'"'+(p.thumb?' style="background-image:url('+p.thumb+')"':'')+'>'+(p.thumb?'':'🎁')+'</div><div class="grow" data-z="'+i+'" style="cursor:zoom-in"><div class="t"><span class="tag '+(p.done?'done':'open')+'">'+(p.done?'[완]':'진행중')+'</span>'+esc(p.title)+'</div><div class="m">'+(p.members||[]).map(function(n){return '<span class="at">@'+esc(n)+'</span>'}).join('')+'<br>분배자 <span class="dist">'+(p.dist?'👑 '+esc(p.dist):'-')+'</span></div></div><div class="acts">'+(p.done?'<button class="btn sm ghost" data-re="'+i+'">되돌리기</button>':'<button class="btn sm gold" data-fin="'+i+'">완료</button>')+'<button class="btn sm ghost" data-ed="'+i+'">수정</button></div></div>'}).join('')||'<div class="empty">아직 기록이 없어요. 「＋ 새 분배」로 시작해 보세요.</div>'}
+ $('cnt').textContent='진행중 '+posts.filter(function(p){return !p.done}).length+' · 완료 '+posts.filter(function(p){return p.done}).length;
+ $('list').innerHTML=L.map(function(x){var p=x[0],i=x[1];return '<div class="post'+(p.done?' isdone':'')+'"><div class="thumb" data-z="'+i+'"'+(p.thumb?' style="background-image:url('+p.thumb+')"':'')+'>'+(p.thumb?'':'🎁')+'</div><div class="grow" data-z="'+i+'" style="cursor:zoom-in"><div class="t"><span class="tag '+(p.done?'done':'open')+'">'+(p.done?'완료':'진행중')+'</span>'+esc(p.title)+'</div><div class="m">'+(p.members||[]).map(function(n){return '<span class="at">@'+esc(n)+'</span>'}).join('')+'<br>분배자 <span class="dist">'+(p.dist?'👑 '+esc(p.dist):'-')+'</span></div></div><div class="acts">'+(p.done?'<button class="btn sm ghost" data-re="'+i+'">되돌리기</button>':'<button class="btn sm gold" data-fin="'+i+'">완료</button>')+'<button class="btn sm ghost" data-ed="'+i+'">수정</button></div></div>'}).join('')||'<div class="empty">아직 기록이 없어요. 「＋ 새 분배」로 시작해 보세요.</div>'}
 function chips(){$('chips').innerHTML=names.map(function(n,i){return '<span class="chip'+(n===dist?' sel':'')+'" data-pick="'+i+'">'+(n===dist?'👑 ':'')+esc(n)+'<span class="x" data-edn="'+i+'" title="수정">✎</span><span class="x" data-rm="'+i+'" title="삭제">✕</span></span>'}).join('')||'<span class="hint">스크린샷을 넣으면 이름이 여기 나와요. 직접 추가도 돼요.</span>';
  $('dhint').innerHTML=dist?'분배자: <b style="color:var(--gold)">👑 '+esc(dist)+'</b>':'위 이름 중 한 명을 눌러 주세요.'}
 function status(t,c){var s=$('status');s.textContent=t;s.className='status'+(c?' '+c:'')}
@@ -29,15 +29,14 @@ function handleFile(file){if(!file||!/^image\//.test(file.type))return;var url=U
  // thumbnail
  var tw=240,th=Math.round(img.height*tw/img.width),tc=document.createElement('canvas');tc.width=tw;tc.height=th;tc.getContext('2d').drawImage(img,0,0,tw,th);thumb=tc.toDataURL('image/jpeg',.7);var bw=Math.min(img.width,1000),bc=document.createElement('canvas');bc.width=bw;bc.height=Math.round(img.height*bw/img.width);bc.getContext('2d').drawImage(img,0,0,bc.width,bc.height);big=bc.toDataURL('image/jpeg',.8);
  $('prev').src=url;$('prev').style.display='block';$('dropMsg').style.display='none';
- // normalize to ~610px wide (tuned)
- var W=img.width>700||img.width<450?610:img.width,H=Math.round(img.height*W/img.width),c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(img,0,0,W,H);
+ var k=Math.min(1,3000/Math.max(img.width,img.height)),W=Math.round(img.width*k),H=Math.round(img.height*k),c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(img,0,0,W,H);
  ocr(x.getImageData(0,0,W,H))};img.src=url}
 function toInput(d){var c=document.createElement('canvas');c.width=d.width;c.height=d.height;c.getContext('2d').putImageData(new ImageData(d.data,d.width,d.height),0,0);return c}
 function ocr(data){if(typeof Tesseract==='undefined'){status('인식 실패 · 직접 입력해 주세요 (인식 엔진을 불러오지 못했어요)','err');return}
  busy++;var my=busy;status('글자 인식 중…');prog(0.02);
- getWorker().then(function(w){return BunbaeOCR.run(w,data,toInput,prog)}).then(function(r){if(my!==busy)return;prog(null);
+ getWorker().then(function(w){return BunbaeOCR.runAny(w,data,toInput,prog)}).then(function(r){if(my!==busy)return;prog(null);
   var il=(r.items&&r.items.length)?r.items:(r.item?[r.item]:[]);if(il.length){queue=il.slice(1);setItems([il[0]])}var added=0;r.names.forEach(function(n){if(names.indexOf(n)<0){names.push(n);added++}});chips();
-  if(!r.item&&!r.names.length)status('인식 실패 · 직접 입력해 주세요','err');
+  if(!r.item&&!r.names.length)status('인식 실패 · 「보상 분배」 창 부분만 잘라서 다시 넣거나 직접 입력해 주세요','err');
   else status('인식 완료 · 아이템 '+il.length+'개 · 이름 '+r.names.length+'명. 틀린 글자는 ✎로 고쳐 주세요.'+(r.names.length?'':' (이름 인식 실패 · 직접 입력해 주세요)'),'ok')})
  .catch(function(e){console.error(e);prog(null);status('인식 실패 · 직접 입력해 주세요','err')})}
 // events
@@ -55,13 +54,13 @@ document.addEventListener('click',function(e){var t=e.target,a;
 });
 $('newBtn').onclick=function(){openModal(-1)};$('cancelBtn').onclick=closeModal;$('saveBtn').onclick=function(){save(false)};$('doneBtn').onclick=function(){save(true)};
 $('delBtn').onclick=function(){if(editIdx>=0&&confirm('이 기록을 삭제할까요?')){posts.splice(editIdx,1);persist();closeModal();render()}};
-function openZoom(i){var p=posts[i];zIdx=i;$('zimg').src=p.big||p.thumb||'';$('zimg').style.display=(p.big||p.thumb)?'':'none';$('zt').textContent=p.title;$('zDel').style.display=$('zEdit').style.display=i>=0?'':'none';$('zoom').classList.add('show')}
+function openZoom(i){var p=posts[i];zIdx=i;$('zimg').src=p.big||p.thumb||'';$('zimg').style.display=(p.big||p.thumb)?'':'none';$('zt').textContent=p.title;$('zm').innerHTML=((p.members||[]).length?'파티원 '+p.members.map(function(n){return '<span class="at">@'+esc(n)+'</span>'}).join(''):'')+'<br>👑 분배자 <span class="dist">'+(p.dist?esc(p.dist):'-')+'</span>';$('zDel').style.display=$('zEdit').style.display=i>=0?'':'none';$('zoom').classList.add('show')}
 function closeZoom(){$('zoom').classList.remove('show')}
 $('zoom').onclick=function(e){if(e.target===this)closeZoom()};$('zClose').onclick=closeZoom;
 $('zEdit').onclick=function(){closeZoom();openModal(zIdx)};
 $('zDel').onclick=function(){if(zIdx>=0&&confirm('이 분배 기록을 삭제할까요?')){posts.splice(zIdx,1);persist();closeZoom();render()}};
 $('nextBtn').onclick=function(){if(queue.length)setItems([queue[0]])};
-$('prev').addEventListener('click',function(e){e.stopPropagation();zIdx=-1;$('zimg').src=this.src;$('zimg').style.display='';$('zt').textContent='';$('zDel').style.display=$('zEdit').style.display='none';$('zoom').classList.add('show')});
+$('prev').addEventListener('click',function(e){e.stopPropagation();zIdx=-1;$('zimg').src=this.src;$('zimg').style.display='';$('zt').textContent='';$('zm').innerHTML='';$('zDel').style.display=$('zEdit').style.display='none';$('zoom').classList.add('show')});
 $('addBtn').onclick=function(){addNames($('addn').value);$('addn').value=''};$('addn').onkeydown=function(e){if(e.key==='Enter'&&!e.isComposing){addNames(this.value);this.value=''}};
 $('addiBtn').onclick=function(){var v=$('addi').value.trim();if(v)setItems([v]);$('addi').value=''};$('addi').onkeydown=function(e){if(e.key==='Enter'&&!e.isComposing){$('addiBtn').click()}};
 $('title').oninput=function(){titleEdited=true};
