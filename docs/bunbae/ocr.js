@@ -1,4 +1,4 @@
-/* 분배 도우미 OCR core v1.0 — browser + node */
+/* 분배 도우미 OCR core v1.1 — browser + node */
 (function(root){
 var BAD=/입찰|포기|분배|보상|리스트|상세|종료|남음|정보|주사위|현황|완료|전체|최고/;
 // src:{width,height,data(RGBA)} -> {width,height,data} grayscale-binarized, dark text on white
@@ -22,12 +22,23 @@ async function run(worker,img,toInput,onProg){var res={item:'',names:[]};var ste
  var r=await worker.recognize(toInput(crop(img,ITEM_BOX[0],ITEM_BOX[1],ITEM_BOX[2],ITEM_BOX[3],3,150)));res.item=cleanItem(r.data.text);
  if(!res.item){r=await worker.recognize(toInput(crop(img,ITEM_BOX[0],ITEM_BOX[1],ITEM_BOX[2],ITEM_BOX[3],3,0)));res.item=cleanItem(r.data.text)}
  if(!res.item){r=await worker.recognize(toInput(crop(img,LEFT_BOX[0],LEFT_BOX[1],LEFT_BOX[2],LEFT_BOX[3],3,150)));res.item=cleanItem(r.data.text)}
+ res.items=await listItems(worker,img,toInput,3,res.item);if(!res.item&&res.items[0])res.item=res.items[0];
  onProg&&onProg(++step/total);
  var runs=[],b=NAME_BOX;
  for(var i=0;i<VARIANTS.length;i++){var sc=VARIANTS[i][0],th=VARIANTS[i][1];var c=crop(img,b[0],b[1],b[2],b[3],sc,th);
   var rr=await worker.recognize(toInput(c));var H=c.height;
   runs.push(rr.data.lines.map(function(l){return {text:l.text,confidence:l.confidence,cy:((l.bbox.y0+l.bbox.y1)/2/H)*(b[3]-b[1])}}));onProg&&onProg(++step/total)}
  res.names=vote(runs);return res}
-var api={crop:crop,vote:vote,cleanItem:cleanItem,run:run};
+function cleanSlot(t){var tk=t.replace(/[|\[\]{}()<>\/]/g,' ').trim().split(/\s+/),o=[];for(var i=0;i<tk.length;i++){if(/^[가-힣0-9]+$/.test(tk[i])&&!BAD.test(tk[i]))o.push(tk[i]);else break}
+ var r=o.join(' ');return (r.match(/[가-힣]/g)||[]).length>=2?r:''}
+var SLOT_Y0=0.132,SLOT_DY=0.1225,SLOT_V=[[4,150],[3,150],[4,0],[3,180],[5,170]];
+async function listItems(worker,img,toInput,n,right){await worker.setParameters({tessedit_pageseg_mode:'7'});var out=[];
+ try{for(var k=0;k<n;k++){var yc=SLOT_Y0+k*SLOT_DY,score={};
+  for(var v=0;v<SLOT_V.length;v++){var r=await worker.recognize(toInput(crop(img,0.11,yc-0.018,0.53,yc+0.018,SLOT_V[v][0],SLOT_V[v][1])));var t=cleanSlot(r.data.text);if(t&&r.data.confidence>=40)score[t]=(score[t]||0)+r.data.confidence}
+  var best=Object.entries(score).sort(function(a,b){return b[1]-a[1]})[0];out.push(best?best[0]:'')}}
+ finally{await worker.setParameters({tessedit_pageseg_mode:'6'})}
+ if(right){var nz=function(s){return s.replace(/\s/g,'')};if(!out[0]||nz(out[0])!==nz(right)){if(out.some(function(x){return x&&nz(x)===nz(right)}))out=out;else out[0]=right}}
+ return out.filter(function(x,i){return x&&out.indexOf(x)===i})}
+var api={listItems:listItems,cleanSlot:cleanSlot,crop:crop,vote:vote,cleanItem:cleanItem,run:run};
 if(typeof module!=='undefined')module.exports=api;else root.BunbaeOCR=api;
 })(this);
