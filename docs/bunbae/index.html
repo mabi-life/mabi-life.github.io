@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2629050616954026" crossorigin="anonymous"></script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-SJP2KJK2XP"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-SJP2KJK2XP');</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#141029">
+<title>마비노기 분배 도우미 v1.0</title>
+<meta name="description" content="마비노기 보상 분배 창 스크린샷으로 파티원과 아이템을 자동 인식하고 분배자를 기록하는 도우미">
+<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--card:rgba(255,255,255,.05);--line:rgba(247,217,139,.25);--gold:#f7d98b;--tx:#ece8ff;--mu:#a9a2d6;--ok:#6fd39b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#0b0918 radial-gradient(circle at 50% 0%,#2b2357 0%,#141029 55%,#0b0918 100%) no-repeat fixed;color:var(--tx);padding:28px 20px 40px}
+.wrap{max-width:980px;margin:0 auto}
+.siteNav{display:flex;align-items:center;gap:2px;margin:0 0 10px;font-size:12.5px}.siteNav a,.siteNav span{color:#a9a2d4;text-decoration:none;padding:3px 10px;border-radius:999px;white-space:nowrap;line-height:1.3}.siteNav a:hover{color:#ffe7a3;background:rgba(255,255,255,.06)}.siteNav .on{color:#ffe7a3;background:rgba(247,217,139,.14);font-weight:700}
+.head{text-align:center;margin:10px 0 22px}
+.head h1{font-size:34px;font-weight:800;letter-spacing:2px;background:linear-gradient(90deg,#f7d98b,#fff3cf,#f7d98b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.verBadge{font-size:11px;color:var(--mu);border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:middle;font-weight:500;-webkit-text-fill-color:var(--mu)}
+.head p{margin-top:6px;color:var(--mu);font-size:15px}
+.bar{display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap}
+.btn{white-space:nowrap;font:inherit;cursor:pointer;padding:8px 15px;border-radius:999px;font-size:14px;font-weight:700;background:rgba(255,255,255,.07);border:1px solid rgba(247,217,139,.35);color:#f3eccf}
+.btn:hover{background:rgba(247,217,139,.15)}.btn.on{color:var(--gold);border-color:var(--gold);background:rgba(247,217,139,.14)}
+.btn.gold{background:linear-gradient(90deg,#f7d98b,#e9bf5c);color:#2a2040;border-color:transparent}
+.btn.sm{padding:5px 11px;font-size:12.5px}.btn.ghost{border-color:rgba(255,255,255,.15);color:var(--mu)}
+.grow{flex:1}
+.list{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 0 30px rgba(120,100,255,.12)}
+.post{display:flex;gap:14px;padding:14px 16px;border-bottom:1px solid rgba(247,217,139,.12);align-items:center}.post:last-child{border:0}
+.post:hover{background:rgba(255,255,255,.04)}.post .t{font-weight:700;word-break:break-all}.post .m{font-size:13px;color:var(--mu);margin-top:5px;line-height:1.9}
+.at{color:#c3c9ff;background:#2d3170;padding:1px 7px;border-radius:5px;margin-right:4px;font-size:12px;white-space:nowrap}
+.dist{color:var(--gold);font-weight:700}.tag{font-size:12px;padding:2px 7px;border-radius:5px;margin-right:6px}
+.tag.done{background:#1f4a35;color:var(--ok)}.tag.open{background:#4a3a14;color:var(--gold)}
+.post.isdone .t{color:var(--mu)}
+.thumb{width:84px;height:84px;border-radius:8px;flex:none;background:linear-gradient(135deg,#3a2f6b,#1b3a5a) center/cover;border:1px solid var(--line);display:grid;place-items:center;font-size:22px;cursor:zoom-in}
+.acts{display:flex;flex-direction:column;gap:6px}
+.empty{padding:30px;text-align:center;color:var(--mu)}
+.ov{position:fixed;inset:0;background:#000a;display:none;align-items:flex-start;justify-content:center;padding:30px 10px;overflow:auto;z-index:20}.ov.show{display:flex}
+.modal{background:#1a1536;border:1px solid var(--gold);border-radius:16px;width:680px;max-width:100%;padding:22px}
+.modal h2{margin:0 0 10px;color:var(--gold);font-size:20px}.step{color:var(--gold);font-size:13px;font-weight:700;margin:16px 0 8px}
+.drop{border:2px dashed rgba(247,217,139,.3);border-radius:12px;padding:18px;text-align:center;color:var(--mu);font-size:14px;cursor:pointer}
+.drop.hover{border-color:var(--gold);background:rgba(247,217,139,.06)}
+.drop img{max-width:100%;max-height:320px;border-radius:8px;display:block;margin:0 auto}
+.status{margin-top:8px;font-size:13px;color:var(--mu)}.status.err{color:#ffb3bd}.status.ok{color:var(--ok)}
+.prog{height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:6px;overflow:hidden;display:none}.prog i{display:block;height:100%;width:0;background:var(--gold);transition:width .2s}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:6px 8px 6px 13px;cursor:pointer;font-size:14px;display:flex;gap:6px;align-items:center}
+.chip .x{color:var(--mu);font-size:12px;padding:0 4px}.chip.sel{background:var(--gold);color:#221a05;border-color:var(--gold);font-weight:700}.chip.sel .x{color:#221a05}
+.chip .ed{background:transparent;border:0;color:inherit;font:inherit;width:auto;padding:0;outline:none}
+input[type=text]{width:100%;background:#120e28;border:1px solid rgba(247,217,139,.25);color:var(--tx);border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit}
+input[type=text]:focus{outline:none;border-color:var(--gold)}
+.q{font-size:17px;font-weight:700;margin:18px 0 6px}.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;flex-wrap:wrap}
+.hint{font-size:12px;color:var(--mu);margin-top:6px}.mini{font-size:11px;color:var(--mu);border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:1px 6px;margin-left:6px;font-weight:400}
+.zoom{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:30;cursor:zoom-out}.zoom.show{display:flex}.zoom img{max-width:95vw;max-height:95vh;border-radius:8px}
+.siteFoot{margin:28px auto 18px;padding:12px 16px;max-width:1180px;text-align:center;font-size:12px;line-height:1.6;color:#8a90a0}.siteFoot a{color:#b8bfd0;text-decoration:underline;text-underline-offset:2px}.siteFoot .sep{margin:0 .4em;opacity:.55}
+@media(max-width:600px){.head h1{font-size:26px}.thumb{width:60px;height:60px}}
+</style>
+</head><body><div class="wrap">
+<nav class="siteNav" aria-label="도우미 이동"><a id="homeLink" href="../" title="생활도우미 메인으로">홈</a><a href="../alba/">알바</a><a href="../barter/">물교</a><a href="../dungeon/">던전</a><span class="on" aria-current="page">분배</span></nav>
+<div class="head"><h1>분배 도우미<span class="verBadge">v1.0</span></h1><p>「보상 분배」 창 스크린샷 한 장으로 파티원·아이템을 정리하고 분배자를 기록해요.</p></div>
+<div class="bar"><button class="btn gold" id="newBtn">＋ 새 분배</button>
+<button class="btn on" data-f="all">전체</button><button class="btn" data-f="open">진행중</button><button class="btn" data-f="done">[완]</button>
+<span class="grow"></span><span class="hint" id="cnt"></span></div>
+<div class="list" id="list"></div>
+<p class="hint" style="margin-top:10px">기록은 이 브라우저(localStorage)에만 저장돼요. 스크린샷은 서버로 전송되지 않고 브라우저 안에서 인식합니다.</p>
+</div>
+<div class="ov" id="ov"><div class="modal" role="dialog" aria-modal="true">
+<h2 id="mTitle">새 분배</h2>
+<div class="step">① 스크린샷 넣기</div>
+<div class="drop" id="drop"><div id="dropMsg">「보상 분배」 창 스크린샷을 <b>Ctrl+V</b>로 붙여넣거나, 끌어다 놓거나, 눌러서 선택하세요.</div><img id="prev" alt="" style="display:none"></div>
+<input type="file" accept="image/*" id="file" hidden>
+<div class="prog" id="prog"><i></i></div><div class="status" id="status"></div>
+<div class="step">② 파티원 <span class="mini">이름 클릭 = 분배자 · ✎ 수정 · ✕ 삭제</span></div>
+<div class="chips" id="chips"></div>
+<div style="display:flex;gap:6px;margin-top:8px"><input type="text" id="addn" placeholder="이름 직접 추가 (쉼표로 여러 명)"><button class="btn" id="addBtn">추가</button></div>
+<div class="q">분배자는 누구예요?</div><div class="hint" id="dhint">위 이름 중 한 명을 눌러 주세요.</div>
+<div class="step">③ 제목 <span class="mini" id="itemlbl" style="display:none"></span></div><input type="text" id="title"><div class="hint">맨 위 아이템으로 자동 채움 · 직접 수정하면 그대로 유지돼요</div>
+<div class="foot"><button class="btn ghost" id="delBtn" style="display:none;margin-right:auto">삭제</button><button class="btn ghost" id="cancelBtn">취소</button><button class="btn" id="saveBtn">저장 (진행중)</button><button class="btn gold" id="doneBtn">완료 [완]</button></div>
+</div></div>
+<div class="zoom" id="zoom"><img alt=""></div>
+<footer class="siteFoot"><span>본 사이트는 넥슨코리아와 무관한 개인 팬 사이트입니다.</span></footer>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="ocr.js?v=1.0"></script><script src="app.js?v=1.0"></script>
+</body></html>
