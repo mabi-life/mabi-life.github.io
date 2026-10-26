@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#141029">
-<title>마비노기 분배 도우미 v1.1</title>
+<title>마비노기 분배 도우미 v1.2</title>
 <meta name="description" content="마비노기 보상 분배 창 스크린샷으로 파티원과 아이템을 자동 인식하고 분배자를 기록하는 도우미">
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -49,13 +49,13 @@ input[type=text]{width:100%;background:#120e28;border:1px solid rgba(247,217,139
 input[type=text]:focus{outline:none;border-color:var(--gold)}
 .q{font-size:17px;font-weight:700;margin:18px 0 6px}.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;flex-wrap:wrap}
 .hint{font-size:12px;color:var(--mu);margin-top:6px}.mini{font-size:11px;color:var(--mu);border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:1px 6px;margin-left:6px;font-weight:400}
-.zoom{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:30;cursor:zoom-out}.zoom.show{display:flex}.zoom img{max-width:95vw;max-height:95vh;border-radius:8px}
+.zoom{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:30;padding:16px}.zoom.show{display:flex}.zbox{background:#1a1536;border:1px solid var(--gold);border-radius:14px;padding:14px;max-width:96vw}.zoom img{display:block;max-width:calc(96vw - 30px);max-height:calc(92vh - 110px);border-radius:8px;margin:0 auto}.zt{margin-top:10px;font-weight:700;color:var(--gold);word-break:break-all}.drop img{cursor:zoom-in}
 .siteFoot{margin:28px auto 18px;padding:12px 16px;max-width:1180px;text-align:center;font-size:12px;line-height:1.6;color:#8a90a0}.siteFoot a{color:#b8bfd0;text-decoration:underline;text-underline-offset:2px}.siteFoot .sep{margin:0 .4em;opacity:.55}
 @media(max-width:600px){.head h1{font-size:26px}.thumb{width:60px;height:60px}}
 </style>
 </head><body><div class="wrap">
 <nav class="siteNav" aria-label="도우미 이동"><a id="homeLink" href="../" title="생활도우미 메인으로">홈</a><a href="../alba/">알바</a><a href="../barter/">물교</a><a href="../dungeon/">던전</a><span class="on" aria-current="page">분배</span></nav>
-<div class="head"><h1>분배 도우미<span class="verBadge">v1.1</span></h1><p>「보상 분배」 창 스크린샷 한 장으로 파티원·아이템을 정리하고 분배자를 기록해요.</p></div>
+<div class="head"><h1>분배 도우미<span class="verBadge">v1.2</span></h1><p>「보상 분배」 창 스크린샷 한 장으로 파티원·아이템을 정리하고 분배자를 기록해요.</p></div>
 <div class="bar"><button class="btn gold" id="newBtn">＋ 새 분배</button>
 <button class="btn on" data-f="all">전체</button><button class="btn" data-f="open">진행중</button><button class="btn" data-f="done">[완]</button>
 <span class="grow"></span><span class="hint" id="cnt"></span></div>
@@ -72,12 +72,12 @@ input[type=text]:focus{outline:none;border-color:var(--gold)}
 <div class="chips" id="chips"></div>
 <div style="display:flex;gap:6px;margin-top:8px"><input type="text" id="addn" placeholder="이름 직접 추가 (쉼표로 여러 명)"><button class="btn" id="addBtn">추가</button></div>
 <div class="q">분배자는 누구예요?</div><div class="hint" id="dhint">위 이름 중 한 명을 눌러 주세요.</div>
-<div class="step">③ 인식된 아이템 <span class="mini">클릭 = 제목에 넣기/빼기 · ✕ 삭제</span></div><div class="chips" id="ichips"></div><div style="display:flex;gap:6px;margin-top:8px"><input type="text" id="addi" placeholder="아이템 직접 추가"><button class="btn" id="addiBtn">추가</button></div>
+<div class="step">③ 인식된 아이템 <span class="mini">클릭 = 제목에 넣기/빼기 · ✕ 삭제</span></div><div class="chips" id="ichips"></div><div style="margin-top:8px"><button class="btn sm" id="nextBtn" style="display:none"></button></div><div style="display:flex;gap:6px;margin-top:8px"><input type="text" id="addi" placeholder="아이템 직접 추가"><button class="btn" id="addiBtn">추가</button></div>
 <div class="step">④ 제목</div><input type="text" id="title"><div class="hint">켜진 아이템(최대 3개)으로 자동 채움 · 직접 수정하면 그대로 유지돼요</div>
 <div class="foot"><button class="btn ghost" id="delBtn" style="display:none;margin-right:auto">삭제</button><button class="btn ghost" id="cancelBtn">취소</button><button class="btn" id="saveBtn">저장 (진행중)</button><button class="btn gold" id="doneBtn">완료 [완]</button></div>
 </div></div>
-<div class="zoom" id="zoom"><img alt=""></div>
+<div class="zoom" id="zoom"><div class="zbox"><img alt="" id="zimg"><div class="zt" id="zt"></div><div class="foot" style="margin-top:12px"><button class="btn ghost" id="zDel" style="margin-right:auto;border-color:rgba(229,72,93,.6);color:#ffb3bd">삭제</button><button class="btn" id="zEdit">수정</button><button class="btn gold" id="zClose">닫기</button></div></div></div>
 <footer class="siteFoot"><span>본 사이트는 넥슨코리아와 무관한 개인 팬 사이트입니다.</span></footer>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="ocr.js?v=1.1"></script><script src="app.js?v=1.1"></script>
+<script src="ocr.js?v=1.2"></script><script src="app.js?v=1.2"></script>
 </body></html>
