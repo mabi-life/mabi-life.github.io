@@ -114,19 +114,22 @@ function repOf(j){let r=j.report,e=j.end;if(!r&&j.npcEn){const d=DATA.find(x=>x.
 function repH(j){const p=repOf(j);if(!p)return'';const now=erinMin(),a=toM(p.r),b=toM(p.e);const on=b==null?now>=a:(a<=b?now>=a&&now<b:now>=a||now<b);
  const w=on?0:(a-now+1440)%1440,rm=Math.ceil(w*1.5/60),ttl=(p.n?p.n+'\n':'')+(on?'지금 보고 가능':'보고까지 현실 '+rm+'분');
  return `<span class="rp${on?' on':''}${p.n?' nt':''}" title="${ttl}">보고 ${p.r}~${p.e}${!on&&rm<=15?' · '+rm+'분':''}</span>`}
-// 정렬: 지금 에린 시각부터 보고 가능 시각이 빠른 순(이미 열림=맨 위, 자정 넘김 처리). 같은 종류는 ★→골드 최고 1개만 펼침.
-// 지양·오늘 완료 제외, 같은 종류(type)는 에린 하루(00:00 기준)에 1개만 (계정당 제한)
+// 정렬: 1) 보고 가능 시각 이른 순 2) 보고 마감(모집 end) 이른 순 3) 직전 알바와 같은 마을 4) ★ 5) 골드.
+// 지양·오늘 완료 제외, 같은 종류(type)는 에린 하루(00:00 기준)에 1개만 (계정당 제한). 같은 종류 대표는 ★→골드→보고빠른순.
 // 울라 대륙 마을 (나무위키 '마비노기/NPC' 지역 분류 2.x 울라: 티르코네일·두갈드 아일·던바튼·카브 항구·반호르·이멘마하·탈틴·타라). 이리아(켈라·필리아·발레스·칼리다)·벨바스트는 제외
 const ULA=new Set(['티르코네일','티르코','두갈드 아일','던바튼','카브','반호르','이멘마하','탈틴','타라']);const isUla=j=>ULA.has(j.village);
 function seqPlan(c,B,maxN=60){const now=erinAbs();let t=now;const used=new Set(),tl={},iv={},out=[];
  const ty=j=>j.type||j.id,favT=new Set(S.jobs.filter(j=>j.fav).map(ty)),cand=S.jobs.filter(j=>!(favT.has(ty(j))&&!j.fav)&&(S.seqAll||isUla(j))&&(!S.favOnly||j.fav)&&!j.avoid&&!c.done.includes(j.id)&&toM(j.start)!=null&&toM(j.end)!=null);
- for(let n=0;n<maxN;n++){const rep={};// 종류별 대표: 이번 칸에 가능한 같은 종류 중 골드 최고
+ const better=(a,b,prevV)=>{if(a.rep!==b.rep)return a.rep<b.rep;if(a.end!==b.end)return a.end<b.end;// 1) 보고가능 2) 보고마감
+  const av=a.j.village===prevV,bv=b.j.village===prevV;if(av!==bv)return av;// 3) 직전 마을
+  if(a.f!==b.f)return a.f>b.f;if(a.g!==b.g)return a.g>b.g;return a.rep<=b.rep};// 4) ★ 5) 골드
+ for(let n=0;n<maxN;n++){const rep={},prevV=out.length?out[out.length-1].j.village:null;
   for(const j of cand){if(used.has(j.id))continue;const s=toM(j.start);let e=toM(j.end);if(e<=s)e+=1440;const p=repOf(j);let r=p?toM(p.r):s;if(r<s)r+=1440;
    const d0=Math.floor((t-s)/1440);for(let d=d0;d<=d0+2;d++){const ws=d*1440+s,we=d*1440+e;if(we<=t)continue;const acc=Math.max(t,ws),day=erinDay(acc),k=ty(j);
     if(tl[k+'@'+day]||(iv[k]||[]).some(([a,z])=>acc<z&&we>a))continue;// 같은 종류: 에린 하루 1개 + 시간대 겹침 금지
     const x={j,acc,rep:Math.max(acc,d*1440+r),g:(best(j,B)||{}).g||0,end:we,f:j.fav?1:0},o=rep[k];
-    if(!o||x.f>o.f||x.f===o.f&&(x.g>o.g||x.g===o.g&&x.rep<o.rep))rep[k]=x;break}}// ★ 즐겨찾기가 같은 종류에서 우선
-  let bj=null;for(const x of Object.values(rep))if(!bj||x.rep<bj.rep||(x.rep===bj.rep&&(x.f>bj.f||x.f===bj.f&&x.g>bj.g)))bj=x;// 1순위: 보고 가능 시각(빠른 순) · 동률: ★ → 골드
+    if(!o||x.f>o.f||(x.f===o.f&&(x.g>o.g||(x.g===o.g&&(x.rep<o.rep||(x.rep===o.rep&&x.end<o.end))))))rep[k]=x;break}}// 종류 대표: ★→골드→보고·마감
+  let bj=null;for(const x of Object.values(rep))if(!bj||better(x,bj,prevV))bj=x;
   if(!bj)break;const k=ty(bj.j);used.add(bj.j.id);tl[k+'@'+erinDay(bj.acc)]=1;(iv[k]=iv[k]||[]).push([bj.acc,bj.end]);out.push({...bj,gap:bj.acc-t,now});t=bj.rep}
  return out}
 function render(){const B=budget(),c=ch(),ids=expandedSet(B),f=focus(c,ids);
