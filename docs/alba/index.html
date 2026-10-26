@@ -14,7 +14,16 @@ tr.thin td{padding:3px 12px;font-size:12.5px;color:var(--mu)}tr.thin .gold{font-
 tr.grp td{padding:4px 12px;font-size:12.5px;color:var(--mu);cursor:pointer;background:#181a20}tr.grp:hover td{color:var(--tx)}
 .badge{font-size:11px;background:var(--g);color:#000;border-radius:8px;padding:1px 6px;margin-left:6px}.tag{font-size:11px;border:1px solid var(--ln);border-radius:8px;padding:0 6px;margin-left:6px;color:var(--mu)}.verneed{border-color:#f59e0b;color:#fbbf24;background:rgba(245,158,11,.12)}.hot{display:inline;margin:0 1px;font-size:11px;cursor:help;filter:drop-shadow(0 0 2px rgba(255,120,40,.55))}
 .tm{font-variant-numeric:tabular-nums;color:#b9c0d0;white-space:nowrap}.chk{width:28px;height:28px;padding:0;border-radius:50%}.chk.on{background:var(--g);color:#000;border-color:var(--g)}
-tr.det>td{background:#191c22;font-size:13px}.rt td{padding:3px 8px;border:0;font-size:13px;background:none}.rt tr.bestr td{color:var(--g)}
+tr.det>td{background:#191c22;font-size:13px}/* 펼침: 시간열 아래 빈칸 = 각 보상 행과 같은 줄의 가로 거래량 박스 */
+.rt{width:100%;border-collapse:collapse}
+.rt td{padding:4px 8px;border:0;font-size:13px;background:none;vertical-align:middle}
+.rt tr.bestr td{color:var(--g)}
+.rt td.volcell{width:268px;min-width:220px;max-width:300px;padding:4px 10px 4px 8px !important}
+.rt .volbox{display:flex;align-items:center;justify-content:flex-end;gap:5px;width:100%;box-sizing:border-box;padding:4px 12px;border-radius:8px;border:1px solid #343b4c;background:linear-gradient(90deg,#151922 0%,#1e2430 100%);font-variant-numeric:tabular-nums;font-size:12.5px;line-height:1.2;white-space:nowrap;color:#c5ccd8}
+.rt .volbox.hot{border-color:#8a4e22;background:linear-gradient(90deg,#24180f 0%,#3a2416 100%);color:#ffb070;font-weight:700}
+.rt .volbox .vn{font-weight:700}
+.rt .volbox .vl{font-size:10.5px;opacity:.75;font-weight:400;margin-left:2px}
+.rt .volbox.empty{justify-content:center;border-style:dashed;border-color:#2a303c;background:transparent;color:var(--mu);opacity:.45;font-weight:400;font-size:11px}
 .pop{position:fixed;top:60px;right:24px;width:440px;max-height:82vh;overflow:auto;background:var(--p);border:1px solid var(--ln);border-radius:12px;padding:16px;box-shadow:0 10px 40px #000a;z-index:5}
 .pop.wide{width:900px}.row{display:flex;gap:8px;align-items:center;margin:8px 0}.row label{width:120px;color:var(--mu)}.hid{display:none}.tg{font-size:12px;padding:2px 8px}.tg.api{border-color:#7aa2ff;color:#9bb8ff}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;padding:8px 16px;border-radius:8px;opacity:0;transition:.3s}.toast.on{opacity:1}
@@ -97,9 +106,9 @@ function focus(c,ids){const now=erinMin(),open=S.jobs.filter(j=>ids.has(j.id)&&!
  return open[0]?{id:open[0].id,lab:'다음'}:null}
 function detail(j,B){const b=best(j,B),mx=mixOf(j,B);
  const rows=j.rewards.map(r=>{const g=rgold(r,B),u=unit(r);
-  if(edit)return `<tr data-rid="${r.id}"><td><input data-rf="item" value="${r.item}" style="width:170px"></td><td><input data-rf="price" type="number" value="${r.price??''}" placeholder="수동" style="width:90px"></td><td><input data-rf="qty" type="number" value="${r.qty??''}" style="width:60px">개</td><td><input data-rf="pts" type="number" value="${r.pts??''}" style="width:60px">P</td><td><button class="tg red" data-delr="${r.id}">✕</button></td></tr>`;
-  return `<tr class="${b&&b.r===r?'bestr':''}"><td>${r.item}${hotIcon(r)}${verifyBadge(r)}${r.en&&r.en!==r.item?` <span class="mu" style="font-size:11px">${r.en}</span>`:''}${r.flags&&r.flags.filter(f=>f!=='검증필요').length?` <span class="tag" title="${r.flags.filter(f=>f!=='검증필요').join(', ')}">!</span>`:''}</td><td class="n">${u!=null?fmt(u)+'G':'<span class="mu">가격 미상</span>'}${u!=null?` <span class="mu" style="font-size:11px">${(!r.useApi&&r.price!=null)?'시트':'경매'}</span>`:''}</td><td class="n">×${r.qty??'?'}</td><td class="n mu">${r.pts??'?'}P × ${count(r,B)}회</td><td class="n gold">${g!=null?'+'+fmt(g):'—'}</td></tr>`}).join('');
- return `<tr class="det"><td></td><td colspan="5"><div class="mu" style="font-size:12px;margin-bottom:4px">${j.type||''} · 모집 ${j.start||'?'}–${j.end||'?'}${j.report?' · 보고 '+j.report+'부터':''}${j.note?' · '+j.note:''}</div><table class="rt">${rows}</table>${edit?`<button class="tg" data-addr="${j.id}">＋ 보상</button> <button class="tg red" data-del="${j.id}">NPC 삭제</button> <button class="tg" data-avoid="${j.id}" title="지양: top10 제외·항상 접힘">${j.avoid?'지양 해제':'지양'}</button>`:(mx.pick.length>1?`<div style="margin-top:4px">혼합: ${mx.pick.map(([x,n])=>x.item+'×'+n).join(' + ')} = <span class="gold">${fmt(mx.gold)}G</span> <span class="mu">(남음 ${mx.left}P)</span></div>`:'')}</td></tr>`}
+  if(edit)return `<tr data-rid="${r.id}"><td class="volcell"></td><td><input data-rf="item" value="${r.item}" style="width:170px"></td><td><input data-rf="price" type="number" value="${r.price??''}" placeholder="수동" style="width:90px"></td><td><input data-rf="qty" type="number" value="${r.qty??''}" style="width:60px">개</td><td><input data-rf="pts" type="number" value="${r.pts??''}" style="width:60px">P</td><td><button class="tg red" data-delr="${r.id}">✕</button></td></tr>`;
+  return `<tr class="${b&&b.r===r?'bestr':''}"><td class="volcell">${edit?'':volBox(r)}</td><td>${r.item}${hotIcon(r)}${verifyBadge(r)}${r.en&&r.en!==r.item?` <span class="mu" style="font-size:11px">${r.en}</span>`:''}${r.flags&&r.flags.filter(f=>f!=='검증필요').length?` <span class="tag" title="${r.flags.filter(f=>f!=='검증필요').join(', ')}">!</span>`:''}</td><td class="n">${u!=null?fmt(u)+'G':'<span class="mu">가격 미상</span>'}${u!=null?` <span class="mu" style="font-size:11px">${(!r.useApi&&r.price!=null)?'시트':'경매'}</span>`:''}</td><td class="n">×${r.qty??'?'}</td><td class="n mu">${r.pts??'?'}P × ${count(r,B)}회</td><td class="n gold">${g!=null?'+'+fmt(g):'—'}</td></tr>`}).join('');
+ return `<tr class="det"><td colspan="6"><div class="mu" style="font-size:12px;margin:0 0 4px 12px">${j.type||''} · 모집 ${j.start||'?'}–${j.end||'?'}${j.report?' · 보고 '+j.report+'부터':''}${j.note?' · '+j.note:''}</div><table class="rt">${rows}</table>${edit?`<button class="tg" data-addr="${j.id}">＋ 보상</button> <button class="tg red" data-del="${j.id}">NPC 삭제</button> <button class="tg" data-avoid="${j.id}" title="지양: top10 제외·항상 접힘">${j.avoid?'지양 해제':'지양'}</button>`:(mx.pick.length>1?`<div style="margin-top:4px;margin-left:12px">혼합: ${mx.pick.map(([x,n])=>x.item+'×'+n).join(' + ')} = <span class="gold">${fmt(mx.gold)}G</span> <span class="mu">(남음 ${mx.left}P)</span></div>`:'')}</td></tr>`}
 const RNOTE={"Malcolm": "초급 방직·재봉 알바: 보고 12:00부터\n고급 재봉 알바: 보고 17:00부터", "Simon": "중급·고급 재봉 알바: 보고 17:00부터", "Lepus": "중급·고급 재봉 알바: 보고 17:00부터", "Brenda": "고급 재봉 알바: 보고 17:00부터", "Pierrick": "초급 방직 알바: 보고 12:00부터", "Shena": "평일 3채널에서만 가능"};
 function repOf(j){let r=j.report,e=j.end;if(!r&&j.npcEn){const d=DATA.find(x=>x.npcEn===j.npcEn);if(d){r=d.report;e=e||d.end}}return r?{r,e:e||"",n:RNOTE[j.npcEn]||""}:null}
 function repH(j){const p=repOf(j);if(!p)return'';const now=erinMin(),a=toM(p.r),b=toM(p.e);const on=b==null?now>=a:(a<=b?now>=a&&now<b:now>=a||now<b);
@@ -175,7 +184,16 @@ const hotIcon=src=>{
   const m=(src&&typeof src==='object')?hotMetric(src):(src!=null&&src!==''?{v:+src,label:'최근'}:null);
   if(!m||!(m.v>=(feedHotMin??HOT_MIN)))return '';
   return `<span class="hot" title="거래 활발 · ${m.label} 체결 ${fmt(m.v)}개">🔥</span>`;
-};const verifyBadge=r=>r&&r.needsVerify?`<span class="tag verneed" title="경매 아이템명 검증 필요">검증필요</span>`:'';
+};
+/* 보상 행 왼쪽(시간열 아래 빈칸): 그 품목 거래량을 가로 박스로. 여러 품목이면 줄마다 각각. */
+const volBox=r=>{
+  const m=hotMetric(r);
+  if(!m)return `<span class="volbox empty" title="거래량 없음">—</span>`;
+  const hot=m.v>=(feedHotMin??HOT_MIN);
+  const short=m.label==='24시간'?'24h':m.label;
+  return `<span class="volbox${hot?' hot':''}" title="${(r.item||'').replace(/"/g,'&quot;')} · ${m.label} 체결 ${fmt(m.v)}개">${hot?'🔥':''}<span class="vn">${fmt(m.v)}</span><span class="vl">${short}</span></span>`;
+};
+const verifyBadge=r=>r&&r.needsVerify?`<span class="tag verneed" title="경매 아이템명 검증 필요">검증필요</span>`:'';
 function feedTs(u){const d=new Date(u);return isNaN(d)?'?':d.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})}
 // apiPrice만 갱신. useApi=false(시트)는 unit()이 sheet price를 쓰므로 덮어쓰지 않음.
 function applyFeedPrices(P,updated,{quiet=false,hotMin=null}={}){const ts=feedTs(updated);SNAP.ts='공유 '+ts;if(hotMin!=null)feedHotMin=hotMin;let k=0;
