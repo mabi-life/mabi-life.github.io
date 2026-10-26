@@ -194,5 +194,24 @@ payload = {
     'prices': prices,
 }
 json.dump(payload, open(out_p, 'w', encoding='utf-8'), ensure_ascii=False, indent=0, sort_keys=True)
+# 균열의 편린 최저가 이력: 이상치도 절대 버리지 않고 추가 (연속 동일값만 생략, 14일 보관)
+try:
+    pe = prices.get('균열의 편린')
+    if pe and pe.get('min', 0) > 0:
+        ph_p = f'{H}/docs/pyeollin_history.json'
+        try:
+            ph = json.load(open(ph_p, encoding='utf-8'))
+        except Exception:
+            ph = {'item': '균열의 편린', 'points': []}
+        pts = ph.get('points', [])
+        t = datetime.datetime.now(KST).isoformat(timespec='minutes')
+        if not pts or pts[-1].get('min') != pe['min']:
+            pts.append({'t': t, 'min': int(pe['min'])})
+        cut = datetime.datetime.now(KST) - datetime.timedelta(days=14)
+        pts = [p for p in pts if datetime.datetime.fromisoformat(p['t']) >= cut]
+        ph.update({'updated': now(), 'item': '균열의 편린', 'points': pts})
+        json.dump(ph, open(ph_p, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+except Exception as ex:
+    print('pyeollin history error', ex)
 print(f'ok {ok} empty {empty} fail {fail} hist_ok {hist_ok} hist_fail {hist_fail} '
       f'total {len(names)} stored {len(prices)} hotMinVolume {hot_min}')
