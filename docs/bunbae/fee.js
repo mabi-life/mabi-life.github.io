@@ -13,7 +13,7 @@ function calc(){const p=num($('#price').value),n=Math.max(1,num($('#n').value)),
  const rows=[{c:0,price:0,ben:0}].concat(CP.map(c=>({c,price:cpPrice[c],ben:Math.floor(base*c/100)-(cpPrice[c]??Infinity)})));
  const best=rows.reduce((a,b)=>b.ben>a.ben?b:a),use=rows.find(o=>o.c===force)||best;
  const fee=base-Math.floor(base*use.c/100)+use.price,net=p-fee;
- $('#kor').textContent=kor(p);$('#rFee').textContent=f(fee);$('#rNet').textContent=f(net);$('#rPer').textContent=f(net/n);
+ $('#kor').textContent=kor(p);$('#rFee').textContent=f(fee);$('#rNet').textContent=f(net);const ex=Math.floor(net/n),chk=Math.floor(ex/1e4)*1e4;window._chk=chk;$('#rPer').textContent=f(chk);$('#rExact').textContent=ex!==chk?'정확히 '+f(ex):'';
  $('#pick').textContent=(use===best?'★ 추천: ':'선택: ')+(use.c?use.c+'% 쿠폰':'쿠폰 없음')+(use!==best?` (추천은 ${best.c?best.c+'%':'없음'})`:'');
  $('#cpBody').innerHTML=rows.map(o=>`<tr data-c="${o.c}" class="${o===best?'best':''} ${o===use?'sel':''}"><td>${o.c?o.c+'%':'없음'}</td><td>${o.c?f(o.price):'—'}</td><td style="color:${o.ben>0?'var(--ok)':o.ben<0?'#ffb3bd':'inherit'}">${o.ben>0?'+':''}${f(o.ben)}</td></tr>`).join('');
  document.querySelectorAll('#cpBody tr').forEach(t=>t.onclick=()=>{const c=+t.dataset.c;force=(force===c||c===best.c)?null:c;calc()});
@@ -21,7 +21,7 @@ function calc(){const p=num($('#price').value),n=Math.max(1,num($('#n').value)),
 document.querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-rate]').forEach(x=>x.classList.remove('on'));b.classList.add('on');rate=+b.dataset.rate;calc()});
 document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const a=+b.dataset.add;$('#price').value=f(a?num($('#price').value)+a:0);force=null;calc()});
 document.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{$('#n').value=Math.max(1,num($('#n').value)+(b.dataset.n=='+'?1:-1));calc()});
-$('#price').oninput=()=>{force=null;calc()};$('#n').oninput=calc;$('#refresh').onclick=refresh;
+$('#price').oninput=()=>{force=null;calc()};$('#n').oninput=calc;$('#refresh').onclick=refresh;$('#cpyPer').onclick=()=>{const t=String(window._chk||0),b=$('#cpyPer'),ok=()=>{b.textContent='복사됨';setTimeout(()=>b.textContent='복사',1200)};navigator.clipboard?navigator.clipboard.writeText(t).then(ok,()=>prompt('복사',t)):prompt('복사',t)};
 document.getElementById('list').addEventListener('click',e=>{const b=e.target.closest('[data-fee]');if(!b)return;e.stopPropagation();$('#n').value=Math.max(1,+b.dataset.fee||1);calc();$('#price').focus();$('#price').select();if(innerWidth<900)document.querySelector('.fee').scrollIntoView({behavior:'smooth'})},true);
 $('#price').onblur=()=>$('#price').value=f(num($('#price').value));calc();refresh();setInterval(refresh,5*60*1000);
 })();
