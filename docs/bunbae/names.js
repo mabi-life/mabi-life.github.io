@@ -1,4 +1,4 @@
-/* 분배 도우미 이름 사전 v1.6 — 자주 쓰는 이름으로 OCR 결과 보정 (localStorage 'mabi.bunbae.names') */
+/* 분배 도우미 이름 사전 v1.7 — 자주 쓰는 이름으로 OCR 결과 보정 (localStorage 'mabi.bunbae.names') */
 (function(root){
 var CHO='ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ',JUNG='ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ',JONG=' ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ';
 function jamo(s){var o=[];for(var i=0;i<s.length;i++){var c=s.charCodeAt(i)-0xAC00;if(c>=0&&c<11172){o.push(CHO[Math.floor(c/588)],JUNG[Math.floor(c%588/28)]);if(c%28)o.push(JONG[c%28])}else o.push(s[i])}return o}

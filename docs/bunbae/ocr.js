@@ -28,7 +28,16 @@ async function run(worker,img,toInput,onProg){var res={item:'',names:[]};var ste
  for(var i=0;i<VARIANTS.length;i++){var sc=VARIANTS[i][0],th=VARIANTS[i][1];var c=crop(img,b[0],b[1],b[2],b[3],sc,th);
   var rr=await worker.recognize(toInput(c));var H=c.height;
   runs.push(rr.data.lines.map(function(l){return {text:l.text,confidence:l.confidence,cy:((l.bbox.y0+l.bbox.y1)/2/H)*(b[3]-b[1])}}));onProg&&onProg(++step/total)}
- res.names=vote(runs);return res}
+ var block=vote(runs),rows=await nameRows(worker,img,toInput,runs);
+ res.names=rows.length>=block.length?rows:block;res.nameMode=rows.length>=block.length?'row':'block';return res}
+// 파티원 줄 단위: 1행 y≈0.467, 간격 0.0429 (607x700 기준), 최대 8명. 이름 열만(x 0.565~0.80) 잘라 5가지 전처리로 읽고 투표
+var ROW_Y0=0.4675,ROW_DY=0.0429,ROW_V=[[3,150],[3,0],[2,150],[3,120],[4,150]];
+async function nameRows(worker,img,toInput,runs){var B=NAME_BOX;var out=[],miss=0;await worker.setParameters({tessedit_pageseg_mode:'7'});
+ try{for(var k=0;k<8&&miss<2;k++){var yc=ROW_Y0+k*ROW_DY,sc={};(runs||[]).forEach(function(r){r.forEach(function(l){var t=l.text.replace(/[^가-힣A-Za-z0-9]/g,'');if(Math.abs(B[1]+l.cy-yc)<ROW_DY*0.5&&/^[가-힣A-Za-z0-9]{2,12}$/.test(t)&&/[가-힣]/.test(t)&&!BAD.test(t)&&l.confidence>=50)sc[t]=(sc[t]||0)+l.confidence})});
+  for(var v=0;v<ROW_V.length;v++){var r=await worker.recognize(toInput(crop(img,0.565,yc-0.017,0.80,yc+0.017,ROW_V[v][0],ROW_V[v][1])));var t=r.data.text.replace(/[^가-힣A-Za-z0-9]/g,'');
+   if(/^[가-힣A-Za-z0-9]{2,12}$/.test(t)&&/[가-힣]/.test(t)&&!BAD.test(t)&&r.data.confidence>=50)sc[t]=(sc[t]||0)+r.data.confidence}
+  var e=Object.entries(sc).sort(function(a,b){return b[1]-a[1]})[0];if(e&&e[1]>=100){miss=0;if(out.indexOf(e[0])<0)out.push(e[0])}else miss++}}
+ finally{await worker.setParameters({tessedit_pageseg_mode:'6'})}return out}
 function cleanSlot(t){var tk=t.replace(/[|\[\]{}()<>\/]/g,' ').trim().split(/\s+/),o=[];for(var i=0;i<tk.length;i++){if(/^[가-힣0-9]+$/.test(tk[i])&&!BAD.test(tk[i]))o.push(tk[i]);else break}
  var r=o.join(' ');return (r.match(/[가-힣]/g)||[]).length>=2?r:''}
 var SLOT_Y0=0.132,SLOT_DY=0.1225,SLOT_V=[[4,150],[3,150],[4,0],[3,180],[5,170]];

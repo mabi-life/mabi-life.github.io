@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#141029">
-<title>마비노기 분배 도우미 v1.6</title>
+<title>마비노기 분배 도우미 v1.7</title>
 <meta name="description" content="마비노기 보상 분배 창 스크린샷으로 파티원과 아이템을 자동 인식하고 분배자를 기록하는 도우미">
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -49,13 +49,13 @@ input[type=text]{width:100%;background:#120e28;border:1px solid rgba(247,217,139
 input[type=text]:focus{outline:none;border-color:var(--gold)}
 .q{font-size:17px;font-weight:700;margin:18px 0 6px}.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;flex-wrap:wrap}
 .hint{font-size:12px;color:var(--mu);margin-top:6px}.mini{font-size:11px;color:var(--mu);border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:1px 6px;margin-left:6px;font-weight:400}
-.zoom{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:30;padding:16px}.zoom.show{display:flex}.zbox{background:#1a1536;border:1px solid var(--gold);border-radius:14px;padding:16px;width:min(94vw,1400px);max-height:96vh;overflow:auto}.zoom img{display:block;max-width:100%;max-height:calc(92vh - 170px);min-height:min(50vh,420px);object-fit:contain;border-radius:8px;margin:0 auto}.zm{margin-top:6px;font-size:14px;color:var(--mu);line-height:1.9}.zt{margin-top:10px;font-weight:700;color:var(--gold);word-break:break-all}.drop img{cursor:zoom-in}
+.ex{margin-top:10px;font-size:13px;color:var(--mu)}.ex summary{cursor:pointer;color:#d9d3ff}.ex summary:hover{color:var(--gold)}.exIn{display:flex;gap:14px;margin-top:10px;align-items:flex-start;flex-wrap:wrap}.exIn img{width:260px;height:auto;border-radius:8px;border:1px solid var(--line)}.exIn ul{flex:1;min-width:200px;padding-left:18px;line-height:1.8}.zoom{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:30;padding:16px}.zoom.show{display:flex}.zbox{background:#1a1536;border:1px solid var(--gold);border-radius:14px;padding:16px;width:min(94vw,1400px);max-height:96vh;overflow:auto}.zoom img{display:block;max-width:100%;max-height:calc(92vh - 170px);min-height:min(50vh,420px);object-fit:contain;border-radius:8px;margin:0 auto}.zm{margin-top:6px;font-size:14px;color:var(--mu);line-height:1.9}.zt{margin-top:10px;font-weight:700;color:var(--gold);word-break:break-all}.drop img{cursor:zoom-in}
 .siteFoot{margin:28px auto 18px;padding:12px 16px;max-width:1180px;text-align:center;font-size:12px;line-height:1.6;color:#8a90a0}.siteFoot a{color:#b8bfd0;text-decoration:underline;text-underline-offset:2px}.siteFoot .sep{margin:0 .4em;opacity:.55}
 @media(max-width:600px){.head h1{font-size:26px}.thumb{width:60px;height:60px}}
 </style>
 </head><body><div class="wrap">
 <nav class="siteNav" aria-label="도우미 이동"><a id="homeLink" href="../" title="생활도우미 메인으로">홈</a><a href="../alba/">알바</a><a href="../barter/">물교</a><a href="../dungeon/">던전</a><span class="on" aria-current="page">분배</span></nav>
-<div class="head"><h1>분배 도우미<span class="verBadge">v1.6</span></h1><p>「보상 분배」 창 스크린샷 한 장으로 파티원·아이템을 정리하고 분배자를 기록해요.</p></div>
+<div class="head"><h1>분배 도우미<span class="verBadge">v1.7</span></h1><p>「보상 분배」 창 스크린샷 한 장으로 파티원·아이템을 정리하고 분배자를 기록해요.</p></div>
 <div class="bar"><button class="btn gold" id="newBtn">＋ 새 분배</button>
 <button class="btn on" data-f="all">전체</button><button class="btn" data-f="open">진행중</button><button class="btn" data-f="done">완료</button>
 <span class="grow"></span><span class="hint" id="cnt"></span></div>
@@ -66,7 +66,7 @@ input[type=text]:focus{outline:none;border-color:var(--gold)}
 <h2 id="mTitle">새 분배</h2>
 <div class="step">① 스크린샷 넣기</div>
 <div class="drop" id="drop"><div id="dropMsg">「보상 분배」 창 스크린샷을 <b>Ctrl+V</b>로 붙여넣거나, 끌어다 놓거나, 눌러서 선택하세요.</div><img id="prev" alt="" style="display:none"></div>
-<input type="file" accept="image/*" id="file" hidden>
+<input type="file" accept="image/*" id="file" hidden><details class="ex" id="exBox"><summary>📷 캡처 예시 보기 · 「보상 분배」 창만 보이게 캡처하면 인식이 더 정확해요</summary><div class="exIn"><img src="capture-example.webp" loading="lazy" width="520" height="600" alt="보상 분배 창 캡처 예시"><ul><li>게임 안 <b>「보상 분배」 창 테두리까지만</b> 캡처해 주세요 (Win+Shift+S 등).</li><li><b style="color:#f7d98b">노란 칸</b>: 왼쪽 보상 리스트 맨 위 3칸 → 제목·「다음 아이템 추가」</li><li><b style="color:#8cc8ff">파란 칸</b>: 오른쪽 파티원 이름 → 이름 칩</li><li>전체 화면 캡처도 창을 자동으로 찾지만, 창만 자르면 더 빠르고 정확해요.</li><li>시스템 메시지가 글자를 가리지 않을 때 찍으면 좋아요.</li></ul></div></details>
 <div class="prog" id="prog"><i></i></div><div class="status" id="status"></div>
 <div class="step">② 파티원 <span class="mini">이름 클릭 = 분배자 · ✎ 수정 · ✕ 삭제</span></div>
 <div class="chips" id="chips"></div>
@@ -81,5 +81,5 @@ input[type=text]:focus{outline:none;border-color:var(--gold)}
 <div class="zoom" id="zoom"><div class="zbox"><img alt="" id="zimg"><div class="zt" id="zt"></div><div class="zm" id="zm"></div><div class="foot" style="margin-top:12px"><button class="btn ghost" id="zDel" style="margin-right:auto;border-color:rgba(229,72,93,.6);color:#ffb3bd">삭제</button><button class="btn" id="zShare">🔗 공유</button><button class="btn ghost" id="zShareImg" title="작은 이미지를 넣어서 링크가 길어져요">🖼 이미지 포함 공유</button><button class="btn" id="zEdit">수정</button><button class="btn gold" id="zClose">닫기</button></div></div></div>
 <footer class="siteFoot"><span>본 사이트는 넥슨코리아와 무관한 개인 팬 사이트입니다.</span></footer>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="names.js?v=1.6"></script><script src="ocr.js?v=1.6"></script><script src="app.js?v=1.6"></script>
+<script src="names.js?v=1.7"></script><script src="ocr.js?v=1.7"></script><script src="app.js?v=1.7"></script>
 </body></html>
