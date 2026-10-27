@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#141029">
-<title>마비노기 던전 도우미 v1.2</title>
+<title>마비노기 던전 도우미 v1.3</title>
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
@@ -232,7 +232,7 @@ button.r1:hover .fi{color:#f7d98b}
   <nav class="siteNav" aria-label="도우미 이동"><a id="homeLink" href="../" title="생활도우미 메인으로">홈</a><a href="../alba/">알바</a><a href="../barter/">물교</a><span class="on" aria-current="page">던전</span><a href="../bunbae/">분배</a></nav>
   <header class="head">
     <h1>✦ 이번 주 던전 통행증 현황 ✦</h1>
-    <span class="verBadge" title="라이브 버전">v1.2</span><span class="badge">💰 전재산</span>
+    <span class="verBadge" title="라이브 버전">v1.3</span><span class="badge">💰 전재산</span>
     <p id="period"></p>
     <p class="sub" id="resetNote"></p>
   </header>
@@ -735,7 +735,7 @@ function rowHtml(c, ci, d){
     nx = n>=10 ? DONE : parts2(['기본키 <b>'+(10-n)+'개</b> 남음', '회당 '+fmtGain(rw('crom'),true)]);
   } else if (d.type==='paid'){
     var t=p[d.key]; two=d.key;
-    st = (t.u+t.cu)+' / 10'+(t.b>0?' · '+fmtCost(ds.spent):'')+plHead;
+    st = (t.cu>0?'(+'+t.cu+')':'')+t.u+' / 10'+(t.b>0?' · '+fmtCost(ds.spent):'')+plHead;
     bar = '<div class="bar">';
     for (var j=0;j<10;j++) bar+=slotBtn(stageCls(j,t,'on','oh',''), ci,d.key,j, d.name+' '+(j+1)+'회째 ('+fmtGold(PRICES[j])+') · '+stageLabel(j,t), (j>=t.u&&j<t.b)?'🔑':'');
     bar += '</div>'+carryLine(ci,d.key,t);
@@ -754,7 +754,7 @@ function rowHtml(c, ci, d){
     else { var fc=riftCost(r); nx=parts2(['다음 입장 편린 <b>'+fc+'개</b> (약 '+fmtCost(fc*fp)+') → '+fmtPL(rw('rift')-fc*fp), '보상 약 '+fmtGain(rw('rift'))]); }
   } else {
     var gs=glenStats(p), x=p.glenX; two='glenX';
-    st = gs.runs+' / 6'+(gs.gold>0?' · '+fmtCost(gs.gold):'');
+    st = (x.cu>0?'(+'+x.cu+')':'')+(gs.runs-x.cu)+' / 6'+(gs.gold>0?' · '+fmtCost(gs.gold):'');
     bar='<div class="bar">';
     for(var a=0;a<3;a++) bar+=slotBtn(a<p.glenBasic?'on':'', ci,'glenBasic',a,'글렌베르나 기본키 '+(a+1)+(a<p.glenBasic?' · 사용':''));
     bar+=slotBtn(p.glenPan?'y':'ye', ci,'glenPan',0,'판의 통행증상자 키'+(p.glenPan?' · 사용':''));
