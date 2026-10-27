@@ -50,7 +50,7 @@ input[type=text]:focus{outline:none;border-color:var(--gold)}
 .q{font-size:17px;font-weight:700;margin:18px 0 6px}.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;flex-wrap:wrap}
 .hint{font-size:12px;color:var(--mu);margin-top:6px}.mini{font-size:11px;color:var(--mu);border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:1px 6px;margin-left:6px;font-weight:400}
 .ex{margin-top:10px;font-size:13px;color:var(--mu)}.ex summary{cursor:pointer;color:#d9d3ff}.ex summary:hover{color:var(--gold)}.exIn{display:flex;gap:14px;margin-top:10px;align-items:flex-start;flex-wrap:wrap}.exIn img{width:260px;height:auto;border-radius:8px;border:1px solid var(--line)}.exIn ul{flex:1;min-width:200px;padding-left:18px;line-height:1.8}.zoom{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:30;padding:16px}.zoom.show{display:flex}.zbox{background:#1a1536;border:1px solid var(--gold);border-radius:14px;padding:16px;width:min(94vw,1400px);max-height:96vh;overflow:auto}.zoom img{display:block;max-width:100%;max-height:calc(92vh - 170px);min-height:min(50vh,420px);object-fit:contain;border-radius:8px;margin:0 auto}.zm{margin-top:6px;font-size:14px;color:var(--mu);line-height:1.9}.zt{margin-top:10px;font-weight:700;color:var(--gold);word-break:break-all}.drop img{cursor:zoom-in}
-.siteFoot{margin:28px auto 18px;padding:12px 16px;max-width:1180px;text-align:center;font-size:12px;line-height:1.6;color:#8a90a0}.siteFoot a{color:#b8bfd0;text-decoration:underline;text-underline-offset:2px}.siteFoot .sep{margin:0 .4em;opacity:.55}
+.siteFoot{margin:28px auto 18px;padding:22px 16px 28px;max-width:1180px;text-align:center;font-size:12.5px;line-height:1.65;color:#8a90a0;position:relative;border-top:1px solid #232733}.siteFoot .gold{position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:80px;height:2px;background:linear-gradient(90deg,transparent,#f7d98b,transparent)}.siteFoot a{color:#c9b27a;text-decoration:none}.siteFoot a:hover{color:#f7d98b;text-decoration:underline}
 @media(max-width:600px){.head h1{font-size:26px}.thumb{width:60px;height:60px}}
 </style>
 </head><body><div class="wrap">
@@ -79,7 +79,10 @@ input[type=text]:focus{outline:none;border-color:var(--gold)}
 <div class="zoom" id="sv"><div class="zbox"><div class="hint" style="margin-bottom:8px">🔗 공유받은 분배 기록 (읽기 전용)</div><img alt="" id="simg"><div class="zt" id="st"></div><div class="zm" id="sm"></div><div class="hint" id="snote"></div><div class="foot" style="margin-top:12px"><button class="btn ghost" id="sClose">닫기</button><button class="btn gold" id="sImport">＋ 내 목록에 추가</button></div></div></div>
 <div id="toast" style="position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#f7d98b;color:#2a2040;font-weight:700;padding:9px 18px;border-radius:999px;z-index:50;display:none"></div>
 <div class="zoom" id="zoom"><div class="zbox"><img alt="" id="zimg"><div class="zt" id="zt"></div><div class="zm" id="zm"></div><div class="foot" style="margin-top:12px"><button class="btn ghost" id="zDel" style="margin-right:auto;border-color:rgba(229,72,93,.6);color:#ffb3bd">삭제</button><button class="btn" id="zShare">🔗 공유</button><button class="btn ghost" id="zShareImg" title="작은 이미지를 넣어서 링크가 길어져요">🖼 이미지 포함 공유</button><button class="btn" id="zEdit">수정</button><button class="btn gold" id="zClose">닫기</button></div></div></div>
-<footer class="siteFoot"><span>본 사이트는 넥슨코리아와 무관한 개인 팬 사이트입니다.</span></footer>
+<footer class="siteFoot"><span class="gold" aria-hidden="true"></span>
+경매장 시세 등은 <a href="https://openapi.nexon.com/" target="_blank" rel="noopener">넥슨 Open API</a>로 가져와요.<br>
+공식 사이트가 아니고, 게임 안 분쟁이나 거래와도 상관없어요.
+</footer>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="names.js?v=1.7"></script><script src="ocr.js?v=1.7"></script><script src="app.js?v=1.7"></script>
 </body></html>
