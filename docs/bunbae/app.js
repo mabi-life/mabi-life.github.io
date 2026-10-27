@@ -1,4 +1,4 @@
-/* 분배 도우미 v1.5 */
+/* 분배 도우미 v1.6 */
 (function(){
 var KEY='mabi.bunbae.v1',$=function(id){return document.getElementById(id)};
 var posts=[],filt='all',names=[],items=[],queue=[],zIdx=-1,big='',bigBlob=null,imgId='',dist=null,thumb='',editIdx=-1,titleEdited=false,worker=null,busy=0;
@@ -28,7 +28,7 @@ function openModal(i){editIdx=i;var p=i>=0?posts[i]:null;names=p?(p.members||[])
 function closeModal(){$('ov').classList.remove('show')}
 function save(done){var t=$('title').value.trim()||today()+' - 분배';var rec={title:t,items:items.filter(function(o){return o.on}).map(function(o){return o.n}),members:names.slice(),dist:dist,done:done,thumb:thumb,ts:Date.now()};if(imgId)rec.imgId=imgId;else if(big)rec.big=big;
  if(bigBlob){var nid=imgId||('i'+Date.now()+Math.random().toString(36).slice(2,6));rec.imgId=nid;delete rec.big;imgPut(nid,bigBlob).catch(function(){alert('고화질 이미지 저장에 실패했어요 (저장 공간 부족). 썸네일만 저장돼요.')})}
- if(editIdx>=0){rec.ts=posts[editIdx].ts;posts[editIdx]=rec}else posts.unshift(rec);persist();closeModal();render()}
+ BunbaeNames.learn(names);if(editIdx>=0){rec.ts=posts[editIdx].ts;posts[editIdx]=rec}else posts.unshift(rec);persist();closeModal();render()}
 function addNames(v){v.split(/[,\s]+/).map(function(s){return s.trim()}).filter(Boolean).forEach(function(n){if(names.indexOf(n)<0)names.push(n)});chips()}
 function getWorker(){if(!worker)worker=Tesseract.createWorker('kor',1,{logger:function(m){if(m.status&&/load|init/.test(m.status)&&busy)status('인식 엔진 준비 중… (처음 한 번만 몇 초 걸려요)')}}).then(function(w){return w.setParameters({tessedit_pageseg_mode:'6'}).then(function(){return w})});return worker}
 function handleFile(file){if(!file||!/^image\//.test(file.type))return;var url=URL.createObjectURL(file),img=new Image();img.onload=function(){
@@ -42,9 +42,9 @@ function toInput(d){var c=document.createElement('canvas');c.width=d.width;c.hei
 function ocr(data){if(typeof Tesseract==='undefined'){status('인식 실패 · 직접 입력해 주세요 (인식 엔진을 불러오지 못했어요)','err');return}
  busy++;var my=busy;status('글자 인식 중…');prog(0.02);
  getWorker().then(function(w){return BunbaeOCR.runAny(w,data,toInput,prog)}).then(function(r){if(my!==busy)return;prog(null);
-  var il=(r.items&&r.items.length)?r.items:(r.item?[r.item]:[]);if(il.length){queue=il.slice(1);setItems([il[0]])}var added=0;r.names.forEach(function(n){if(names.indexOf(n)<0){names.push(n);added++}});chips();
+  var il=(r.items&&r.items.length)?r.items:(r.item?[r.item]:[]);if(il.length){queue=il.slice(1);setItems([il[0]])}var cf=BunbaeNames.correctAll(r.names);r.names=cf.names;r.fixes=cf.fixes;var added=0;r.names.forEach(function(n){if(names.indexOf(n)<0){names.push(n);added++}});chips();
   if(!r.item&&!r.names.length)status('인식 실패 · 「보상 분배」 창 부분만 잘라서 다시 넣거나 직접 입력해 주세요','err');
-  else status('인식 완료 · 아이템 '+il.length+'개 · 이름 '+r.names.length+'명. 틀린 글자는 ✎로 고쳐 주세요.'+(r.names.length?'':' (이름 인식 실패 · 직접 입력해 주세요)'),'ok')})
+  else status('인식 완료 · 아이템 '+il.length+'개 · 이름 '+r.names.length+'명. 틀린 글자는 ✎로 고쳐 주세요.'+(r.fixes.length?' · 보정: '+r.fixes.join(', '):'')+(r.names.length?'':' (이름 인식 실패 · 직접 입력해 주세요)'),'ok')})
  .catch(function(e){console.error(e);prog(null);status('인식 실패 · 직접 입력해 주세요','err')})}
 // events
 document.addEventListener('click',function(e){var t=e.target,a;
@@ -55,20 +55,20 @@ document.addEventListener('click',function(e){var t=e.target,a;
  if((a=t.closest('[data-ed]'))){openModal(+a.dataset.ed);return}
  if((a=t.closest('[data-z]'))){var p=posts[+a.dataset.z];if(p)openZoom(+a.dataset.z);return}
  if((a=t.closest('[data-rm]'))){var i=+a.dataset.rm;if(names[i]===dist)dist=null;names.splice(i,1);chips();return}
- if((a=t.closest('[data-edn]'))){var j=+a.dataset.edn,v=prompt('이름 수정',names[j]);if(v&&v.trim()){if(names[j]===dist)dist=v.trim();names[j]=v.trim();chips()}return}
+ if((a=t.closest('[data-edn]'))){var j=+a.dataset.edn,v=prompt('이름 수정',names[j]);if(v&&v.trim()){if(names[j]===dist)dist=v.trim();names[j]=v.trim();BunbaeNames.learn([names[j]]);chips()}return}
  if((a=t.closest('[data-irm]'))){items.splice(+a.dataset.irm,1);ichips();autoTitle();return}
  if((a=t.closest('[data-it]'))){var o=items[+a.dataset.it];o.on=!o.on;ichips();autoTitle();return}
  if((a=t.closest('[data-pick]'))){var n=names[+a.dataset.pick];dist=dist===n?null:n;chips();return}
 });
 $('newBtn').onclick=function(){openModal(-1)};$('cancelBtn').onclick=closeModal;$('saveBtn').onclick=function(){save(false)};$('doneBtn').onclick=function(){save(true)};
 $('delBtn').onclick=function(){if(editIdx>=0&&confirm('이 기록을 삭제할까요?')){if(posts[editIdx].imgId)imgDel(posts[editIdx].imgId);posts.splice(editIdx,1);persist();closeModal();render()}};
-function openZoom(i){var p=posts[i];zIdx=i;showBig($('zimg'),p,p.big||p.thumb||'');$('zimg').style.display=(p.big||p.thumb)?'':'none';$('zt').textContent=p.title;$('zm').innerHTML=((p.members||[]).length?'파티원 '+p.members.map(function(n){return '<span class="at">@'+esc(n)+'</span>'}).join(''):'')+'<br>👑 분배자 <span class="dist">'+(p.dist?esc(p.dist):'-')+'</span>';$('zDel').style.display=$('zEdit').style.display=$('zShare').style.display=i>=0?'':'none';$('zoom').classList.add('show')}
+function openZoom(i){var p=posts[i];zIdx=i;showBig($('zimg'),p,p.big||p.thumb||'');$('zimg').style.display=(p.big||p.thumb)?'':'none';$('zt').textContent=p.title;$('zm').innerHTML=((p.members||[]).length?'파티원 '+p.members.map(function(n){return '<span class="at">@'+esc(n)+'</span>'}).join(''):'')+'<br>👑 분배자 <span class="dist">'+(p.dist?esc(p.dist):'-')+'</span>';$('zDel').style.display=$('zEdit').style.display=$('zShare').style.display=$('zShareImg').style.display=i>=0?'':'none';$('zoom').classList.add('show')}
 function closeZoom(){$('zoom').classList.remove('show')}
 $('zoom').onclick=function(e){if(e.target===this)closeZoom()};$('zClose').onclick=closeZoom;
 $('zEdit').onclick=function(){closeZoom();openModal(zIdx)};
 $('zDel').onclick=function(){if(zIdx>=0&&confirm('이 분배 기록을 삭제할까요?')){if(posts[zIdx].imgId)imgDel(posts[zIdx].imgId);posts.splice(zIdx,1);persist();closeZoom();render()}};
 $('nextBtn').onclick=function(){if(queue.length)setItems([queue[0]])};
-$('prev').addEventListener('click',function(e){e.stopPropagation();zIdx=-1;$('zimg').src=this.src;$('zimg').style.display='';$('zt').textContent='';$('zm').innerHTML='';$('zDel').style.display=$('zEdit').style.display=$('zShare').style.display='none';$('zoom').classList.add('show')});
+$('prev').addEventListener('click',function(e){e.stopPropagation();zIdx=-1;$('zimg').src=this.src;$('zimg').style.display='';$('zt').textContent='';$('zm').innerHTML='';$('zDel').style.display=$('zEdit').style.display=$('zShare').style.display=$('zShareImg').style.display='none';$('zoom').classList.add('show')});
 $('addBtn').onclick=function(){addNames($('addn').value);$('addn').value=''};$('addn').onkeydown=function(e){if(e.key==='Enter'&&!e.isComposing){addNames(this.value);this.value=''}};
 $('addiBtn').onclick=function(){var v=$('addi').value.trim();if(v)setItems([v]);$('addi').value=''};$('addi').onkeydown=function(e){if(e.key==='Enter'&&!e.isComposing){$('addiBtn').click()}};
 $('title').oninput=function(){titleEdited=true};
@@ -86,14 +86,24 @@ function enc(obj){var u=new TextEncoder().encode(JSON.stringify(obj));return typ
 function dec(s){var u=unb64u(s.slice(1));return (s[0]==='z'?pipe(u,new DecompressionStream('deflate-raw')):Promise.resolve(u)).then(function(b){return JSON.parse(new TextDecoder().decode(b))})}
 function shrink(src,w,q){return new Promise(function(res){if(!src)return res('');var im=new Image();im.onload=function(){var k=Math.min(1,w/im.width),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);var d=c.toDataURL('image/webp',q);if(d.indexOf('data:image/webp')!==0)d=c.toDataURL('image/jpeg',q);res(d)};im.onerror=function(){res('')};im.src=src})}
 var LIMIT=7000;
-function share(i){var p=posts[i];var base={v:1,t:p.title,m:p.members||[],d:p.dist||'',o:p.done?1:0,ts:p.ts||Date.now(),i:p.items||[]};
- var base_url=location.origin+location.pathname+'#s=';var tries=[[240,.6],[180,.5],[120,.45]],note='';
- (function next(k){if(k>=tries.length||!p.thumb){return enc(base).then(function(s){done(s,p.thumb?' (이미지는 너무 커서 빼고 글자만 공유)':'')})}
-  shrink(p.thumb,tries[k][0],tries[k][1]).then(function(th){var o=Object.assign({},base,{th:th});return enc(o)}).then(function(s){if((base_url+s).length<=LIMIT)done(s,'');else next(k+1)})})(0);
- function done(s,n){var url=base_url+s;var ok=function(){toast('링크 복사됨'+n)};
-  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(ok,function(){prompt('아래 링크를 복사하세요'+n,url)});else prompt('아래 링크를 복사하세요'+n,url)}}
+function copyText(url,n){function fb(){try{var ta=document.createElement('textarea');ta.value=url;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;top:-1000px;opacity:0';document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,url.length);var ok=document.execCommand('copy');ta.remove();return ok}catch(e){return false}}
+ function fail(){toast('자동 복사 실패 · 링크를 직접 복사해 주세요');prompt('아래 링크를 복사하세요',url)}
+ function ok(){toast('✅ 링크 복사됨'+(n||'')+' · '+url.length+'자')}
+ if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(url).then(ok,function(){fb()?ok():fail()});else fb()?ok():fail()}
+/* 공유 v2: [2,제목,파티원[],분배자 인덱스(없으면 -1, 목록 밖이면 이름),완료0/1,ts(초,36진),제목에 없는 아이템[],썸네일?]
+   → JSON → deflate-raw와 원본 중 짧은 쪽 → base64url. 기본은 글자만(보통 200~400자), 「이미지 포함」은 7000자 이내 축소 썸네일 */
+function pack(p,th){var m=p.members||[],di=p.dist?m.indexOf(p.dist):-1,t=p.title||'';var it=(p.items||[]).filter(function(x){return t.indexOf(x)<0});
+ var a=[2,t,m,di<0&&p.dist?p.dist:di,p.done?1:0,Math.floor((p.ts||Date.now())/1000).toString(36),it];if(th)a.push(th);else if(!it.length)a.pop();return a}
+function encBest(o){var u=new TextEncoder().encode(JSON.stringify(o)),raw='j'+b64u(u);if(typeof CompressionStream==='undefined')return Promise.resolve(raw);
+ return pipe(u,new CompressionStream('deflate-raw')).then(function(z){var zs='z'+b64u(z);return zs.length<raw.length?zs:raw})}
+function share(i,withImg){var p=posts[i],base=location.origin+location.pathname+'#s=';
+ if(!withImg||!p.thumb)return encBest(pack(p)).then(function(s){copyText(base+s,withImg?' (이미지 없음 · 글자만)':'')});
+ var tries=[[240,.6],[180,.5],[120,.45]];
+ (function next(k){if(k>=tries.length)return encBest(pack(p)).then(function(s){copyText(base+s,' (이미지가 커서 글자만)')});
+  shrink(p.thumb,tries[k][0],tries[k][1]).then(function(th){return encBest(pack(p,th))}).then(function(s){if((base+s).length<=LIMIT)copyText(base+s,' (이미지 포함)');else next(k+1)})})(0)}
+function unpack(o){if(!Array.isArray(o))return o;var m=o[2]||[];return {t:o[1],m:m,d:typeof o[3]==='number'?(m[o[3]]||''):o[3],o:o[4],ts:parseInt(o[5],36)*1000,i:(o[6]||[]).length?o[6]:[],th:o[7]||''}}
 var shared=null;
-function openShared(){var m=location.hash.match(/^#s=(.+)$/);if(!m)return;dec(m[1]).then(function(o){shared=o;
+function openShared(){var m=location.hash.match(/^#s=(.+)$/);if(!m)return;dec(m[1]).then(function(o){o=unpack(o);if(!o.i||!o.i.length){var mm=(o.t||'').match(/^\d{4}\.\d\d\.\d\d\s*-\s*(.+)$/);o.i=mm?mm[1].split(' · '):[]}shared=o;
   $('simg').style.display=o.th?'':'none';$('simg').src=o.th||'';$('st').innerHTML='<span class="tag '+(o.o?'done':'open')+'">'+(o.o?'완료':'진행중')+'</span>'+esc(o.t||'');
   $('sm').innerHTML=(o.m&&o.m.length?'파티원 '+o.m.map(function(n){return '<span class="at">@'+esc(n)+'</span>'}).join(''):'')+'<br>👑 분배자 <span class="dist">'+(o.d?esc(o.d):'-')+'</span>';
   $('snote').textContent=o.th?'공유 링크에는 작은 미리보기 이미지만 들어 있어요.':'';
@@ -102,7 +112,7 @@ function openShared(){var m=location.hash.match(/^#s=(.+)$/);if(!m)return;dec(m[
 function closeShared(){$('sv').classList.remove('show');history.replaceState(null,'',location.pathname+location.search)}
 $('sClose').onclick=closeShared;$('sv').onclick=function(e){if(e.target===this)closeShared()};
 $('sImport').onclick=function(){if(!shared||this.disabled)return;posts.unshift({title:shared.t,items:shared.i||[],members:shared.m||[],dist:shared.d||null,done:!!shared.o,thumb:shared.th||'',big:shared.th||'',ts:shared.ts||Date.now()});persist();render();closeShared();toast('내 목록에 추가했어요')};
-$('zShare').onclick=function(){if(zIdx>=0)share(zIdx)};
+$('zShare').onclick=function(){if(zIdx>=0)share(zIdx)};$('zShareImg').onclick=function(){if(zIdx>=0)share(zIdx,true)};
 window.addEventListener('hashchange',openShared);
-load();render();openShared();
+load();render();if(!localStorage.getItem(BunbaeNames.KEY)){var all=[];posts.forEach(function(p){all=all.concat(p.members||[])});BunbaeNames.learn(all)}openShared();
 })();
