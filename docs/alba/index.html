@@ -298,7 +298,7 @@ setInterval(()=>{if(document.querySelector('.pop:not(.hid)')||edit){$('#clock').
  document.addEventListener('dragover',e=>{if(!src)return;const o=tgtOf(e.target,e.clientY);if(!o)return;e.preventDefault();clr();o.r.classList.add(o.after?'dropB':'dropT')});
  document.addEventListener('drop',e=>{if(!src)return;const o=tgtOf(e.target,e.clientY);e.preventDefault();clr();if(o)drop(o.r.dataset.open,o.after);src=null});
  document.addEventListener('dragend',()=>{clr();unDrag();src=null});
- // 터치: ⠿ 핸들은 바로, 행 본문은 0.3초 꾹 누르면(움직이지 않고) 드래그 시작 → 그냥 스와이프는 스크롤
+ // 터치: 행을 0.3초 꾹 누르면(움직이지 않고) 드래그 시작 → 그냥 스와이프는 스크롤
  let tp=null,lp=0,act=false;
  document.addEventListener('touchstart',e=>{const r=rowOf(e.target);if(!r||e.target.closest(IA))return;const t=e.touches[0];tp={x:t.clientX,y:t.clientY,id:r.dataset.open,r};act=false;clearTimeout(lp);
   const go=()=>{act=true;src=tp.id;tp.r.classList.add('dragging');if(navigator.vibrate)navigator.vibrate(15)};lp=setTimeout(go,300)},{passive:true});
