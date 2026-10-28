@@ -303,4 +303,4 @@ async function loadPricesApi(){const key=localStorage.getItem(KEYLS);if(!key)ret
  mut(()=>{for(const[m,p]of Object.entries(res))S.prices[m]={p,src:'api',t:Date.now()}},`시세 ${Object.keys(res).length}종 갱신${fail?` · 실패 ${fail}`:''}`)}
 window.__barter={get S(){return S},plan,weekKey,render,exchange,parsePaste,migrate,setOpen:id=>{open=id;render()},setLayer,route,get UI(){return UI},openRoutes:()=>{UI.routes=true;try{localStorage.setItem(UIK,JSON.stringify(UI))}catch(x){}render()},HOT_MIN,get feedHotMin(){return feedHotMin},hotIcon,hotMat,hotMetric};
 render();
-</script><footer class="siteFoot"><span class="gold" aria-hidden="true"></span>경매장 시세 등은 <a href="https://openapi.nexon.com/" target="_blank" rel="noopener">넥슨 Open API</a>로 가져와요.<br>마비노기 공식 서비스와 관련 없습니다.</footer></body></html>
+</script><footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br>시세는 10분 단위로 갱신되고 있습니다.<br>마비노기 공식 서비스와 관련 없습니다.</footer></body></html>
