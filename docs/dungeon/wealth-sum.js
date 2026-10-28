@@ -1,4 +1,4 @@
-/* 전재산 합계 내역 (v1.4) — c.wh 기록에서 합계 시계열을 재구성. 저장소 키 추가 없음. */
+/* 전재산 합계 내역 (v1.4.1) — c.wh 기록에서 합계 시계열을 재구성. 저장소 키 추가 없음. */
 (function(){
 var wsRange='1m', UID=0;
 function sumSeries(cs){
@@ -16,6 +16,16 @@ function sumSeries(cs){
   }).filter(function(p){ return p.v!=null; });
 }
 window.sumSeries=sumSeries;
+/* 그래프용: 마지막 기록 이후 '지금' 시점까지 현재 합계로 이어서, 기록 1개여도 선이 보이게 */
+function withNow(S){
+  var cur=0,set=0; state.chars.forEach(function(c){ if(c.wealth!=null){ cur+=c.wealth; set++; } });
+  if(!set) return S;
+  var now=Date.now(), L=S[S.length-1];
+  if(!L) return [{t:now-864e5,v:cur},{t:now,v:cur}];
+  if(L.t<now-6e4) return S.concat([{t:now,v:cur}]);
+  if(S.length<2) return [{t:L.t-864e5,v:L.v}].concat(S);
+  return S;
+}
 function fm(v){ return fmtWealth(Math.round(v)); }
 function md2(t){ var d=new Date(t); return (d.getMonth()+1)+'/'+d.getDate(); }
 function chart(pts,W,H,mini){
@@ -37,7 +47,7 @@ function chart(pts,W,H,mini){
   return '<svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" preserveAspectRatio="none"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7d98b" stop-opacity=".28"/><stop offset="1" stop-color="#f7d98b" stop-opacity="0"/></linearGradient></defs>'+g+'<path d="'+area+'" fill="url(#'+id+')"/><path d="'+line+'" fill="none" stroke="#f7d98b" stroke-width="'+(mini?1.5:2)+'" vector-effect="non-scaling-stroke"/><circle cx="'+X(L.t)+'" cy="'+Y(L.v)+'" r="'+(mini?2.2:4.5)+'" fill="#f7d98b"/></svg>';
 }
 var css=document.createElement('style');
-css.textContent='#wealthLine.wsc{cursor:pointer;border-radius:8px;display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}#wealthLine.wsc:hover{background:rgba(247,217,139,.08)}#wsSpark{display:inline-block;vertical-align:middle;line-height:0}#wsSpark svg{display:block}'+
+css.textContent='#wealthLine.wsc{cursor:pointer;border-radius:8px;display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}#wealthLine.wsc:hover{background:rgba(247,217,139,.08)}#wsSpark{display:inline-block;vertical-align:middle;line-height:0}#wsSpark{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;background:rgba(247,217,139,.08);border:1px solid rgba(247,217,139,.22)}#wsSpark svg{display:block}#wsSpark .wsMore{font-size:12px;line-height:1}'+
 '.wsBig{font-size:26px;font-weight:800;color:#f7d98b;margin:2px 0 4px}.wsBig small{display:block;font-size:13px;font-weight:700;margin-top:2px}'+
 '.wsTg{display:flex;gap:6px;margin:10px 0 6px}.wsTg button{padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:transparent;color:#b9b2e0;font:inherit;font-size:13px;cursor:pointer}.wsTg button.on{background:rgba(247,217,139,.18);border-color:rgba(247,217,139,.6);color:#ffe7a3;font-weight:700}'+
 '#wsCh{border-radius:10px;background:rgba(0,0,0,.25);padding:4px 0;min-height:60px}#wsCh svg{display:block;width:100%;height:220px}#wsCh .em{padding:30px 10px;text-align:center;color:#9f98c9;font-size:13px}'+
@@ -47,8 +57,10 @@ document.head.appendChild(css);
 window.wsSpark=function(){
   var wl=document.getElementById('wealthLine'); if(!wl) return;
   wl.classList.add('wsc'); wl.setAttribute('data-act','wsOpen'); wl.setAttribute('title','전재산 합계 내역 보기'); wl.setAttribute('role','button');
-  var S=sumSeries(state.chars);
-  if(S.length>=2){ var sp=document.createElement('span'); sp.id='wsSpark'; sp.innerHTML=chart(S,64,20,true); wl.appendChild(sp); }
+  var G=withNow(sumSeries(state.chars)), sp=document.createElement('span'); sp.id='wsSpark';
+  sp.innerHTML=G.length>=2?chart(G,64,20,true):'<svg viewBox="0 0 64 20" width="64" height="20"><path d="M2 10 H62" stroke="#f7d98b" stroke-opacity=".45" stroke-width="1.5" stroke-dasharray="3 3"/></svg>';
+  sp.insertAdjacentHTML('beforeend','<span class="wsMore">📈</span>');
+  wl.appendChild(sp);
 };
 function filt(S){
   if(wsRange==='all' || !S.length) return S;
@@ -59,13 +71,13 @@ function filt(S){
   return out;
 }
 function render(){
-  var S=sumSeries(state.chars), F=filt(S);
+  var S=sumSeries(state.chars), F=filt(withNow(S));
   var cur=0, set=0, unset=[]; state.chars.forEach(function(c){ if(c.wealth!=null){ cur+=c.wealth; set++; } else unset.push(c.name); });
   var h='<h3>💰 전재산 합계 내역</h3>';
   h+='<div class="wsBig">'+(set?fm(cur)+' G':'—');
   if(S.length>=2){ var d=S[S.length-1].v-S[0].v; h+='<small style="color:'+(d>=0?'#7fd69a':'#ff8a8a')+'">'+(d>=0?'▲ +':'▼ −')+fm(Math.abs(d))+' G <span style="color:#9f98c9;font-weight:400">(기록 시작 '+md2(S[0].t)+' 대비)</span></small>'; }
   h+='</div><div class="wsTg">'+[['1w','1주'],['1m','1달'],['all','전체']].map(function(r){ return '<button type="button" data-ws-r="'+r[0]+'"'+(r[0]===wsRange?' class="on"':'')+'>'+r[1]+'</button>'; }).join('')+'</div>';
-  h+='<div id="wsCh">'+(F.length>=2?chart(F,600,220,false):'<div class="em">'+(S.length<2?'전재산을 2번 이상 기록하면 그래프가 나타나요':'이 기간에는 변경 기록이 없어요')+'</div>')+'</div>';
+  h+='<div id="wsCh">'+(F.length>=2?chart(F,600,220,false):'<div class="em">'+(S.length<1?'캐릭터 카드에서 전재산을 입력하면 그래프가 나타나요':'이 기간에는 변경 기록이 없어요')+'</div>')+'</div>';
   h+='<p class="note">입력된 캐릭터 '+set+'명 합계'+(unset.length?' · '+unset.join(', ')+'은(는) 전재산 미입력이라 제외':'')+' · 각 캐릭터의 📜 내역으로 계산해요</p>';
   if(S.length>=2){
     h+='<ul class="whl wsl">';
