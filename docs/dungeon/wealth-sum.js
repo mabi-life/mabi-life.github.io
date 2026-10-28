@@ -1,5 +1,10 @@
-/* 전재산 합계 내역 (v1.4.1) — c.wh 기록에서 합계 시계열을 재구성. 저장소 키 추가 없음. */
+/* 전재산 합계 내역 (v1.4.2) — c.wh 기록에서 합계 시계열을 재구성. 저장소 키 추가 없음. */
 (function(){
+/* index.html 본체는 IIFE 안이라 state/fmtWealth/modal 이 전역이 아님 → __passTracker 로 접근 */
+var PT=window.__passTracker||{};
+var modal=document.getElementById('modal'), mask=document.getElementById('mask');
+function fmtWealth(g){ return PT.fmtWealth?PT.fmtWealth(g):Math.round(g).toLocaleString('ko-KR'); }
+var state={get chars(){ var s=PT.getState&&PT.getState(); return (s&&s.chars)||[]; }};
 var wsRange='1m', UID=0;
 function sumSeries(cs){
   var ts=[]; cs.forEach(function(c){ (c.wh||[]).forEach(function(e){ ts.push(e.t); }); });
@@ -92,5 +97,5 @@ document.addEventListener('click', function(e){
   var r=e.target.closest('[data-ws-r]'); if(r && modal.contains(r)){ wsRange=r.getAttribute('data-ws-r'); render(); return; }
   var w=e.target.closest('#wealthLine'); if(w){ e.stopPropagation(); window.wsOpen(); }
 }, true);
-if(typeof window.render==='function') try{ window.render(); }catch(e){}
+if(PT.render) try{ PT.render(); }catch(e){ console.error(e); }
 })();
