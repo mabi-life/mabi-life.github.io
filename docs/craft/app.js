@@ -15,6 +15,10 @@ function nodeCost(c,mult){const [n,k,r]=c;const all=k*mult;const own=+st.own[n]|
  return {all,need,p,sub,best,miss,cn,cg,via}}
 function bal(n,all,own,kind,extra,z){const ok=own>=all;const C={제작:['#e8c66a','⚒'],구매:['#7fb2ff','₲'],채집:['#7fd99a','✿'],코인:['#d59bff','⦿']}[kind];
  return `<span class="t">${IC[n]?`<img class="ic im" src="/assets/icons/2x/${IC[n].id}.png" alt="" loading="lazy" decoding="async">`:`<span class="ic" style="background:${C[0]}22;color:${C[0]}">${C[1]}</span>`}<b>${n}</b>${extra||''}</span><span class="t"><span class="tag" style="color:${C[0]};border-color:${C[0]}55">${kind}</span><span class="q${ok?' ok':''}"><input type="number" min="0" data-n="${n}" value="${own}" title="현재 보유 수량"><em>${f(Math.min(own,all))}</em>/${f(all)}</span></span>${z&&z.cn?`<a class="coin${z.via==='코인'?' best':''}" href="#coin-${z.cn.tab}" onclick="event.stopPropagation()" title="${z.cn.shop} 상점 · 코인 계산기에서 열기">⦿ 구슬 ${z.cn.cost}${z.cn.bp?` ≈${f(Math.round(z.cn.g))}G`:''}${z.p&&z.cn.g?(z.cn.g<z.p?' ✓':''):''}</a>`:''}`}
+function rcTip(n,r){const o=r.out||1;return `<b>${n}</b> ${o}개 제작 · ${r.skill||''}<br>`+r.c.map(x=>`· ${x[0]} <b>×${f(x[1])}</b>${x[2]?' ⚒':''}`).join('<br>')+`<br><small>클릭: 펼치기/접기</small>`}
+(()=>{const t=document.createElement('div');t.id='rcTip';t.style.cssText='position:fixed;z-index:9999;display:none;pointer-events:none;max-width:280px;background:#1b1f2a;color:#e8e8e8;border:1px solid #e8c66a66;border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.55;box-shadow:0 6px 20px #0008';document.body.appendChild(t);
+ document.addEventListener('mouseover',e=>{const b=e.target.closest&&e.target.closest('[data-rc]');if(!b){t.style.display='none';return}t.innerHTML=b.dataset.rc;t.style.display='block'});
+ document.addEventListener('mousemove',e=>{if(t.style.display==='none')return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.min(e.clientX+14,innerWidth-w-6)+'px';t.style.top=(e.clientY+h+20>innerHeight?e.clientY-h-10:e.clientY+16)+'px'})})();
 function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');
  const old={};root.querySelectorAll('.nd').forEach(e=>old[e.dataset.id]={x:parseFloat(e.style.left),y:parseFloat(e.style.top)});
  root.innerHTML='';st.open=st.open||{};
@@ -22,10 +26,10 @@ function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');
  const card=(id,cls,html,title)=>{const e=document.createElement('div');e.className='bal nd '+cls;e.dataset.id=id;e.innerHTML=html;if(title)e.title=title;root.appendChild(e);return e};
  const BC=['#4fc3f7','#ff8a65','#81c784','#ba68c8','#ffd54f','#f06292','#4db6ac','#9575cd','#aed581','#e57373'];
  const mk=(c,mult,pid,dep,bi)=>{const [n,k,r]=c;const z=nodeCost(c,mult);const id=pid+'/'+n;const open=!!(r&&st.open[id]);
-  const el=card(id,(r?'craft':'')+(open?' open':''),bal(n,z.all,+st.own[n]||0,r?'제작':(z.p?'구매':(z.cn?'코인':'채집')),(r?`<span class="chev">${open?'▾':'▸'}</span>`:''),z),r?`${r.skill}${r.out>1?' ×'+r.out:''} · 클릭: 펼치기/접기`:'');
+  const el=card(id,(r?'craft':'')+(open?' open':''),bal(n,z.all,+st.own[n]||0,r?'제작':(z.p?'구매':(z.cn?'코인':'채집')),(r?`<span class="chev">${open?'▾':'▸'}</span>`:''),z),'');if(r)el.dataset.rc=rcTip(n,r);
   el.dataset.dep=dep;const nd={id,el,open,dep,craft:!!r,col:BC[bi%BC.length],kids:open?r.c.map(x=>mk(x,z.sub.runs,id,dep+1,bi)):null};
   if(r)el.onclick=()=>toggle(id,el);return nd};
- const g=card('G','goal craft',bal(R.n,q,+st.own[R.n]||0,'제작',`<span class="chev">${st.closed?'▸':'▾'}</span>`),'클릭: 펼치기/접기');
+ const g=card('G','goal craft',bal(R.n,q,+st.own[R.n]||0,'제작',`<span class="chev">${st.closed?'▸':'▾'}</span>`),'');g.dataset.rc=rcTip(R.n,{skill:R.skill,out:1,c:R.c});
  g.onclick=()=>{st.closed=!st.closed;save();render()};
  const kids=st.closed?[]:R.c.map((c,i)=>{const k=mk(c,q,'',1,i);return k});
  const paint=(n)=>{n.el.style.borderColor=n.col;n.el.style.boxShadow='inset 3px 0 0 '+n.col;(n.kids||[]).forEach(paint)};kids.forEach(paint);
