@@ -98,11 +98,17 @@ def prune_and_merge(name, rows, now_utc):
         n = int(row.get('item_count') or 1)
         # keep earliest-seen n if already present (same id)
         if fid not in keep:
-            keep[fid] = {'t': ts.isoformat().replace('+00:00', 'Z'), 'n': n}
+            keep[fid] = {'t': ts.isoformat().replace('+00:00', 'Z'), 'n': n, 'p': row.get('auction_price_per_unit')}
     roll['items'][name] = keep
     trades24 = len(keep)
     volume24 = sum(int((v or {}).get('n') or 0) for v in keep.values())
+    # avg24: 24h 체결 단가의 수량가중 평균 (p 저장 이후 체결만)
+    pv = [(int(v['n']), v['p']) for v in keep.values() if v.get('p')]
+    q = sum(n for n, _ in pv)
+    avg24_cache[name] = round(sum(n * p for n, p in pv) / q) if q else None
     return trades24, volume24
+
+avg24_cache = {}
 
 def pct(xs, p):
     if not xs: return None
@@ -147,6 +153,8 @@ for i, n in enumerate(names):
         t24, v24 = prune_and_merge(n, hist, now_utc)
         entry['trades24'] = t24
         entry['volume24'] = v24
+        if avg24_cache.get(n): entry['avg24'] = avg24_cache[n]
+        else: entry.pop('avg24', None)
         hist_ok += 1
     except Exception as e:
         hist_fail += 1
