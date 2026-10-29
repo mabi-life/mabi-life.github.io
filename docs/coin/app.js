@@ -19,12 +19,12 @@ var HR=[],BEAD={};
 function beadStats(){var acc={};function add(r,src){parseHorn(r.m).forEach(function(q){var k=q.k==='any'?'any':q.k;var a=acc[k]=acc[k]||{buy:[],sell:[],ex:[]};a[q.side].push(q.p);if(a.ex.length<6)a.ex.push({m:r.m,s:r.s||src,p:q.p,side:q.side})})}
  var dd={};HR.forEach(function(r){var key=(r.s||'')+(r.w||'')+r.m.replace(/\[\d+\/\d+명\]/,'');if(dd[key])return;dd[key]=1;add(r)});String(st.paste||'').split(/\n+/).forEach(function(l){if(l.trim())add({m:l},'붙여넣기')});
  BEAD={};Object.keys(acc).forEach(function(k){var a=acc[k];BEAD[k]={buy:median(a.buy),sell:median(a.sell),nb:a.buy.length,ns:a.sell.length,ex:a.ex}})}
-function beadPrice(tab){var o=+st.beadOv[tab];if(o>0)return{p:o,src:'직접 입력'};var b=BEAD[tab]||BEAD.any;if(!b)return null;
- var v=b.buy!=null&&b.sell!=null?(b.buy+b.sell)/2:(b.buy!=null?b.buy:b.sell);return{p:v,src:'뿔피리 '+(BEAD[tab]?'':'(종류 미표기) ')+'구구 '+b.nb+'건·ㅍㅍ '+b.ns+'건 중앙값'}}
+function beadPrice(tab){var o=+st.beadOv[tab];if(o>0)return{p:o,src:'직접 입력'};var b=BEAD[tab];if(!b)return null;
+ var v=b.buy!=null&&b.sell!=null?(b.buy+b.sell)/2:(b.buy!=null?b.buy:b.sell);return{p:v,src:'뿔피리 구구 '+b.nb+'건·ㅍㅍ '+b.ns+'건 중앙값'}}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function pts(tab){var o=[],dd={};HR.forEach(function(r){var key=(r.s||'')+(r.w||'')+r.m.replace(/\[\d+\/\d+명\]/,'');if(dd[key])return;dd[key]=1;
- parseHorn(r.m).forEach(function(q){if(q.k===tab||q.k==='any')o.push({t:Date.parse(r.t)||0,p:q.p,side:q.side,any:q.k==='any'})})});
- String(st.paste||'').split(/\n+/).forEach(function(l){if(l.trim())parseHorn(l).forEach(function(q){if(q.k===tab||q.k==='any')o.push({t:Date.now(),p:q.p,side:q.side,paste:1})})});return o}
+ parseHorn(r.m).forEach(function(q){if(q.k===tab)o.push({t:Date.parse(r.t)||0,p:q.p,side:q.side})})});
+ String(st.paste||'').split(/\n+/).forEach(function(l){if(l.trim())parseHorn(l).forEach(function(q){if(q.k===tab)o.push({t:Date.now(),p:q.p,side:q.side,paste:1})})});return o}
 function chart(P,med,mean){if(!P.length)return'';var W=640,H=150,L=48,R=8,T=10,B=22;
  var t0=Math.min.apply(0,P.map(function(x){return x.t})),t1=Math.max.apply(0,P.map(function(x){return x.t}));if(t1-t0<36e5){t0-=18e5;t1+=18e5}
  var ps=P.map(function(x){return x.p}).concat([med]),lo=Math.min.apply(0,ps),hi=Math.max.apply(0,ps),pad=(hi-lo)*.15||lo*.1;lo-=pad;hi+=pad;
@@ -40,8 +40,8 @@ var BPN=null;
 function renderBead(){var P=pts(st.tab),h=$('bead'),ps=P.map(function(x){return x.p});var med=median(ps),mean=ps.length?ps.reduce(function(a,b){return a+b},0)/ps.length:null;
  var ov=+st.beadOv[st.tab]||0;BPN=ov>0?{p:ov,src:'직접 입력'}:(med!=null?{p:med,src:'뿔피리 '+ps.length+'건 중앙값'}:null);
  var nb=P.filter(function(x){return x.side==='buy'}).length;
- h.innerHTML='🔮 구슬 시세(개당) <b>'+(BPN?fmt(BPN.p)+'골드':'—')+'</b> <small>'+(BPN?BPN.src:'최근 48시간 뿔피리에 가격 글이 없습니다')+(med!=null&&!ov?' · 평균 '+fmt(mean)+' · 구구 '+nb+'건 · ㅍㅍ '+(ps.length-nb)+'건':'')+'</small>'+
-  chart(P,med!=null?med:0,mean)+(P.length?'<div class="leg"><i style="background:#7fd99a"></i>구구(삽니다) <i style="background:#ffa86b"></i>ㅍㅍ(팝니다) <span>흐린 점 = 구슬 종류 미표기 글 · 점선 = 중앙값(이상치에 강해 기준으로 사용)</span></div>':'');
+ h.innerHTML='🔮 구슬 시세(개당) <b>'+(BPN?fmt(BPN.p)+'골드':'—')+'</b> <small>'+(BPN?BPN.src:'최근 48시간 뿔피리에 '+SHOPS[st.tab].name+' 가격 글이 없습니다 (다른 구슬·미표기 시세는 쓰지 않음)')+(med!=null&&!ov?' · 평균 '+fmt(mean)+' · 구구 '+nb+'건 · ㅍㅍ '+(ps.length-nb)+'건':'')+'</small>'+
+  chart(P,med!=null?med:0,mean)+(P.length?'<div class="leg"><i style="background:#7fd99a"></i>구구(삽니다) <i style="background:#ffa86b"></i>ㅍㅍ(팝니다) <span>해당 상점 구슬로 명시된 글만 · 종류 미표기/거뿔 글 제외 · 점선 = 중앙값(이상치에 강해 기준으로 사용)</span></div>':'');
  $('beadOv').value=st.beadOv[st.tab]||''}
 function render(){
  beadStats();renderBead();

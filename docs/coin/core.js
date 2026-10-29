@@ -11,7 +11,8 @@ var KIND=[['tala',/탈라|가흐/],['bri',/브리|레흐/],['horn',/거뿔|거�
 function side(m){if(/구구|구매|삽니다|사요|삼\b|매입|ㅅㅅ|ㄱㄱ|구함|구해요/.test(m))return'buy';if(/ㅍㅍ|팜|팝니다|판매|팔아요|팔아|파는/.test(m))return'sell';return null}
 function num(t,strict){var m=strict?t.match(/개당\s*(\d+(?:\.\d+)?)\s*(억|만|천|k|골|g|G)?|(\d+(?:\.\d+)?)\s*(억|만|천|k|골|g|G)/):t.match(/(\d+(?:\.\d+)?)\s*(억|만|천|k|골|g|G)?/);if(m&&strict)m=[0,m[1]||m[3],m[2]||m[4]];if(!m)return null;var v=parseFloat(m[1]),u=m[2]||'';
  if(u==='억')v*=1e8;else if(u==='만')v*=1e4;else if(u==='천'||u==='k')v*=1e3;else if(v<1000)v*=1e4;return v}
-function kindOf(m){for(var i=0;i<KIND.length;i++)if(KIND[i][1].test(m))return KIND[i][0];return'any'}
+// 상점 분류: 탈라(탈라|가흐)·브리(브리|레흐) 중 하나만 명시된 글만 해당 상점. 둘 다/미표기 = 'any'(어느 상점 시세에도 쓰지 않음)
+function kindOf(m){var t=/탈라|가흐/.test(m),b=/브리|레흐/.test(m);return t&&!b?'tala':b&&!t?'bri':'any'}
 function parseHorn(msg){
  var m=String(msg||'').replace(/,/g,'').replace(/^[^:#]{1,20}:\s*/,'');
  // 파티 모집 뿔피리의 「구구25있」「구구있25」「구구 25」: 파티장이 구슬을 개당 N(만)에 구매 → 구구 바로 옆 숫자만 사용
@@ -34,7 +35,7 @@ function median(a){if(!a.length)return null;a=a.slice().sort(function(x,y){retur
 function beadTable(rows,paste){var acc={};function add(r,src){parseHorn(r.m).forEach(function(q){var a=acc[q.k]=acc[q.k]||{buy:[],sell:[],all:[]};a[q.side].push(q.p);a.all.push(q.p)})}
  var dd={};(rows||[]).forEach(function(r){var key=(r.s||'')+(r.w||'')+r.m.replace(/\[\d+\/\d+명\]/,'');if(dd[key])return;dd[key]=1;add(r)});String(paste||'').split(/\n+/).forEach(function(l){if(l.trim())add({m:l})});
  var B={};Object.keys(acc).forEach(function(k){var a=acc[k];B[k]={buy:median(a.buy),sell:median(a.sell),med:median(a.all),n:a.all.length,_a:a.all}});return B}
-function beadPick(B,tab,ov){var o=+(ov||{})[tab];if(o>0)return{p:o,src:'직접 입력'};var x=B[tab],y=B.any;if(!x&&!y)return null;var b=x||y;if(x&&y)b={med:median((x._a||[]).concat(y._a||[])),n:x.n+y.n};var v=b.med;return v==null?null:{p:v,src:'뿔피리 '+b.n+'건 중앙값'}}
+function beadPick(B,tab,ov){var o=+(ov||{})[tab];if(o>0)return{p:o,src:'직접 입력'};var b=B[tab];if(!b)return null;var v=b.med;return v==null?null:{p:v,src:'뿔피리 '+b.n+'건 중앙값'}}
 // 이름 → {tab, shop, cost}
 var COST={};Object.keys(SHOPS).forEach(function(t){SHOPS[t].items.forEach(function(x){COST[x[0]]={tab:t,shop:SHOPS[t].name,cost:x[1]}})});
 W.MabiCoin={COST:COST,beadTable:beadTable,beadPick:beadPick,SHOPS:SHOPS,parseHorn:parseHorn,median:median};

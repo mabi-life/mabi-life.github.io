@@ -100,7 +100,7 @@ html{scrollbar-gutter:auto}#root .row{contain:layout}
 <link rel="stylesheet" href="/css/site-chrome.css?v=1"><style>input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}input[type=number]{-moz-appearance:textfield;appearance:textfield}.head{text-align:left!important}.head h1{letter-spacing:.5px!important}</style>
 </head><body><div class="wrap">
 <nav class="siteNav" aria-label="도우미 이동"><a href="/">홈</a><a href="/alba/">알바</a><a href="/barter/">물교</a><a href="/dungeon/">던전</a><a href="/bunbae/">분배</a></nav>
-<div class="head"><h1>제작 재료 계산기 <span style="font-size:.6em">+ 정가 코인</span><span class="verBadge">v0.7 test</span></h1><p id="craftDesc">목표 아이템이 위, 재료가 아래로 뻗어 나갑니다. 카드를 클릭하면 펼치기·접기. 보유 수량을 입력하면 부족분만 계산합니다.</p></div>
+<div class="head"><h1>제작 재료 계산기 <span style="font-size:.6em">+ 정가 코인</span><span class="verBadge">v0.8 test</span></h1><p id="craftDesc">목표 아이템이 위, 재료가 아래로 뻗어 나갑니다. 카드를 클릭하면 펼치기·접기. 보유 수량을 입력하면 부족분만 계산합니다.</p></div>
 <section id="vCraft">
 <div class="bar"><label>목표 <select id="goalSel"></select></label><label>목표 수량 <input type="number" id="goalQty" min="1" value="1"></label>
 <button class="btn" id="addBtn" disabled title="준비중">+ 목표 아이템 추가 (준비중)</button><button class="btn" id="resetBtn">보유 수량 초기화</button></div>
@@ -124,13 +124,13 @@ html{scrollbar-gutter:auto}#root .row{contain:layout}
 <table><thead><tr><th data-s="name">아이템 ⇅</th><th data-s="cost">필요 코인 ⇅</th><th data-s="ppc">코인당 가격 ⇅</th><th>판정</th><th>무시</th></tr></thead><tbody id="tb"></tbody></table>
 <p class="sum" id="upd" style="margin-top:10px"></p>
 <p class="sum" id="hupd"></p>
-<details class="sum"><summary>뿔피리 원문 붙여넣기 (선택)</summary><p style="margin:6px 0">게임에서 본 뿔피리를 한 줄에 하나씩 붙여넣으면 자동 수집분과 합쳐 계산합니다. 예) <code>구구 탈라구슬 25만</code> · <code>ㅍㅍ 브리 레흐 구슬 30</code></p><textarea id="paste" placeholder="구구 구슬구매 25"></textarea></details>
+<details class="sum"><summary>뿔피리 원문 붙여넣기 (선택)</summary><p style="margin:6px 0">게임에서 본 뿔피리를 한 줄에 하나씩 붙여넣으면 자동 수집분과 합쳐 계산합니다. 예) <code>구구 탈라구슬 25만</code> · <code>ㅍㅍ 브리 레흐 구슬 30</code> (탈라/브리 명시 필수 · 미표기 글은 무시)</p><textarea id="paste" placeholder="구구 브리구슬 25"></textarea></details>
 </div>
 </section>
 </div>
 <footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br>시세는 10분 단위로 갱신되고 있습니다.<br>구슬 시세는 거대한 외침의 뿔피리 원문을 자동 파싱한 참고값입니다.<br>마비노기 공식 서비스와 관련 없는 비공식 팬 도구입니다.<br><a href="/privacy/">개인정보처리방침</a></footer>
-<script src="/coin/core.js?v=3"></script>
-<script src="app.js?v=3.0"></script>
-<script src="/coin/app.js?v=1.4"></script>
+<script src="/coin/core.js?v=4"></script>
+<script src="app.js?v=3.1"></script>
+<script src="/coin/app.js?v=1.5"></script>
 <script src="views.js?v=2"></script>
 </body></html>
