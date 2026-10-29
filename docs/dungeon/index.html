@@ -456,6 +456,7 @@ button.r1:hover .fi{color:#f7d98b}
         <li>던전 이름을 누르면 그 행을 <b>접고 펼칠</b> 수 있어요 (▾/▸). 카드의 <b>모두 접기</b>로 한 번에. 접은 상태는 이 브라우저에 저장돼요.</li>
         <li>이 전재산 버전은 기본 버전과 <b>따로 저장</b>돼요 (같은 브라우저에서 함께 써도 서로 덮어쓰지 않아요). 기본 버전 기록은 <b>기본 버전 기록 가져오기</b>로 복사할 수 있어요.</li>
         <li>데이터는 이 브라우저의 localStorage에만 저장돼요. 다른 기기로 옮기려면 <b>내보내기</b> → 다른 기기에서 <b>가져오기</b>.</li>
+        <li><b>자동 백업</b>: 기록이 바뀔 때마다(10분 내 연속 변경은 하나로) + 하루 1번 이 브라우저에 스냅샷을 남기고 <b>최근 7개</b>만 보관해요. 캐릭터가 비면 <b>백업에서 복구</b> 버튼이 뜨고, 저장 기록이 통째로 사라졌으면 자동 복구돼요. 브라우저 데이터를 지우면 백업도 함께 지워지니 중요한 기록은 내보내기도 해 두세요.</li>
         <li>골드(<span class="cost">지출</span>)는 키를 구매한 순간, 보상(<span class="gain">수입</span>)은 키를 사용(입장)한 순간 계산돼요. 크롬바스는 기본키만 기록해요.</li>
         <li>가격표(회차별): 10만 · 20만 · 40만 · 70만 · 100만 · 200만 · 300만 · 500만 · 700만 · 1,000만 / 글렌베르나 추가키 125만 · 375만</li>
         <li>브리레흐 4관(믿음의 균열)은 골드 대신 <b>균열의 편린</b>으로 입장해요. 회차별 필요 편린: 1 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 (최대 10). 편린은 시세×개수로 골드 환산해 지출에 포함해요.</li>
@@ -556,7 +557,7 @@ function sumPrices(n){ var s=0; for(var i=0;i<n;i++) s+=PRICES[i]; return s; }
 
 /* ===== 상태 ===== */
 var state = {version:DATA_VERSION, weekStart:null, settings:normSettings(null), chars:[]};
-var storageOk = true;
+var storageOk = true, autoRestored = false;
 
 function uid(){ return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function clampInt(v,min,max){ v = parseInt(v,10); if(isNaN(v)) v=min; return Math.max(min, Math.min(max, v)); }
@@ -633,12 +634,35 @@ function load(){
   try{
     var raw = localStorage.getItem(STORAGE_KEY);
     if (raw){ var obj = JSON.parse(raw); state = normState(obj); if (obj.version !== DATA_VERSION) save(); }
+    else if (bakList().length){ var bl=bakList(); state=normState(bl[bl.length-1].d); autoRestored=true; save(); }  /* 저장 키가 사라졌으면 최신 자동 백업으로 자동 복구 */
     else { var m=readMain(); if (m){ state=normState(m, null); try{ localStorage.setItem(MAIN_ASKED_KEY,'1'); }catch(e){} save(); }  /* 예전 사이트(기본 버전, mabiPassTracker.v1) 기록 자동 이전 · 원본 키는 그대로 둠 */
     else state.chars = DEFAULT_CHARS.map(function(n){ return normChar({name:n, p:blankProgress()}); }); }
   }catch(e){ storageOk = false; }
 }
+/* ===== 자동 백업 (같은 브라우저 localStorage, 최근 7개) ===== */
+var BAK_KEY='mabiPassTracker.wealth.bak.v1', BAK_MAX=7, BAK_GAP=10*60*1000;
+function bakList(){ try{ var a=JSON.parse(localStorage.getItem(BAK_KEY)||'[]'); return Array.isArray(a)?a.filter(function(b){return b&&b.d&&Array.isArray(b.d.chars)&&b.d.chars.length;}):[]; }catch(e){ return []; } }
+function bakDay(t){ return new Date(t+9*3600000).toISOString().slice(0,10); }
+function backup(force){
+  if (!state.chars.length) return;  /* 빈 상태는 백업하지 않음 (복구 원본 보호) */
+  try{
+    var a=bakList(), now=Date.now(), d=JSON.parse(JSON.stringify(state)), last=a[a.length-1];
+    if (last && JSON.stringify(last.d)===JSON.stringify(d)) return;
+    /* 변경마다 스냅샷 · 10분 이내 연속 변경은 최신 1개를 갱신 · 날짜가 바뀌면 새 스냅샷 */
+    if (!force && last && now-last.t<BAK_GAP && bakDay(last.t)===bakDay(now)) a[a.length-1]={t:now,d:d};
+    else a.push({t:now,d:d});
+    while (a.length>BAK_MAX) a.shift();
+    localStorage.setItem(BAK_KEY, JSON.stringify(a));
+  }catch(e){}
+}
+function dailyBackup(){ var a=bakList(), l=a[a.length-1]; if(!l || bakDay(l.t)!==bakDay(Date.now())) backup(true); }
+function restoreBak(){
+  var a=bakList(), b=a[a.length-1]; if(!b){ toast('백업이 없어요'); return; }
+  var before=snap(); state=normState(b.d); checkWeek(true); pushHist(before); save();
+  render(); renderCfg(); showBanner(); toast('자동 백업('+kstStamp(b.t)+')에서 복구했어요 · 캐릭터 '+state.chars.length+'명');
+}
 function save(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); storageOk = true; }
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); storageOk = true; backup(false); }
   catch(e){ if (storageOk){ storageOk = false; toast('저장소를 사용할 수 없어 새로고침하면 기록이 사라져요'); } }
 }
 /* ===== 던전 행 접기 (캐릭터 id별, 별도 저장) ===== */
@@ -1101,6 +1125,7 @@ document.addEventListener('click', function(e){
       var ac=state.chars[ci]; if(ac){ var to=!allFolded(ac); DUNGEONS.forEach(function(d){ setFold(ac, d.key, to); }); render(); }
       break;
     case 'importMain': importMain(false); break;
+    case 'restoreBak': restoreBak(); break;
     case 'dismissMain': try{ localStorage.setItem(MAIN_ASKED_KEY,'1'); }catch(err){} showBanner(); break;
   }
 });
@@ -1187,8 +1212,12 @@ modal.addEventListener('click', function(e){
 function readMain(){ try{ var raw=localStorage.getItem(MAIN_KEY); if(!raw) return null; var o=JSON.parse(raw); return (o && Array.isArray(o.chars) && o.chars.length) ? o : null; }catch(e){ return null; } }
 function mainAsked(){ try{ return localStorage.getItem(MAIN_ASKED_KEY)==='1'; }catch(e){ return true; } }
 function showBanner(){
-  var b=document.getElementById('banner'), m=readMain();
-  if (m && !state.chars.length && !mainAsked()){
+  var b=document.getElementById('banner'), m=readMain(), bl=bakList();
+  if (!state.chars.length && bl.length){
+    var lb=bl[bl.length-1];
+    b.innerHTML='🛟 캐릭터가 비어 있어요. 자동 백업이 있어요 ('+kstStamp(lb.t)+' · 캐릭터 '+lb.d.chars.length+'명). <button class="btn gold" data-act="restoreBak">백업에서 복구</button>';
+    b.hidden=false;
+  } else if (m && !state.chars.length && !mainAsked()){
     b.innerHTML='📥 같은 브라우저에 기본 버전 기록이 있어요 (캐릭터 '+m.chars.length+'명). <button class="btn gold" data-act="importMain">기본 버전 기록 가져오기</button><button class="btn" data-act="dismissMain">괜찮아요</button>';
     b.hidden=false;
   } else { b.hidden=true; b.innerHTML=''; }
@@ -1214,7 +1243,9 @@ load();
 checkWeek(false);
 render();
 renderCfg();
+dailyBackup();
 showBanner();
+if (autoRestored) toast('저장 기록이 없어 최신 자동 백업에서 복구했어요');
 loadFeed({quiet:true});
 })();
 </script>
