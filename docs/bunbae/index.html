@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#141029">
-<title>마비노기 분배 도우미 v1.8.2</title>
+<title>마비노기 분배 도우미 v1.8.3</title>
 <meta name="description" content="마비노기 보상 분배 창 스크린샷으로 파티원과 아이템을 자동 인식하고 분배자를 기록하는 도우미">
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -67,9 +67,10 @@ table.cp{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px}.c
 @media(max-width:600px){.head h1{font-size:26px}.thumb{width:60px;height:60px}}
 .siteFoot a{color:inherit;text-decoration:none}.siteFoot a:hover{text-decoration:underline}</style>
   <script type="text/javascript" src="https://openapi.nexon.com/js/analytics.js?app_id=355270" async></script>
+<link rel="stylesheet" href="/css/site-chrome.css?v=1"><style>.head{text-align:left!important}.head h1{letter-spacing:.5px!important}</style>
 </head><body><div class="wrap">
-<nav class="siteNav" aria-label="도우미 이동"><a id="homeLink" href="../" title="생활도우미 메인으로">홈</a><a href="../alba/">알바</a><a href="../barter/">물교</a><a href="../dungeon/">던전</a><span class="on" aria-current="page">분배</span></nav>
-<div class="head"><h1>분배 도우미<span class="verBadge">v1.8.2</span></h1><p>「보상 분배」 창 스크린샷 한 장으로 파티원·아이템을 정리하고 분배자를 기록해요.</p></div>
+<nav class="siteNav" aria-label="도우미 이동"><a id="homeLink" href="/">홈</a><a href="/alba/">알바</a><a href="/barter/">물교</a><a href="/dungeon/">던전</a><span class="on" aria-current="page">분배</span></nav>
+<div class="head"><h1>분배 도우미<span class="verBadge">v1.8.3</span></h1><p>「보상 분배」 창 스크린샷 한 장으로 파티원·아이템을 정리하고 분배자를 기록해요.</p></div>
 <div class="cols"><section class="fee"><div style="font-weight:800;color:var(--gold);font-size:16px">💰 수수료 계산기</div>
 <div class="fg" style="grid-template-columns:1fr">
 <div><label>판매가격</label><input type="text" id="price" inputmode="numeric" value="100,000,000"><div class="seg" style="margin-top:6px"><button class="btn sm ghost" data-add="1000000">+100만</button><button class="btn sm ghost" data-add="10000000">+1000만</button><button class="btn sm ghost" data-add="100000000">+1억</button><button class="btn sm ghost" data-add="0">↺</button><span class="hint" id="kor" style="margin:6px 0 0 4px"></span></div></div>
@@ -105,7 +106,7 @@ table.cp{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px}.c
 <div class="zoom" id="sv"><div class="zbox"><div class="hint" style="margin-bottom:8px">🔗 공유받은 분배 기록 (읽기 전용)</div><img alt="" id="simg"><div class="zt" id="st"></div><div class="zm" id="sm"></div><div class="hint" id="snote"></div><div class="foot" style="margin-top:12px"><button class="btn ghost" id="sClose">닫기</button><button class="btn gold" id="sImport">＋ 내 목록에 추가</button></div></div></div>
 <div id="toast" style="position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#f7d98b;color:#2a2040;font-weight:700;padding:9px 18px;border-radius:999px;z-index:50;display:none"></div>
 <div class="zoom" id="zoom"><div class="zbox"><img alt="" id="zimg"><div class="zt" id="zt"></div><div class="zm" id="zm"></div><div class="foot" style="margin-top:12px"><button class="btn ghost" id="zDel" style="margin-right:auto;border-color:rgba(229,72,93,.6);color:#ffb3bd">삭제</button><button class="btn" id="zShare">🔗 공유</button><button class="btn ghost" id="zShareImg" title="작은 이미지를 넣어서 링크가 길어져요">🖼 이미지 포함 공유</button><button class="btn" id="zEdit">수정</button><button class="btn gold" id="zClose">닫기</button></div></div></div>
-<footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br>시세는 10분 단위로 갱신되고 있습니다.<br>마비노기 공식 서비스와 관련 없습니다.<br><a href="/privacy/">개인정보처리방침</a></footer>
+<footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br>시세는 10분 단위로 갱신되고 있습니다.<br>마비노기 공식 서비스와 관련 없는 비공식 팬 도구입니다.<br><a href="/privacy/">개인정보처리방침</a></footer>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="names.js?v=1.8.2"></script><script src="ocr.js?v=1.8.2"></script><script src="app.js?v=1.8.2"></script><script src="fee.js?v=1.8.2"></script>
+<script src="names.js?v=1.8.3"></script><script src="ocr.js?v=1.8.3"></script><script src="app.js?v=1.8.3"></script><script src="fee.js?v=1.8.3"></script>
 </body></html>

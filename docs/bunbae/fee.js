@@ -5,10 +5,10 @@ const CP=[10,20,30,50,100],NAME=c=>`경매장 수수료 ${c}% 할인 쿠폰`;
 // 기본값: 2026-10-27 20:35 KST Open API 최저가 스냅샷 → /prices.json 로 갱신
 let cpPrice={10:254900,20:800000,30:1495000,50:11740000,100:7140000},cpT=new Date('2026-10-27T20:35:00+09:00');
 let rate=4,force=null;
-async function refresh(){$('#upd').textContent='시세 불러오는 중…';
- try{const r=await fetch('/prices.json',{cache:'no-store'});const d=await r.json();let got=0;CP.forEach(c=>{const x=d.prices&&d.prices[NAME(c)];if(x){cpPrice[c]=x.min;got++;if(x.t)cpT=new Date(x.t)}});if(!got)throw 0}
+async function refresh(){$('#upd').textContent='시세 불러오는 중…';let ok=false;
+ try{const ac=window.AbortController?new AbortController():null,tm=setTimeout(()=>ac&&ac.abort(),8000);const r=await fetch('/prices.json',{cache:'no-store',signal:ac?ac.signal:undefined});clearTimeout(tm);const d=await r.json();let got=0;CP.forEach(c=>{const x=d.prices&&d.prices[NAME(c)];if(x){cpPrice[c]=x.min;got++;if(x.t)cpT=new Date(x.t)}});if(!got)throw 0;ok=true}
  catch(e){}
- calc()}
+ calc();if(!ok)$('#upd').textContent='시세를 불러오지 못했어요 · 저장된 기본 시세로 계산 중 (↻ 다시 시도)'}
 function calc(){const p=num($('#price').value),n=Math.max(1,num($('#n').value)),base=Math.floor(p*rate/100);
  const rows=[{c:0,price:0,ben:0}].concat(CP.map(c=>({c,price:cpPrice[c],ben:Math.floor(base*c/100)-(cpPrice[c]??Infinity)})));
  const best=rows.reduce((a,b)=>b.ben>a.ben?b:a),use=rows.find(o=>o.c===force)||best;

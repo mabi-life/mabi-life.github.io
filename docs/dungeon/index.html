@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#141029">
-<title>마비노기 던전 도우미 v1.4</title>
+<title>마비노기 던전 도우미 v1.4.3</title>
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
@@ -227,13 +227,14 @@ button.r1:hover .fi{color:#f7d98b}
 .card .ib.del{opacity:0;transition:opacity .15s}.card:hover .ib.del,.card .ib.del:focus{opacity:1}.card .name{cursor:context-menu}
 .siteFoot{margin:28px auto 18px;padding:22px 16px 28px;max-width:1180px;text-align:center;font-size:12.5px;line-height:1.65;color:#8a90a0;position:relative;border-top:1px solid #232733}.siteFoot .gold{position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:80px;height:2px;background:linear-gradient(90deg,transparent,#f7d98b,transparent)}.siteFoot a{color:#c9b27a;text-decoration:none}.siteFoot a:hover{color:#f7d98b;text-decoration:underline}.siteFoot a{color:inherit;text-decoration:none}.siteFoot a:hover{text-decoration:underline}</style>
   <script type="text/javascript" src="https://openapi.nexon.com/js/analytics.js?app_id=355270" async></script>
+<link rel="stylesheet" href="/css/site-chrome.css?v=1"><style>.head{text-align:left!important}.head h1{letter-spacing:.5px!important}.grid{align-items:flex-start!important}.grid>.addcard{align-self:flex-start;min-height:160px;max-height:240px}.pcEmpty{fill:#a9a2d4;font-size:13px}</style>
 </head>
 <body>
 <div class="wrap">
-  <nav class="siteNav" aria-label="도우미 이동"><a id="homeLink" href="../" title="생활도우미 메인으로">홈</a><a href="../alba/">알바</a><a href="../barter/">물교</a><span class="on" aria-current="page">던전</span><a href="../bunbae/">분배</a></nav>
+  <nav class="siteNav" aria-label="도우미 이동"><a id="homeLink" href="/">홈</a><a href="/alba/">알바</a><a href="/barter/">물교</a><span class="on" aria-current="page">던전</span><a href="/bunbae/">분배</a></nav>
   <header class="head">
     <h1>✦ 이번 주 던전 통행증 현황 ✦</h1>
-    <span class="verBadge" title="라이브 버전">v1.4.1</span><span class="badge">💰 전재산</span>
+    <span class="verBadge" title="라이브 버전">v1.4.3</span><span class="badge">💰 전재산</span>
     <p id="period"></p>
     <p class="sub" id="resetNote"></p>
   </header>
@@ -271,7 +272,7 @@ button.r1:hover .fi{color:#f7d98b}
 #pcSvg .vt{fill:#7ee0b5;font-size:9.5px;font-weight:700}
 .pcNote{font-size:11.5px;color:#a9a2d4;margin-top:4px}
 </style>
-<section class="pcCard" id="pcCard"><div class="pcHd"><h3>📈 균열의 편린 시세</h3><span class="cur" id="pcCur">-</span><span class="sub" id="pcUpd"></span><div class="pcTg"><button data-r="24">24시간</button><button data-r="all" class="on">전체</button></div></div><svg id="pcSvg" viewBox="0 0 640 220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="균열의 편린 최저가 추이"></svg><div class="pcNote" id="pcNote">경매장 최저가 기록 · 아래 타임라인 ▽ = 골짜기(국소 저점) · ○ 급변동</div></section>
+<section class="pcCard" id="pcCard"><div class="pcHd"><h3>📈 균열의 편린 시세</h3><span class="cur" id="pcCur">-</span><span class="sub" id="pcUpd"></span><div class="pcTg"><button data-r="24">24시간</button><button data-r="all" class="on">전체</button></div></div><svg id="pcSvg" viewBox="0 0 640 220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="균열의 편린 최저가 추이"><text x="320" y="110" text-anchor="middle" class="pcEmpty">편린 시세 불러오는 중…</text></svg><div class="pcNote" id="pcNote">경매장 최저가 기록 · 아래 타임라인 ▽ = 골짜기(국소 저점) · ○ 급변동</div></section>
 <script>
 (function () {
   try { document.documentElement.setAttribute('data-pc-chart', 'loaded'); } catch (e) {}
@@ -300,7 +301,7 @@ button.r1:hover .fi{color:#f7d98b}
     var now = Date.now();
     var a = P.filter(function (p) { return R === 'all' || now - new Date(p.t) <= 864e5; });
     if (a.length < 2 && P.length) a = P.slice(-2);
-    if (!a.length) return;
+    if (!a.length) { s.appendChild(el('text',{x:320,y:110,'text-anchor':'middle','class':'pcEmpty'},P.length?'표시할 시세 기록이 없어요':'아직 편린 시세 기록이 없어요 · 곧 쌓일 거예요')); return; }
 
     var W = 640, H = 220, L = 48, T = 12, B = 40;
     s.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
@@ -488,7 +489,7 @@ var KST_OFFSET_MS = 9 * 3600 * 1000;
 var STORAGE_KEY = 'mabiPassTracker.wealth.v1';        // 전재산 버전 전용 (기본 버전과 따로 저장)
 var MAIN_KEY = 'mabiPassTracker.v1';                  // 기본 버전 저장 키 (읽기 전용으로 가져오기만)
 var DEFAULT_CHARS = ['캐릭터 1'];  /* 저장 데이터가 없을 때 기본 캐릭터 (배포본은 publish.py가 1명으로 바꿈) */
-var APP_VER = 'v1.4.2';
+var APP_VER = 'v1.4.3';
 var FEED = '/prices.json';
 var MAIN_ASKED_KEY = 'mabiPassTracker.wealth.mainImportAsked';
 var WEALTH_MAX = 1e13;
@@ -1217,6 +1218,6 @@ showBanner();
 loadFeed({quiet:true});
 })();
 </script>
-<script src="wealth-sum.js?v=1.4.2"></script>
-<footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br>시세는 10분 단위로 갱신되고 있습니다.<br>마비노기 공식 서비스와 관련 없습니다.<br><a href="/privacy/">개인정보처리방침</a></footer></body>
+<script src="wealth-sum.js?v=1.4.3"></script>
+<footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br>시세는 10분 단위로 갱신되고 있습니다.<br>마비노기 공식 서비스와 관련 없는 비공식 팬 도구입니다.<br><a href="/privacy/">개인정보처리방침</a></footer></body>
 </html>
