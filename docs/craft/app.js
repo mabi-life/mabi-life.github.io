@@ -22,7 +22,9 @@ function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');root.in
  while(list){let nx=null,nm=0,pn=null;const els=list.map(c=>{const [n,k,r]=c;const z=nodeCost(c,mult);const open=r&&st.path[d]===n;
    const nd=document.createElement('div');nd.className='bal'+(r?' craft':'')+(open?' open':'');nd.dataset.nm=n;nd.dataset.d=d;nd.title=r?`${r.skill}${r.out>1?' ×'+r.out:''} · 클릭: 펼치기/접기`:'';
    nd.innerHTML=bal(n,z.all,+st.own[n]||0,r?'제작':(z.p?'구매':'채집'),r?`<span class="chev">${open?'▾':'▸'}</span>`:'');
-   if(r){const dd=d;nd.onclick=()=>{const old=nd.getBoundingClientRect();if(st.path[dd]!==n)nd.classList.add('press');
+   if(r){const dd=d;nd.onclick=()=>{if(window._busy)return;const cur=st.path[dd];if(cur&&cur!==n){const oc=[...root.querySelectorAll('.bal:not(.ph)')].find(e=>e.dataset.nm===cur&&e.dataset.d==dd&&e.parentElement.classList.contains('drop'));
+     if(oc){window._busy=1;oc.onclick();setTimeout(()=>{window._busy=0;const nc=[...root.querySelectorAll('.bal:not(.ph)')].find(e=>e.dataset.nm===n&&e.dataset.d==dd);nc&&nc.onclick()},520);return}}
+    const old=nd.getBoundingClientRect();if(st.path[dd]!==n)nd.classList.add('press');
      if(st.path[dd]===n){const rows=[...root.querySelectorAll('.row')];const i=rows.indexOf(nd.parentElement);const ph=rows[i-1]&&rows[i-1].querySelector('.ph');
       rows.slice(i+1).forEach(x=>{x.style.transition='opacity .2s cubic-bezier(.5,0,.75,0),transform .2s cubic-bezier(.5,0,.75,0)';x.style.opacity=0;x.style.transform='translateY(-14px) scale(.96)'});
       setTimeout(()=>{st.path.length=dd;save();window._flip={n,old:nd.getBoundingClientRect(),d:dd};render()},180)}
