@@ -22,22 +22,29 @@ function price(n){var e=P[n];if(!e)return null;var v=st.basis==='avg24'?e.avg24:
 // ── 뿔피리 파서 ──
 var KIND=[['tala',/탈라|가흐/],['bri',/브리|레흐/],['horn',/거뿔|거대한?\s*(외침의\s*)?뿔피리|거대\s*뿔/]];
 function side(m){if(/구구|구매|삽니다|사요|삼\b|매입|ㅅㅅ|ㄱㄱ|구함|구해요/.test(m))return'buy';if(/ㅍㅍ|팜|팝니다|판매|팔아요|팔아|파는/.test(m))return'sell';return null}
-function num(t){var m=t.match(/(\d+(?:\.\d+)?)\s*(억|만|천|k|골|g|G)?/);if(!m)return null;var v=parseFloat(m[1]),u=m[2]||'';
+function num(t,strict){var m=strict?t.match(/개당\s*(\d+(?:\.\d+)?)\s*(억|만|천|k|골|g|G)?|(\d+(?:\.\d+)?)\s*(억|만|천|k|골|g|G)/):t.match(/(\d+(?:\.\d+)?)\s*(억|만|천|k|골|g|G)?/);if(m&&strict)m=[0,m[1]||m[3],m[2]||m[4]];if(!m)return null;var v=parseFloat(m[1]),u=m[2]||'';
  if(u==='억')v*=1e8;else if(u==='만')v*=1e4;else if(u==='천'||u==='k')v*=1e3;else if(v<1000)v*=1e4;return v}
+function kindOf(m){for(var i=0;i<KIND.length;i++)if(KIND[i][1].test(m))return KIND[i][0];return'any'}
 function parseHorn(msg){
- var m=String(msg||'').replace(/,/g,''),sd=side(m);if(!sd||!/구슬|구구|거뿔|뿔피리|거대/.test(m))return[];
+ var m=String(msg||'').replace(/,/g,'').replace(/^[^:#]{1,20}:\s*/,'');
+ // 파티 모집 뿔피리의 「구구25있」「구구있25」「구구 25」: 파티장이 구슬을 개당 N(만)에 구매 → 구구 바로 옆 숫자만 사용
+ var g=m.match(/구구\s*(?:있|가능|ㅇ|o|O)?\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(만|천|k)?(?!\s*(?:인|명|관|릴|채널|시|분|개))/);
+ if(g){var v=num((g[1]||g[3])+(g[2]||g[4]||''));if(v>=1e4&&v<=1e8){var md=m.replace(/거뿔|거대한?\s*(외침의\s*)?뿔피리|거대\s*뿔/g,'');return[{k:kindOf(md),side:'buy',p:v}]}}
+ if(/#\[채널|\[\d+\/\d+명\]/.test(m)&&!/개당/.test(m))return[]; // 파티 모집글: 구구 숫자 없으면 가격 아님
+ var sd=side(m);if(!sd||!/구슬|구구|거뿔|뿔피리|거대/.test(m))return[];
  var hits=[];KIND.forEach(function(k){var r=new RegExp(k[1].source,'g'),x;while((x=r.exec(m)))hits.push({k:k[0],i:x.index,e:x.index+x[0].length})});
  if(!hits.length){var g=m.search(/구슬|구구/);if(g<0)return[];hits.push({k:'any',i:g,e:g+2})}
  hits.sort(function(a,b){return a.i-b.i});
  var out=[],seen={};hits.forEach(function(h,j){if(seen[h.k])return;var end=j+1<hits.length?hits[j+1].i:m.length;
-  var seg=m.slice(h.e,end).replace(/\d+\s*(개|ea|EA|장|묶|시|분|채널|ch)/g,'');var v=num(seg);
+  var seg=m.slice(h.e,end).replace(/\d+\s*(개|ea|EA|장|묶|시|분|채널|ch)/g,'');var v=num(seg,1);if(v==null&&/^\s*(구매|삽니다|매입|팝니다|판매|ㅍㅍ|구구)?\s*\d/.test(seg))v=num(seg);
   if(v==null&&j===0){v=num(m.slice(0,h.i).replace(/\d+\s*(개|ea|EA|장|묶|시|분|채널|ch)/g,''))}
   if(v!=null&&v>=1e4&&v<=1e8){seen[h.k]=1;out.push({k:h.k,side:sd,p:v})}});
+ if(!out.length){var t=m.match(/(?:구매|삽니다|매입|팝니다|판매|ㅍㅍ|구구|사요|팜)\s*(\d+(?:\.\d+)?)\s*(만|천|k)?\s*$/)||m.match(/(?:구슬)\D{0,6}?(\d+(?:\.\d+)?)\s*(만|천|k)?\s*(?:에|씩)?\s*(?:구매|삽니다|매입|팝니다|판매|사요|팜)/);if(t){var v=num(t[1]+(t[2]||''));if(v>=1e4&&v<=1e8)out.push({k:kindOf(m),side:sd,p:v})}}
  return out}
 function median(a){if(!a.length)return null;a=a.slice().sort(function(x,y){return x-y});var n=a.length,h=n>>1;return n%2?a[h]:(a[h-1]+a[h])/2}
 var HR=[],BEAD={};
 function beadStats(){var acc={};function add(r,src){parseHorn(r.m).forEach(function(q){var k=q.k==='any'?'any':q.k;var a=acc[k]=acc[k]||{buy:[],sell:[],ex:[]};a[q.side].push(q.p);if(a.ex.length<6)a.ex.push({m:r.m,s:r.s||src,p:q.p,side:q.side})})}
- HR.forEach(function(r){add(r)});String(st.paste||'').split(/\n+/).forEach(function(l){if(l.trim())add({m:l},'붙여넣기')});
+ var dd={};HR.forEach(function(r){var key=(r.s||'')+(r.w||'')+r.m.replace(/\[\d+\/\d+명\]/,'');if(dd[key])return;dd[key]=1;add(r)});String(st.paste||'').split(/\n+/).forEach(function(l){if(l.trim())add({m:l},'붙여넣기')});
  BEAD={};Object.keys(acc).forEach(function(k){var a=acc[k];BEAD[k]={buy:median(a.buy),sell:median(a.sell),nb:a.buy.length,ns:a.sell.length,ex:a.ex}})}
 function beadPrice(tab){var o=+st.beadOv[tab];if(o>0)return{p:o,src:'직접 입력'};var b=BEAD[tab]||BEAD.any;if(!b)return null;
  var v=b.buy!=null&&b.sell!=null?(b.buy+b.sell)/2:(b.buy!=null?b.buy:b.sell);return{p:v,src:'뿔피리 '+(BEAD[tab]?'':'(종류 미표기) ')+'구구 '+b.nb+'건·ㅍㅍ '+b.ns+'건 중앙값'}}
