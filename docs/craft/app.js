@@ -11,43 +11,60 @@ function nodeCost(c,mult){const [n,k,r]=c;const all=k*mult;const own=+st.own[n]|
  return {all,need,p,sub,best,miss}}
 function bal(n,all,own,kind,extra){const ok=own>=all;const C={제작:['#e8c66a','⚒'],구매:['#7fb2ff','₲'],채집:['#7fd99a','✿']}[kind];
  return `<span class="t"><span class="ic" style="background:${C[0]}22;color:${C[0]}">${C[1]}</span><b>${n}</b>${extra||''}</span><span class="t"><span class="tag" style="color:${C[0]};border-color:${C[0]}55">${kind}</span><span class="q${ok?' ok':''}"><input type="number" min="0" data-n="${n}" value="${own}" title="현재 보유 수량"><em>${f(Math.min(own,all))}</em>/${f(all)}</span></span>`}
-function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');root.innerHTML='';
+function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');
+ const old={};root.querySelectorAll('.nd').forEach(e=>old[e.dataset.id]={x:parseFloat(e.style.left),y:parseFloat(e.style.top)});
+ root.innerHTML='';st.open=st.open||{};
  let tot=0,miss=0;R.c.forEach(c=>{const z=nodeCost(c,q);tot+=z.best;miss+=z.miss});const gp=pr(R.n);
- st.path=st.path||[];
- const row=(items)=>{const d=document.createElement('div');d.className='row';items.forEach(x=>d.appendChild(x));root.appendChild(d);return d};
- const g=document.createElement('div');g.className='bal goal craft';
- g.innerHTML=bal(R.n,q,+st.own[R.n]||0,'제작',`<span class="chev">${st.closed?'▸':'▾'}</span>`);g.title='클릭: 펼치기/접기';
- g.onclick=()=>{st.closed=!st.closed;save();render()};let prev=g;row([g]);
- let list=st.closed?null:R.c,mult=q,d=0;
- while(list){let nx=null,nm=0,pn=null;const els=list.map(c=>{const [n,k,r]=c;const z=nodeCost(c,mult);const open=r&&st.path[d]===n;
-   const nd=document.createElement('div');nd.className='bal'+(r?' craft':'')+(open?' open':'');nd.dataset.nm=n;nd.dataset.d=d;nd.title=r?`${r.skill}${r.out>1?' ×'+r.out:''} · 클릭: 펼치기/접기`:'';
-   nd.innerHTML=bal(n,z.all,+st.own[n]||0,r?'제작':(z.p?'구매':'채집'),r?`<span class="chev">${open?'▾':'▸'}</span>`:'');
-   if(r){const dd=d;nd.onclick=()=>{if(window._busy)return;const cur=st.path[dd];if(cur&&cur!==n){const oc=[...root.querySelectorAll('.bal:not(.ph)')].find(e=>e.dataset.nm===cur&&e.dataset.d==dd&&e.parentElement.classList.contains('drop'));
-     if(oc){window._busy=1;oc.onclick();setTimeout(()=>{window._busy=0;const nc=[...root.querySelectorAll('.bal:not(.ph)')].find(e=>e.dataset.nm===n&&e.dataset.d==dd);nc&&nc.onclick()},520);return}}
-    const old=nd.getBoundingClientRect();if(st.path[dd]!==n)nd.classList.add('press');
-     if(st.path[dd]===n){const rows=[...root.querySelectorAll('.row')];const i=rows.indexOf(nd.parentElement);const ph=rows[i-1]&&rows[i-1].querySelector('.ph');
-      rows.slice(i+1).forEach(x=>{x.style.transition='opacity .2s cubic-bezier(.5,0,.75,0),transform .2s cubic-bezier(.5,0,.75,0)';x.style.opacity=0;x.style.transform='translateY(-14px) scale(.96)'});
-      setTimeout(()=>{st.path.length=dd;save();window._flip={n,old:nd.getBoundingClientRect(),d:dd};render()},180)}
-     else setTimeout(()=>{st.path.length=dd;st.path[dd]=n;window._flip={n,old,d:dd,open:1};save();render()},110)}}
-   if(open){nx=r.c;nm=z.sub.runs;pn=nd;const ph=nd.cloneNode(true);ph.querySelectorAll('input').forEach(i=>i.disabled=true);ph.setAttribute('aria-hidden','true');ph.className+=' ph';ph._real=nd;return ph}return nd});
-  const rw=row(els.filter(e=>e!==pn));rw._p=prev;if(!nx){st.path.length=d;break}const dr=row([pn]);dr.classList.add('drop');dr._p=rw.querySelector('.ph');prev=pn;list=nx;mult=nm;d++}
- window._lay=()=>{root.querySelectorAll(".ln").forEach(e=>e.remove());const G=root.firstChild;if(!window._gx){const sc=root.parentElement.parentElement;window._gx=Math.max(0,sc.clientWidth/2)}G.style.marginLeft=Math.max(0,window._gx-G.offsetWidth/2)+'px';let maxW=0;root.querySelectorAll('.row').forEach(rw=>{if(!rw._p)return;const pr_=rw._p.getBoundingClientRect(),rr=root.getBoundingClientRect();
-   const cx=pr_.left+pr_.width/2-rr.left;let L=cx-rw.offsetWidth/2;if(L<0)L=0;rw.style.marginLeft=L+'px';rw.style.setProperty('--px',(cx-L)+'px');maxW=Math.max(maxW,L+rw.offsetWidth);
-   if(!rw.classList.contains('drop')){const px=cx-L,cs=[...rw.children].filter(e=>!e.classList.contains('ln')).map(e=>e.offsetLeft+e.offsetWidth/2);const add=(st_)=>{const k=document.createElement('i');k.className='ln';k.style.cssText=st_;rw.appendChild(k)};
-    const a=Math.min(px,...cs),b=Math.max(px,...cs);add(`left:${px}px;top:0;height:11px;width:0`);if(b-a>1)add(`left:${a}px;top:11px;width:${b-a}px;height:0`);cs.forEach(x=>add(`left:${x}px;top:11px;height:11px;width:0`));const ph=rw.querySelector('.ph');if(ph){const x=ph.offsetLeft+ph.offsetWidth/2;add(`left:${x}px;top:11px;height:${rw.offsetHeight-11+12}px;width:0`)}}});root.style.minWidth=maxW+'px';};window._lay();{
-  const F=window._flip;window._flip=null;
-  if(F){const rows=[...root.querySelectorAll('.row')];const card=[...root.querySelectorAll('.bal:not(.ph)')].find(e=>e.dataset.nm===F.n&&e.dataset.d==F.d);
-   if(card){const nw=card.getBoundingClientRect();const dx=F.old.left-nw.left,dy=F.old.top-nw.top;
-    card.animate(F.open?[{transform:`translate(${dx}px,${dy}px) scale(.92)`,easing:'cubic-bezier(.5,0,.2,1)'},{transform:'translate(0,6px) scale(1.06,.95)',offset:.6,easing:'cubic-bezier(.3,1.6,.5,1)'},{transform:'translate(0,-2px) scale(.98,1.02)',offset:.82},{transform:'none'}]:[{transform:`translate(${dx}px,${dy}px)`,easing:'cubic-bezier(.5,0,.2,1)'},{transform:'translate(0,-5px) scale(1.04,.96)',offset:.65,easing:'cubic-bezier(.3,1.6,.5,1)'},{transform:'translate(0,1px)',offset:.85},{transform:'none'}],{duration:F.open?560:480});
-    if(F.open){const dr=card.parentElement;dr.animate([{'--h':'0px',opacity:.3},{opacity:1}],{duration:300});
-     rows.slice(rows.indexOf(dr)+1).forEach((x,j)=>x.animate([{opacity:0,transform:'translateY(-18px) scale(.94)'},{opacity:1,transform:'none'}],{duration:420,delay:280+j*80,fill:'backwards',easing:'cubic-bezier(.34,1.56,.64,1)'}))}}}}
+ const card=(id,cls,html,title)=>{const e=document.createElement('div');e.className='bal nd '+cls;e.dataset.id=id;e.innerHTML=html;if(title)e.title=title;root.appendChild(e);return e};
+ const mk=(c,mult,pid,dep)=>{const [n,k,r]=c;const z=nodeCost(c,mult);const id=pid+'/'+n;const open=!!(r&&st.open[id]);
+  const el=card(id,(r?'craft':'')+(open?' open':''),bal(n,z.all,+st.own[n]||0,r?'제작':(z.p?'구매':'채집'),r?`<span class="chev">${open?'▾':'▸'}</span>`:''),r?`${r.skill}${r.out>1?' ×'+r.out:''} · 클릭: 펼치기/접기`:'');
+  el.dataset.dep=dep;const nd={id,el,open,dep,kids:open?r.c.map(x=>mk(x,z.sub.runs,id,dep+1)):null};
+  if(r)el.onclick=()=>toggle(id,el);return nd};
+ const g=card('G','goal craft',bal(R.n,q,+st.own[R.n]||0,'제작',`<span class="chev">${st.closed?'▸':'▾'}</span>`),'클릭: 펼치기/접기');
+ g.onclick=()=>{st.closed=!st.closed;save();render()};
+ const kids=st.closed?[]:R.c.map(c=>mk(c,q,'',1));
+ const all=[...root.querySelectorAll('.nd')];all.forEach(e=>{e._w=e.offsetWidth;e._h=e.offsetHeight});
+ const GAP=6,VG=22,DG=16,SG=14;const pos=[],lines=[];
+ const ov=(a,b)=>a.x1<b.x2+GAP&&b.x1<a.x2+GAP&&a.y1<b.y2+SG&&b.y1<a.y2+SG;
+ function layOpen(nd,x,dy,out){const el=nd.el;out.pos.push([el,x,dy]);let bb={x1:x,x2:x+el._w,y1:dy,y2:dy+el._h};
+  if(nd.kids&&nd.kids.length){const r=layRow(nd.kids,x+el._w/2,dy+el._h,dy+el._h+VG,out);bb={x1:Math.min(bb.x1,r.x1),x2:Math.max(bb.x2,r.x2),y1:dy,y2:Math.max(bb.y2,r.y2)}}return bb}
+ function layRow(ks,px,pb,y,out){const H=Math.max(...ks.map(k=>k.el._h));const W=ks.reduce((s,k)=>s+k.el._w,0)+GAP*(ks.length-1);
+  let x=Math.max(0,px-W/2);const xs=ks.map(k=>{const v=x;x+=k.el._w+GAP;return v});const cs=ks.map((k,i)=>xs[i]+k.el._w/2);
+  const by=y-VG/2;out.lines.push([px,pb,px,by],[Math.min(px,...cs),by,Math.max(px,...cs),by]);
+  let bb={x1:xs[0],x2:xs[xs.length-1]+ks[ks.length-1].el._w,y1:y,y2:y+H};const placed=[];
+  ks.forEach((k,i)=>{if(!k.open){out.pos.push([k.el,xs[i],y]);out.lines.push([cs[i],by,cs[i],y]);return}
+   let dy=y+H+DG,sub,tmp;for(let t=0;t<50;t++){tmp={pos:[],lines:[]};sub=layOpen(k,xs[i],dy,tmp);const hit=placed.filter(p=>ov(p,sub));if(!hit.length)break;dy=Math.max(...hit.map(p=>p.y2))+SG}
+   out.pos.push(...tmp.pos);out.lines.push(...tmp.lines,[cs[i],by,cs[i],dy]);placed.push(sub);
+   bb={x1:Math.min(bb.x1,sub.x1),x2:Math.max(bb.x2,sub.x2),y1:y,y2:Math.max(bb.y2,sub.y2)}});
+  return bb}
+ if(!window._gx)window._gx=Math.max(g._w/2,root.parentElement.parentElement.clientWidth/2);
+ const out={pos:[[g,window._gx-g._w/2,0]],lines:[]};if(kids.length)layRow(kids,window._gx,g._h,g._h+VG,out);
+ let mw=0,mh=0;out.pos.forEach(([e,x,y])=>{e.style.left=x+'px';e.style.top=y+'px';mw=Math.max(mw,x+e._w);mh=Math.max(mh,y+e._h)});
+ root.style.width=mw+'px';root.style.height=mh+4+'px';
+ const sv=document.createElementNS('http://www.w3.org/2000/svg','svg');sv.setAttribute('class','lines');sv.setAttribute('width',mw);sv.setAttribute('height',mh+4);
+ sv.innerHTML=`<path d="${out.lines.map(l=>`M${Math.round(l[0])+.5} ${Math.round(l[1])+.5}L${Math.round(l[2])+.5} ${Math.round(l[3])+.5}`).join('')}" stroke="#c9a24acc" stroke-width="1" fill="none"/>`;root.prepend(sv);
+ const A=window._act;window._act=null;
+ if(A){let moved=0;sv.animate([{opacity:0},{opacity:0,offset:.55},{opacity:1}],{duration:620,easing:'ease-out'});
+  out.pos.forEach(([e,x,y])=>{const o=old[e.dataset.id];if(e.dataset.id==='G')return;
+   if(o){const dx=o.x-x,dy=o.y-y;if(Math.abs(dx)+Math.abs(dy)<.5)return;const me=e.dataset.id===A.id;
+    e.animate(me?(A.open?[{transform:`translate(${dx}px,${dy}px) scale(.92)`,easing:'cubic-bezier(.5,0,.2,1)'},{transform:'translate(0,6px) scale(1.06,.95)',offset:.6,easing:'cubic-bezier(.3,1.6,.5,1)'},{transform:'translate(0,-2px) scale(.98,1.02)',offset:.82},{transform:'none'}]
+     :[{transform:`translate(${dx}px,${dy}px)`,easing:'cubic-bezier(.5,0,.2,1)'},{transform:'translate(0,-5px) scale(1.04,.96)',offset:.65,easing:'cubic-bezier(.3,1.6,.5,1)'},{transform:'translate(0,1px)',offset:.85},{transform:'none'}])
+     :[{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:me?(A.open?560:480):480,easing:me?undefined:'cubic-bezier(.34,1.3,.64,1)'})}
+   else{const d=e.dataset.id.startsWith(A.id+'/')?(+e.dataset.dep-A.dep-1):0;e.animate([{opacity:0,transform:'translateY(-18px) scale(.94)'},{opacity:1,transform:'none'}],{duration:420,delay:280+d*90+(moved++%12)*18,fill:'backwards',easing:'cubic-bezier(.34,1.56,.64,1)'})}})}
  root.querySelectorAll('input[data-n]').forEach(i=>{i.onclick=e=>e.stopPropagation();i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render()}});
  $('tot').innerHTML=`<span>목표 <b>${R.n}</b> ×${q}</span><span>1단계 재료 ${R.c.length}종</span><span>최저 재료비 <b>${f(tot)}</b>${miss?` · 시세 없는 재료 ${miss}종 제외`:''}</span><span>경매장 완제품 <b>${gp?f(gp):'—'}</b></span>`;
- $('cond').innerHTML=`제작 조건 · 스킬 <b>${R.skill}</b> · 도구 <b>${R.tool}</b> · 시설 <b>${R.fac}</b> · 레시피 출처 mabinogi.shimplace.com · 시세 ${PT||'—'}`;
- const sc=document.querySelector('.scroll');if(!render.c){render.c=1;requestAnimationFrame(()=>sc.scrollLeft=(sc.scrollWidth-sc.clientWidth)/2)}}
+ $('cond').innerHTML=`제작 조건 · 스킬 <b>${R.skill}</b> · 도구 <b>${R.tool}</b> · 시설 <b>${R.fac}</b> · 레시피 출처 mabinogi.shimplace.com · 시세 ${PT||'—'}`}
+let busy=0;
+function toggle(id,el){if(busy)return;const root=$('root');const dep=+el.dataset.dep;
+ if(st.open[id]){busy=1;const sub=[...root.querySelectorAll('.nd')].filter(e=>e.dataset.id.startsWith(id+'/'));
+  sub.forEach(e=>e.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translateY(-14px) scale(.96)'}],{duration:180,easing:'cubic-bezier(.5,0,.75,0)',fill:'forwards'}));
+  const sv=root.querySelector('svg.lines');sv&&sv.animate([{opacity:1},{opacity:0}],{duration:180,fill:'forwards'});
+  setTimeout(()=>{busy=0;Object.keys(st.open).forEach(k=>{if(k===id||k.startsWith(id+'/'))delete st.open[k]});window._act={id,open:0,dep};save();render()},180)}
+ else{el.classList.add('press');busy=1;setTimeout(()=>{busy=0;st.open[id]=1;window._act={id,open:1,dep};save();render()},110)}}
 $('goalSel').innerHTML=RECIPES.map((r,i)=>`<option value="${i}">${r.n}</option>`).join('');$('goalSel').value=st.goal;$('goalQty').value=st.qty;
 $('goalSel').onchange=e=>{st.goal=+e.target.value;save();render()};$('goalQty').onchange=e=>{st.qty=Math.max(1,+e.target.value||1);e.target.value=st.qty;save();render()};
 $('resetBtn').onclick=()=>{st.own={};st.open={};save();render()};
 render();
 fetch('/prices.json?t='+Date.now()).then(r=>r.json()).then(j=>{P=j.prices||{};const t=Object.values(P).map(v=>v.t).filter(Boolean).sort().pop();PT=t?t.slice(0,16).replace('T',' '):'';render()}).catch(()=>{});
-document.fonts&&document.fonts.ready.then(()=>window._lay&&window._lay());addEventListener('resize',()=>window._lay&&window._lay());
+
+document.fonts&&document.fonts.ready.then(()=>render());
