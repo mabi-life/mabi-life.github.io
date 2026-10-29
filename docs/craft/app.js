@@ -22,11 +22,17 @@ function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');root.in
  while(list){let nx=null,nm=0,pn=null;const els=list.map(c=>{const [n,k,r]=c;const z=nodeCost(c,mult);const open=r&&st.path[d]===n;
    const nd=document.createElement('div');nd.className='bal'+(r?' craft':'')+(open?' open':'');nd.title=r?`${r.skill}${r.out>1?' ×'+r.out:''} · 클릭: 펼치기/접기`:'';
    nd.innerHTML=bal(n,z.all,+st.own[n]||0,r?'제작':(z.p?'구매':'채집'),r?`<span class="chev">${open?'▾':'▸'}</span>`:'');
-   if(r){const dd=d;nd.onclick=()=>{if(st.path[dd]===n)st.path.length=dd;else{st.path.length=dd;st.path[dd]=n}save();render()}}
+   if(r){const dd=d;nd.onclick=()=>{if(st.path[dd]===n){const rows=[...root.querySelectorAll('.row')];const i=rows.indexOf(nd.parentElement);const ph=rows[i-1]&&rows[i-1].querySelector('.ph');
+     rows.slice(i+1).forEach(x=>x.classList.add('out'));if(ph){const dy=ph.getBoundingClientRect().top-nd.getBoundingClientRect().top;nd.style.transition='transform .28s ease';nd.style.transform=`translateY(${dy}px)`}
+     setTimeout(()=>{st.path.length=dd;save();render()},280)}else{st.path.length=dd;st.path[dd]=n;window._drop=n;save();render()}}}
    if(open){nx=r.c;nm=z.sub.runs;pn=nd;const ph=nd.cloneNode(true);ph.style.visibility='hidden';ph.className+=' ph';ph._real=nd;return ph}return nd});
   const rw=row(els.filter(e=>e!==pn));rw._p=prev;if(!nx){st.path.length=d;break}const dr=row([pn]);dr.classList.add('drop');dr._p=rw.querySelector('.ph');prev=pn;list=nx;mult=nm;d++}
  requestAnimationFrame(()=>{let maxW=0;root.querySelectorAll('.row').forEach(rw=>{if(!rw._p)return;const pr_=rw._p.getBoundingClientRect(),rr=root.getBoundingClientRect();
-   const cx=pr_.left+pr_.width/2-rr.left;let L=cx-rw.offsetWidth/2;if(L<0)L=0;rw.style.marginLeft=L+'px';rw.style.setProperty('--px',(cx-L)+'px');maxW=Math.max(maxW,L+rw.offsetWidth)});root.style.minWidth=maxW+'px'});
+   const cx=pr_.left+pr_.width/2-rr.left;let L=cx-rw.offsetWidth/2;if(L<0)L=0;rw.style.marginLeft=L+'px';rw.style.setProperty('--px',(cx-L)+'px');maxW=Math.max(maxW,L+rw.offsetWidth)});root.style.minWidth=maxW+'px';
+   const dn=window._drop;window._drop=null;if(!dn)return;const dr=[...root.querySelectorAll('.row.drop')].find(x=>x.firstChild&&x.firstChild.querySelector('b').textContent===dn);if(!dr)return;
+   const c=dr.firstChild,ph=dr._p;const dy=ph.getBoundingClientRect().top-c.getBoundingClientRect().top;const rows=[...root.querySelectorAll('.row')],after=rows.slice(rows.indexOf(dr)+1);
+   c.animate([{transform:`translateY(${dy}px)`},{transform:'none'}],{duration:280,easing:'cubic-bezier(.2,.8,.3,1)'});
+   after.forEach((x,j)=>x.animate([{opacity:0,transform:'translateY(-10px)'},{opacity:1,transform:'none'}],{duration:260,delay:220+j*60,fill:'backwards',easing:'ease-out'}))});
  root.querySelectorAll('input[data-n]').forEach(i=>{i.onclick=e=>e.stopPropagation();i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render()}});
  $('tot').innerHTML=`<span>목표 <b>${R.n}</b> ×${q}</span><span>1단계 재료 ${R.c.length}종</span><span>최저 재료비 <b>${f(tot)}</b>${miss?` · 시세 없는 재료 ${miss}종 제외`:''}</span><span>경매장 완제품 <b>${gp?f(gp):'—'}</b></span>`;
  $('cond').innerHTML=`제작 조건 · 스킬 <b>${R.skill}</b> · 도구 <b>${R.tool}</b> · 시설 <b>${R.fac}</b> · 레시피 출처 mabinogi.shimplace.com · 시세 ${PT||'—'}`;
