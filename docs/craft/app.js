@@ -9,34 +9,33 @@ function nodeCost(c,mult){const [n,k,r]=c;const all=k*mult;const own=+st.own[n]|
  let sub=null;if(r){const runs=Math.ceil(need/(r.out||1));sub={runs,tot:0,miss:0};r.c.forEach(x=>{const z=nodeCost(x,runs);sub.tot+=z.best;sub.miss+=z.miss});}
  let best,miss=0;if(p&&(!sub||sub.miss||p*need<=sub.tot))best=p*need;else if(sub){best=sub.tot;miss=sub.miss}else{best=0;miss=need?1:0}
  return {all,need,p,sub,best,miss}}
-let COLS=[],LINKS=[];
-function col(d){while(COLS.length<=d){const e=document.createElement('div');e.className='col';COLS.push(e)}return COLS[d]}
-function mk(c,mult,path,dep,par){const [n,k,r]=c;const z=nodeCost(c,mult);const d=document.createElement('div');d.className='branch';
+function mk(c,mult,path){const [n,k,r]=c;const z=nodeCost(c,mult);const d=document.createElement('div');d.className='branch';
  const id=path+'/'+n;const open=st.open&&st.open[id];
  const nd=document.createElement('div');nd.className='node'+(r?' craft':'');
  nd.innerHTML=`${r?`<span class="chev">${open?'‹':'›'}</span>`:''}<div class="name">${n}<span class="tag" style="${r?'background:#4a3a1a;color:#f7d98b':''}">${r?r.skill+(r.out>1?' ×'+r.out:''):'구매/획득'}</span></div><div class="meta">필요 ×${f(z.all)} · 부족 <b class="${z.need?'':'need0'}">${f(z.need)}</b></div><div class="meta">개당 ${z.p?f(z.p):'—'} · 구매 <b>${z.p?f(z.p*z.need):'—'}</b>${z.sub?` · 제작 <b>${f(z.sub.tot)}</b>${z.sub.miss?'+?':''} (${f(z.sub.runs)}회)`:''}</div><label class="own">보유 <input type="number" min="0" value="${st.own[n]||0}" data-n="${n}"></label>${r?`<div class="hint">클릭: 하위 재료 ${open?'접기':'펼치기'}</div>`:''}`;
- col(dep).appendChild(nd);LINKS.push([par,nd]);
- if(r){if(open)r.c.forEach(x=>mk(x,z.sub.runs,id,dep+1,nd));
+ d.appendChild(nd);
+ if(r){const kids=document.createElement('div');kids.className='kids'+(open?'':' hide');
+  if(open)r.c.forEach(x=>kids.appendChild(mk(x,z.sub.runs,id)));d.appendChild(kids);
   nd.onclick=()=>{st.open=st.open||{};st.open[id]=!open;save();render()}}
  return d}
 function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');root.innerHTML='';
- const g=document.createElement('div');g.className='node goal craft';
+ const b=document.createElement('div');b.className='branch';const g=document.createElement('div');g.className='node goal craft';
  let tot=0,miss=0;R.c.forEach(c=>{const z=nodeCost(c,q);tot+=z.best;miss+=z.miss});
  const gp=pr(R.n);
  g.innerHTML=`<span class="chev">‹›</span><div class="name">${R.n}</div><div class="meta">×${q} · 최저 재료비(구매/제작 중 싼 쪽) <b>${f(tot)}</b>${miss?` (+시세없음 ${miss}종)`:''}</div><div class="meta">경매장 최저가 <b>${gp?f(gp):'—'}</b></div><div class="hint">클릭: 펼치기·접기 · 하위 노드도 클릭해 깊이 탐색</div>`;
- COLS=[];LINKS=[];col(0).appendChild(g);
- if(!st.closed)R.c.forEach(c=>mk(c,q,'',1,g));
- g.onclick=()=>{st.closed=!st.closed;save();render()};
- COLS.forEach(c=>root.appendChild(c));
+ const kids=document.createElement('div');kids.className='kids'+(st.closed?' hide':'');
+ R.c.forEach(c=>kids.appendChild(mk(c,q,'')));
+ g.onclick=()=>{st.closed=!st.closed;save();kids.classList.toggle('hide');draw()};
+ b.append(g,kids);root.appendChild(b);
  root.querySelectorAll('input[data-n]').forEach(i=>{i.onclick=e=>e.stopPropagation();i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render()}});
  $('tot').innerHTML=`<span>목표 <b>${R.n}</b> ×${q}</span><span>1단계 재료 ${R.c.length}종</span><span>최저 재료비 <b>${f(tot)}</b>${miss?` · 시세 없는 재료 ${miss}종 제외`:''}</span><span>경매장 완제품 <b>${gp?f(gp):'—'}</b></span>`;
  $('cond').innerHTML=`제작 조건 · 스킬 <b>${R.skill}</b> · 도구 <b>${R.tool}</b> · 시설 <b>${R.fac}</b> · 레시피 출처 mabinogi.shimplace.com · 시세 ${PT||'—'}`;
  draw()}
-function draw(){const s=$('svg'),W=$('tree').getBoundingClientRect();let h='';const G=new Map();
- LINKS.forEach(([p,c])=>{if(!G.has(p))G.set(p,[]);G.get(p).push(c)});
- G.forEach((ks,p)=>{const P=p.getBoundingClientRect(),R=ks.map(k=>k.getBoundingClientRect());
-  const x0=P.right-W.left,y0=P.top+P.height/2-W.top,xm=R[0].left-W.left-24,ys=R.map(r=>r.top+r.height/2-W.top);
-  h+=`<path d="M${x0} ${y0}H${xm}"/><path d="M${xm} ${Math.min(...ys,y0)}V${Math.max(...ys,y0)}"/>`;R.forEach((r,i)=>h+=`<path d="M${xm} ${ys[i]}H${r.left-W.left}"/>`)});
+function draw(){const s=$('svg'),W=$('tree').getBoundingClientRect();let h='';
+ document.querySelectorAll('.branch').forEach(b=>{const k=b.querySelector(':scope>.kids');if(!k||k.classList.contains('hide'))return;
+  const p=b.querySelector(':scope>.node').getBoundingClientRect();const ks=[...k.children].map(c=>c.querySelector(':scope>.node').getBoundingClientRect());
+  const x0=p.right-W.left,y0=p.top+p.height/2-W.top,xm=x0+28,ys=ks.map(r=>r.top+r.height/2-W.top);
+  h+=`<path d="M${x0} ${y0}H${xm}"/><path d="M${xm} ${Math.min(...ys,y0)}V${Math.max(...ys,y0)}"/>`;ks.forEach((r,i)=>h+=`<path d="M${xm} ${ys[i]}H${r.left-W.left}"/>`)});
  s.innerHTML=`<g stroke="#f7d98b" stroke-width="2" fill="none" stroke-linecap="round">${h}</g>`}
 $('goalSel').innerHTML=RECIPES.map((r,i)=>`<option value="${i}">${r.n}</option>`).join('');$('goalSel').value=st.goal;$('goalQty').value=st.qty;
 $('goalSel').onchange=e=>{st.goal=+e.target.value;save();render()};$('goalQty').onchange=e=>{st.qty=Math.max(1,+e.target.value||1);e.target.value=st.qty;save();render()};

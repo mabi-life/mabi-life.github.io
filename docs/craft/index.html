@@ -22,7 +22,7 @@ input[type=number]{width:72px}
 .cond{font-size:12.5px;color:var(--mu);margin-bottom:22px}.cond b{color:var(--gold)}
 .scroll{overflow-x:auto;padding-bottom:10px;width:calc(100vw - 28px);position:relative;left:50%;transform:translateX(-50%)}
 .tree{position:relative;display:inline-block;min-width:100%}svg{position:absolute;inset:0;pointer-events:none;overflow:visible;width:100%;height:100%}
-#root{display:flex;align-items:flex-start;gap:56px}.col{display:flex;flex-direction:column;gap:12px;justify-content:flex-start}
+.branch{display:flex;align-items:center;gap:56px}.kids{display:flex;flex-direction:column;gap:12px}.kids.hide{display:none}
 .node{background:linear-gradient(160deg,#241d48,#17122f);border:2px solid #3a3170;border-radius:22px;padding:10px 16px;min-width:230px;position:relative;box-shadow:0 4px 14px #0006}
 .node.goal{border-color:var(--gold);min-width:260px}.node.craft{cursor:pointer}.node.craft:hover{border-color:#f7d98bbb}
 .chev{position:absolute;top:8px;right:12px;color:#f7d98b88;font-size:11px}
@@ -44,5 +44,5 @@ input[type=number]{width:72px}
 <div class="scroll"><div class="tree" id="tree"><svg id="svg"></svg><div id="root"></div></div></div>
 </div>
 <footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br>시세는 10분 단위로 갱신되고 있습니다.<br>마비노기 공식 서비스와 관련 없는 비공식 팬 도구입니다.<br><a href="/privacy/">개인정보처리방침</a></footer>
-<script src="app.js?v=0.3"></script>
+<script src="app.js?v=0.4"></script>
 </body></html>
