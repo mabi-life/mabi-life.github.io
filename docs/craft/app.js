@@ -11,20 +11,22 @@ function nodeCost(c,mult){const [n,k,r]=c;const all=k*mult;const own=+st.own[n]|
  return {all,need,p,sub,best,miss}}
 function bal(n,all,own,kind,extra){const ok=own>=all;const C={제작:['#e8c66a','⚒'],구매:['#7fb2ff','₲'],채집:['#7fd99a','✿']}[kind];
  return `<span class="t"><span class="ic" style="background:${C[0]}22;color:${C[0]}">${C[1]}</span><b>${n}</b>${extra||''}</span><span class="t"><span class="tag" style="color:${C[0]};border-color:${C[0]}55">${kind}</span><span class="q${ok?' ok':''}"><input type="number" min="0" data-n="${n}" value="${own}" title="현재 보유 수량"><em>${f(Math.min(own,all))}</em>/${f(all)}</span></span>`}
-function mk(c,mult,path){const [n,k,r]=c;const z=nodeCost(c,mult);const li=document.createElement('li');
- const id=path+'/'+n;const open=st.open&&st.open[id];const own=+st.own[n]||0;
- const nd=document.createElement('div');nd.className='bal'+(r?' craft':'');nd.title=r?`${r.skill}${r.out>1?' ×'+r.out:''} · 클릭: 펼치기/접기`:'';
- nd.innerHTML=bal(n,z.all,own,r?'제작':(z.p?'구매':'채집'),r?`<span class="chev">${open?'▾':'▸'}</span>`:'');li.appendChild(nd);
- if(r){if(open){const ul=document.createElement('ul');r.c.forEach(x=>ul.appendChild(mk(x,z.sub.runs,id)));li.appendChild(ul)}
-  nd.onclick=()=>{st.open=st.open||{};st.open[id]=!open;save();render()}}
- return li}
 function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');root.innerHTML='';
  let tot=0,miss=0;R.c.forEach(c=>{const z=nodeCost(c,q);tot+=z.best;miss+=z.miss});const gp=pr(R.n);
- const ul=document.createElement('ul'),li=document.createElement('li'),g=document.createElement('div');g.className='bal goal craft';
+ st.path=st.path||[];
+ const row=(items)=>{const d=document.createElement('div');d.className='row';items.forEach(x=>d.appendChild(x));root.appendChild(d);return d};
+ const g=document.createElement('div');g.className='bal goal craft';
  g.innerHTML=bal(R.n,q,+st.own[R.n]||0,'제작',`<span class="chev">${st.closed?'▸':'▾'}</span>`);g.title='클릭: 펼치기/접기';
- g.onclick=()=>{st.closed=!st.closed;save();render()};li.appendChild(g);
- if(!st.closed){const k=document.createElement('ul');R.c.forEach(c=>k.appendChild(mk(c,q,'')));li.appendChild(k)}
- ul.appendChild(li);root.appendChild(ul);
+ g.onclick=()=>{st.closed=!st.closed;save();render()};let prev=g;row([g]);
+ let list=st.closed?null:R.c,mult=q,d=0;
+ while(list){let nx=null,nm=0,pn=null;const els=list.map(c=>{const [n,k,r]=c;const z=nodeCost(c,mult);const open=r&&st.path[d]===n;
+   const nd=document.createElement('div');nd.className='bal'+(r?' craft':'')+(open?' open':'');nd.title=r?`${r.skill}${r.out>1?' ×'+r.out:''} · 클릭: 펼치기/접기`:'';
+   nd.innerHTML=bal(n,z.all,+st.own[n]||0,r?'제작':(z.p?'구매':'채집'),r?`<span class="chev">${open?'▾':'▸'}</span>`:'');
+   if(r){const dd=d;nd.onclick=()=>{if(st.path[dd]===n)st.path.length=dd;else{st.path.length=dd;st.path[dd]=n}save();render()}}
+   if(open){nx=r.c;nm=z.sub.runs;pn=nd}return nd});
+  const rw=row(els);rw._p=prev;if(!nx){st.path.length=d;break}prev=pn;list=nx;mult=nm;d++}
+ requestAnimationFrame(()=>{let maxW=0;root.querySelectorAll('.row').forEach(rw=>{if(!rw._p)return;const pr_=rw._p.getBoundingClientRect(),rr=root.getBoundingClientRect();
+   const cx=pr_.left+pr_.width/2-rr.left;let L=cx-rw.offsetWidth/2;if(L<0)L=0;rw.style.marginLeft=L+'px';rw.style.setProperty('--px',(cx-L)+'px');maxW=Math.max(maxW,L+rw.offsetWidth)});root.style.minWidth=maxW+'px'});
  root.querySelectorAll('input[data-n]').forEach(i=>{i.onclick=e=>e.stopPropagation();i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render()}});
  $('tot').innerHTML=`<span>목표 <b>${R.n}</b> ×${q}</span><span>1단계 재료 ${R.c.length}종</span><span>최저 재료비 <b>${f(tot)}</b>${miss?` · 시세 없는 재료 ${miss}종 제외`:''}</span><span>경매장 완제품 <b>${gp?f(gp):'—'}</b></span>`;
  $('cond').innerHTML=`제작 조건 · 스킬 <b>${R.skill}</b> · 도구 <b>${R.tool}</b> · 시설 <b>${R.fac}</b> · 레시피 출처 mabinogi.shimplace.com · 시세 ${PT||'—'}`;
