@@ -23,8 +23,8 @@ function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');root.in
    const nd=document.createElement('div');nd.className='bal'+(r?' craft':'')+(open?' open':'');nd.title=r?`${r.skill}${r.out>1?' ×'+r.out:''} · 클릭: 펼치기/접기`:'';
    nd.innerHTML=bal(n,z.all,+st.own[n]||0,r?'제작':(z.p?'구매':'채집'),r?`<span class="chev">${open?'▾':'▸'}</span>`:'');
    if(r){const dd=d;nd.onclick=()=>{if(st.path[dd]===n)st.path.length=dd;else{st.path.length=dd;st.path[dd]=n}save();render()}}
-   if(open){nx=r.c;nm=z.sub.runs;pn=nd}return nd});
-  const rw=row(els);rw._p=prev;if(!nx){st.path.length=d;break}prev=pn;list=nx;mult=nm;d++}
+   if(open){nx=r.c;nm=z.sub.runs;pn=nd;const ph=nd.cloneNode(true);ph.style.visibility='hidden';ph.className+=' ph';ph._real=nd;return ph}return nd});
+  const rw=row(els.filter(e=>e!==pn));rw._p=prev;if(!nx){st.path.length=d;break}const dr=row([pn]);dr.classList.add('drop');dr._p=rw.querySelector('.ph');prev=pn;list=nx;mult=nm;d++}
  requestAnimationFrame(()=>{let maxW=0;root.querySelectorAll('.row').forEach(rw=>{if(!rw._p)return;const pr_=rw._p.getBoundingClientRect(),rr=root.getBoundingClientRect();
    const cx=pr_.left+pr_.width/2-rr.left;let L=cx-rw.offsetWidth/2;if(L<0)L=0;rw.style.marginLeft=L+'px';rw.style.setProperty('--px',(cx-L)+'px');maxW=Math.max(maxW,L+rw.offsetWidth)});root.style.minWidth=maxW+'px'});
  root.querySelectorAll('input[data-n]').forEach(i=>{i.onclick=e=>e.stopPropagation();i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render()}});
