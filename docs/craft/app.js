@@ -16,35 +16,37 @@ function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');
  root.innerHTML='';st.open=st.open||{};
  let tot=0,miss=0;R.c.forEach(c=>{const z=nodeCost(c,q);tot+=z.best;miss+=z.miss});const gp=pr(R.n);
  const card=(id,cls,html,title)=>{const e=document.createElement('div');e.className='bal nd '+cls;e.dataset.id=id;e.innerHTML=html;if(title)e.title=title;root.appendChild(e);return e};
- const mk=(c,mult,pid,dep)=>{const [n,k,r]=c;const z=nodeCost(c,mult);const id=pid+'/'+n;const open=!!(r&&st.open[id]);
+ const BC=['#4fc3f7','#ff8a65','#81c784','#ba68c8','#ffd54f','#f06292','#4db6ac','#9575cd','#aed581','#e57373'];
+ const mk=(c,mult,pid,dep,bi)=>{const [n,k,r]=c;const z=nodeCost(c,mult);const id=pid+'/'+n;const open=!!(r&&st.open[id]);
   const el=card(id,(r?'craft':'')+(open?' open':''),bal(n,z.all,+st.own[n]||0,r?'제작':(z.p?'구매':'채집'),r?`<span class="chev">${open?'▾':'▸'}</span>`:''),r?`${r.skill}${r.out>1?' ×'+r.out:''} · 클릭: 펼치기/접기`:'');
-  el.dataset.dep=dep;const nd={id,el,open,dep,craft:!!r,kids:open?r.c.map(x=>mk(x,z.sub.runs,id,dep+1)):null};
+  el.dataset.dep=dep;const nd={id,el,open,dep,craft:!!r,col:BC[bi%BC.length],kids:open?r.c.map(x=>mk(x,z.sub.runs,id,dep+1,bi)):null};
   if(r)el.onclick=()=>toggle(id,el);return nd};
  const g=card('G','goal craft',bal(R.n,q,+st.own[R.n]||0,'제작',`<span class="chev">${st.closed?'▸':'▾'}</span>`),'클릭: 펼치기/접기');
  g.onclick=()=>{st.closed=!st.closed;save();render()};
- const kids=st.closed?[]:R.c.map(c=>mk(c,q,'',1));
+ const kids=st.closed?[]:R.c.map((c,i)=>{const k=mk(c,q,'',1,i);return k});
+ const paint=(n)=>{n.el.style.borderColor=n.col;n.el.style.boxShadow='inset 3px 0 0 '+n.col;(n.kids||[]).forEach(paint)};kids.forEach(paint);
  const all=[...root.querySelectorAll('.nd')];all.forEach(e=>{e._w=e.offsetWidth;e._h=e.offsetHeight});
  const GAP=6,VG=22,RH=Math.max(...all.map(e=>e._h)),RY=RH+VG;
  // relative layout: node card centered at x=0 on row 0; prof[row]=[x1,x2]
  function shiftL(L,dx,dr){L.pos.forEach(p=>{p[1]+=dx;p[2]+=dr});L.lines.forEach(l=>{l[0]+=dx;l[2]+=dx;l[1]+=dr*RY;l[3]+=dr*RY});const P={};for(const r in L.prof)P[+r+dr]=[L.prof[r][0]+dx,L.prof[r][1]+dx];L.prof=P}
  function pack(Ls,row){let acc=null;Ls.forEach(L=>{shiftL(L,0,row);if(acc){let sh=-1e9;for(const r in L.prof)if(acc[r])sh=Math.max(sh,acc[r][1]+GAP-L.prof[r][0]);if(sh===-1e9)sh=0;shiftL(L,sh,0)}acc=acc||{};for(const r in L.prof)acc[r]=acc[r]?[Math.min(acc[r][0],L.prof[r][0]),Math.max(acc[r][1],L.prof[r][1])]:L.prof[r].slice()});
   const a=Ls[0].cx,b=Ls[Ls.length-1].cx;const m=(Ls[0].pos[0][1]+Ls[0].el._w/2+Ls[Ls.length-1].pos[0][1]+Ls[Ls.length-1].el._w/2)/2;Ls.forEach(L=>shiftL(L,-m,0))}
- function lay(nd,split){const w=nd.el._w;const L={el:nd.el,pos:[[nd.el,-w/2,0]],lines:[],prof:{0:[-w/2,w/2]}};
+ function lay(nd,split){const w=nd.el._w;const L={col:nd.col,el:nd.el,pos:[[nd.el,-w/2,0]],lines:[],prof:{0:[-w/2,w/2]}};
   if(!(nd.open||nd===GN)||!nd.kids||!nd.kids.length)return L;
-  const ks=nd.kids.map(k=>lay(k,true));const lv=split?ks.filter((x,i)=>!nd.kids[i].craft):[],cr=split?ks.filter((x,i)=>nd.kids[i].craft):ks;
-  const groups=[];if(lv.length)groups.push([lv,1]);if(cr.length)groups.push([cr,lv.length?2:1]);
+  const ks=nd.kids.map(k=>lay(k,true));const lc=nd.col||'#c9a24a';const lv=split?ks.filter((x,i)=>!nd.kids[i].craft):[],cr=split?ks.filter((x,i)=>nd.kids[i].craft):ks;
+  const groups=[];if(lv.length)groups.push([lv,1]);if(cr.length)groups.push([cr,split?2:1]);
   groups.forEach(([g,row])=>{pack(g,row);const by=row*RY-VG/2;const cs=g.map(x=>x.pos[0][1]+x.el._w/2);
-   L.lines.push([0,by,0,by],[Math.min(0,...cs),by,Math.max(0,...cs),by]);cs.forEach(c=>L.lines.push([c,by,c,row*RY]));
+   const gc=nd===GN?g.map(x=>x.col):g.map(()=>lc);L.lines.push([0,by,0,by,lc],[Math.min(0,...cs),by,Math.max(0,...cs),by,lc]);cs.forEach((c,i)=>L.lines.push([c,by,c,row*RY,gc[i]]));
    g.forEach(x=>{L.pos.push(...x.pos);L.lines.push(...x.lines);for(const r in x.prof)L.prof[r]=L.prof[r]?[Math.min(L.prof[r][0],x.prof[r][0]),Math.max(L.prof[r][1],x.prof[r][1])]:x.prof[r]})});
-  const deep=groups[groups.length-1][1];L.lines.push([0,nd.el._h,0,deep*RY-VG/2]);return L}
- const GN={el:g,open:!st.closed,kids};const T=lay(GN,false);
+  const deep=groups[groups.length-1][1];L.lines.push([0,nd.el._h,0,deep*RY-VG/2,lc]);return L}
+ const GN={el:g,open:!st.closed,kids};const T=lay(GN,true);
  if(!window._gx)window._gx=Math.max(g._w/2,root.parentElement.parentElement.clientWidth/2);
  let minx=Math.min(...T.pos.map(p=>p[1]));const ox=Math.max(window._gx,-minx);
- const out={pos:T.pos.map(([e,x,r])=>[e,x+ox,r*RY]),lines:T.lines.map(l=>[l[0]+ox,l[1],l[2]+ox,l[3]])};
+ const out={pos:T.pos.map(([e,x,r])=>[e,x+ox,r*RY]),lines:T.lines.map(l=>[l[0]+ox,l[1],l[2]+ox,l[3],l[4]||'#c9a24a'])};
  let mw=0,mh=0;out.pos.forEach(([e,x,y])=>{e.style.left=x+'px';e.style.top=y+'px';mw=Math.max(mw,x+e._w);mh=Math.max(mh,y+e._h)});
  root.style.width=mw+'px';root.style.height=mh+4+'px';
  const sv=document.createElementNS('http://www.w3.org/2000/svg','svg');sv.setAttribute('class','lines');sv.setAttribute('width',mw);sv.setAttribute('height',mh+4);
- sv.innerHTML=`<path d="${out.lines.map(l=>`M${Math.round(l[0])+.5} ${Math.round(l[1])+.5}L${Math.round(l[2])+.5} ${Math.round(l[3])+.5}`).join('')}" stroke="#c9a24acc" stroke-width="1" fill="none"/>`;root.prepend(sv);
+ {const bc={};out.lines.forEach(l=>(bc[l[4]]=bc[l[4]]||[]).push(l));sv.innerHTML=Object.entries(bc).map(([c,ls])=>`<path d="${ls.map(l=>`M${Math.round(l[0])+.5} ${Math.round(l[1])+.5}L${Math.round(l[2])+.5} ${Math.round(l[3])+.5}`).join('')}" stroke="${c}" stroke-opacity=".85" stroke-width="1" fill="none"/>`).join('')}root.prepend(sv);
  const A=window._act;window._act=null;
  if(A){let moved=0;sv.animate([{opacity:0},{opacity:0,offset:.55},{opacity:1}],{duration:620,easing:'ease-out'});
   out.pos.forEach(([e,x,y])=>{const o=old[e.dataset.id];if(e.dataset.id==='G')return;
