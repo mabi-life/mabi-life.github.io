@@ -25,20 +25,18 @@ function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');
  const kids=st.closed?[]:R.c.map(c=>mk(c,q,'',1));
  const all=[...root.querySelectorAll('.nd')];all.forEach(e=>{e._w=e.offsetWidth;e._h=e.offsetHeight});
  const GAP=6,VG=22,DG=16,SG=14;const pos=[],lines=[];
- const ov=(a,b)=>a.x1<b.x2+GAP&&b.x1<a.x2+GAP&&a.y1<b.y2+SG&&b.y1<a.y2+SG;
- function layOpen(nd,x,dy,out){const el=nd.el;out.pos.push([el,x,dy]);let bb={x1:x,x2:x+el._w,y1:dy,y2:dy+el._h};
+  function layOpen(nd,x,dy,out){const el=nd.el;out.pos.push([el,x,dy]);let bb={x1:x,x2:x+el._w,y1:dy,y2:dy+el._h};
   if(nd.kids&&nd.kids.length){const r=layRow(nd.kids,x+el._w/2,dy+el._h,dy+el._h+VG,out);bb={x1:Math.min(bb.x1,r.x1),x2:Math.max(bb.x2,r.x2),y1:dy,y2:Math.max(bb.y2,r.y2)}}return bb}
  function layRow(ks,px,pb,y,out){const H=Math.max(...ks.map(k=>k.el._h));const W=ks.reduce((s,k)=>s+k.el._w,0)+GAP*(ks.length-1);
   let x=Math.max(0,px-W/2);const xs=ks.map(k=>{const v=x;x+=k.el._w+GAP;return v});const cs=ks.map((k,i)=>xs[i]+k.el._w/2);
   const by=y-VG/2;out.lines.push([px,pb,px,by],[Math.min(px,...cs),by,Math.max(px,...cs),by]);
-  let bb={x1:xs[0],x2:xs[xs.length-1]+ks[ks.length-1].el._w,y1:y,y2:y+H};const placed=[];
+  let bb={x1:xs[0],x2:xs[xs.length-1]+ks[ks.length-1].el._w,y1:y,y2:y+H};const dy=y+H+DG,jy=y+H+DG/2;let prevR=-1e9;
   ks.forEach((k,i)=>{if(!k.open){out.pos.push([k.el,xs[i],y]);out.lines.push([cs[i],by,cs[i],y]);return}
-   let dy=y+H+DG,sub,tmp;for(let t=0;t<50;t++){tmp={pos:[],lines:[]};sub=layOpen(k,xs[i],dy,tmp);const hit=placed.filter(p=>ov(p,sub));if(!hit.length)break;dy=Math.max(...hit.map(p=>p.y2))+SG}
-   out.pos.push(...tmp.pos);out.lines.push(...tmp.lines);const bl=placed.filter(p=>p.y1<dy&&p.y2>by);
-   if(dy>y+H+DG&&bl.length){const L=Math.min(...bl.map(p=>p.x1))-GAP/2,R=Math.max(...bl.map(p=>p.x2))+GAP/2;const lx=(L>=0&&cs[i]-L<R-cs[i])?L:R,jy=dy-SG/2;
-    out.lines.push([cs[i],by,lx,by],[lx,by,lx,jy],[lx,jy,cs[i],jy],[cs[i],jy,cs[i],dy]);sub.x1=Math.min(sub.x1,lx);sub.x2=Math.max(sub.x2,lx)}
-   else out.lines.push([cs[i],by,cs[i],dy]);placed.push(sub);
-   bb={x1:Math.min(bb.x1,sub.x1),x2:Math.max(bb.x2,sub.x2),y1:y,y2:Math.max(bb.y2,sub.y2)}});
+   const tmp={pos:[],lines:[]};const sub=layOpen(k,xs[i],dy,tmp);const sh=Math.max(0,prevR+GAP*2-sub.x1);
+   if(sh){tmp.pos.forEach(p=>p[1]+=sh);tmp.lines.forEach(l=>{l[0]+=sh;l[2]+=sh});sub.x1+=sh;sub.x2+=sh}
+   prevR=sub.x2;out.pos.push(...tmp.pos);out.lines.push(...tmp.lines);const cx=cs[i]+sh;
+   if(sh)out.lines.push([cs[i],by,cs[i],jy],[cs[i],jy,cx,jy],[cx,jy,cx,dy]);else out.lines.push([cs[i],by,cs[i],dy]);
+   bb={x1:Math.min(bb.x1,sub.x1),x2:Math.max(bb.x2,sub.x2,cx),y1:y,y2:Math.max(bb.y2,sub.y2)}});
   return bb}
  if(!window._gx)window._gx=Math.max(g._w/2,root.parentElement.parentElement.clientWidth/2);
  const out={pos:[[g,window._gx-g._w/2,0]],lines:[]};if(kids.length)layRow(kids,window._gx,g._h,g._h+VG,out);
