@@ -34,21 +34,19 @@ function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');
  function lay(nd,split){const w=nd.el._w;const L={col:nd.col,el:nd.el,pos:[[nd.el,-w/2,0]],lines:[],prof:{0:[-w/2,w/2]}};
   if(!(nd.open||nd===GN)||!nd.kids||!nd.kids.length)return L;
   const ks=nd.kids.map(k=>lay(k,true));const lc=nd.col||'#c9a24a';const lv=split?ks.filter((x,i)=>!nd.kids[i].craft):[],cr=split?ks.filter((x,i)=>nd.kids[i].craft):ks;
-  const groups=[];if(lv.length)groups.push([lv,1]);if(cr.length)groups.push([cr,split?2:1]);
+  const groups=[];if(lv.length)groups.push([lv,1]);if(cr.length)groups.push([cr,split&&lv.length?2:1]);
   groups.forEach(([g,row])=>{pack(g,row);const by=row*RY-VG/2;const cs=g.map(x=>x.pos[0][1]+x.el._w/2);
    const gc=nd===GN?g.map(x=>x.col):g.map(()=>lc);L.lines.push([0,by,0,by,lc],[Math.min(0,...cs),by,Math.max(0,...cs),by,lc]);cs.forEach((c,i)=>L.lines.push([c,by,c,row*RY,gc[i]]));
    g.forEach(x=>{L.pos.push(...x.pos);L.lines.push(...x.lines);for(const r in x.prof)L.prof[r]=L.prof[r]?[Math.min(L.prof[r][0],x.prof[r][0]),Math.max(L.prof[r][1],x.prof[r][1])]:x.prof[r]})});
-  const deep=groups[groups.length-1][1];let tx=0;
-  if(split&&lv.length&&cr.length){const CW=14,cards=lv.map(x=>[x.pos[0][1],x.pos[0][1]+x.el._w,x]).sort((a,b)=>a[0]-b[0]);
-   // corridor: always reserve a >=2*CW gap nearest x=0 in the leaf row and route the expandable trunk through it
-   if(cards.some(c=>c[0]<CW&&c[1]>-CW)){let best=null;for(let i=0;i<=cards.length;i++){const gx=i===0?cards[0][0]-CW:i===cards.length?cards[i-1][1]+CW:(cards[i-1][1]+cards[i][0])/2;if(best===null||Math.abs(gx)<Math.abs(best[0]))best=[gx,i]}
-    const [gx,i]=best;const need=i===0||i===cards.length?0:Math.max(0,2*CW-(cards[i][0]-cards[i-1][1]));
-    if(need){cards.slice(0,i).forEach(c=>shiftL(c[2],-need/2,0));cards.slice(i).forEach(c=>shiftL(c[2],need/2,0));
-     L.lines=L.lines.filter(l=>!(l[1]===RY-VG/2&&l[3]===RY-VG/2&&l[0]!==l[2]));const cs=lv.map(x=>x.pos[0][1]+x.el._w/2);
-     L.lines=L.lines.filter(l=>!(l[1]===RY-VG/2&&l[3]===RY&&l[0]===l[2]));cs.forEach(c=>L.lines.push([c,RY-VG/2,c,RY,lc]));L.lines.push([Math.min(0,...cs),RY-VG/2,Math.max(0,...cs),RY-VG/2,lc]);
-     L.prof[1]=[Math.min(...lv.map(x=>x.pos[0][1])),Math.max(...lv.map(x=>x.pos[0][1]+x.el._w))]}
-    tx=gx;if(Math.abs(tx)<1)tx=0}}
-  if(tx){const b0=nd.el._h+4,b2=deep*RY-VG/2;L.lines.push([0,nd.el._h,0,b0,lc,2],[0,b0,tx,b0,lc,2],[tx,b0,tx,b2,lc,2],[tx,b2,0,b2,lc,2])}else L.lines.push([0,nd.el._h,0,deep*RY-VG/2,lc]);return L}
+  const deep=groups[groups.length-1][1];
+  if(split&&lv.length&&cr.length){const CW=20;const l1=Math.min(...lv.map(x=>x.pos[0][1])),r1=Math.max(...lv.map(x=>x.pos[0][1]+x.el._w));
+   // edge lane: trunk runs down the OUTSIDE of the leaf cluster (prefer left), lane kept empty via profile
+   const tx=(-l1<=r1)?l1-CW:r1+CW;const y1=RY-VG/2,y2=2*RY-VG/2;
+   L.lines=L.lines.filter(l=>!(l[1]===y1&&l[3]===y1&&l[0]!==l[2])&&!(l[1]===y2&&l[3]===y2&&l[0]!==l[2]));
+   const c1=lv.map(x=>x.pos[0][1]+x.el._w/2),c2=cr.map(x=>x.pos[0][1]+x.el._w/2);
+   L.lines.push([Math.min(0,tx,...c1),y1,Math.max(0,tx,...c1),y1,lc],[Math.min(tx,...c2),y2,Math.max(tx,...c2),y2,lc],[tx,y1,tx,y2,lc,2]);
+   L.prof[1]=[Math.min(l1,tx-CW),Math.max(r1,tx+CW)]}
+  L.lines.push([0,nd.el._h,0,(lv.length?1:deep)*RY-VG/2,lc]);return L}
  const GN={el:g,open:!st.closed,kids};const T=lay(GN,true);
  if(!window._gx)window._gx=Math.max(g._w/2,root.parentElement.parentElement.clientWidth/2);
  let minx=Math.min(...T.pos.map(p=>p[1]));const ox=Math.max(window._gx,-minx);
