@@ -22,21 +22,21 @@ function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');root.in
  while(list){let nx=null,nm=0,pn=null;const els=list.map(c=>{const [n,k,r]=c;const z=nodeCost(c,mult);const open=r&&st.path[d]===n;
    const nd=document.createElement('div');nd.className='bal'+(r?' craft':'')+(open?' open':'');nd.dataset.nm=n;nd.dataset.d=d;nd.title=r?`${r.skill}${r.out>1?' ×'+r.out:''} · 클릭: 펼치기/접기`:'';
    nd.innerHTML=bal(n,z.all,+st.own[n]||0,r?'제작':(z.p?'구매':'채집'),r?`<span class="chev">${open?'▾':'▸'}</span>`:'');
-   if(r){const dd=d;nd.onclick=()=>{const old=nd.getBoundingClientRect();nd.classList.add('press');
+   if(r){const dd=d;nd.onclick=()=>{const old=nd.getBoundingClientRect();if(st.path[dd]!==n)nd.classList.add('press');
      if(st.path[dd]===n){const rows=[...root.querySelectorAll('.row')];const i=rows.indexOf(nd.parentElement);const ph=rows[i-1]&&rows[i-1].querySelector('.ph');
       rows.slice(i+1).forEach(x=>{x.style.transition='opacity .2s cubic-bezier(.5,0,.75,0),transform .2s cubic-bezier(.5,0,.75,0)';x.style.opacity=0;x.style.transform='translateY(-14px) scale(.96)'});
-      setTimeout(()=>{st.path.length=dd;save();window._flip={n,old:nd.getBoundingClientRect(),d:dd};render()},200)}
+      setTimeout(()=>{st.path.length=dd;save();window._flip={n,old:nd.getBoundingClientRect(),d:dd};render()},180)}
      else setTimeout(()=>{st.path.length=dd;st.path[dd]=n;window._flip={n,old,d:dd,open:1};save();render()},110)}}
    if(open){nx=r.c;nm=z.sub.runs;pn=nd;const ph=nd.cloneNode(true);ph.querySelectorAll('input').forEach(i=>i.disabled=true);ph.setAttribute('aria-hidden','true');ph.className+=' ph';ph._real=nd;return ph}return nd});
   const rw=row(els.filter(e=>e!==pn));rw._p=prev;if(!nx){st.path.length=d;break}const dr=row([pn]);dr.classList.add('drop');dr._p=rw.querySelector('.ph');prev=pn;list=nx;mult=nm;d++}
- {const G=root.firstChild;if(!window._gx){const sc=root.parentElement.parentElement;window._gx=Math.max(0,sc.clientWidth/2)}G.style.marginLeft=Math.max(0,window._gx-G.offsetWidth/2)+'px';let maxW=0;root.querySelectorAll('.row').forEach(rw=>{if(!rw._p)return;const pr_=rw._p.getBoundingClientRect(),rr=root.getBoundingClientRect();
+ window._lay=()=>{root.querySelectorAll(".ln").forEach(e=>e.remove());const G=root.firstChild;if(!window._gx){const sc=root.parentElement.parentElement;window._gx=Math.max(0,sc.clientWidth/2)}G.style.marginLeft=Math.max(0,window._gx-G.offsetWidth/2)+'px';let maxW=0;root.querySelectorAll('.row').forEach(rw=>{if(!rw._p)return;const pr_=rw._p.getBoundingClientRect(),rr=root.getBoundingClientRect();
    const cx=pr_.left+pr_.width/2-rr.left;let L=cx-rw.offsetWidth/2;if(L<0)L=0;rw.style.marginLeft=L+'px';rw.style.setProperty('--px',(cx-L)+'px');maxW=Math.max(maxW,L+rw.offsetWidth);
-   if(!rw.classList.contains('drop')){const px=cx-L,cs=[...rw.children].filter(e=>!e.classList.contains('ph')).map(e=>e.offsetLeft+e.offsetWidth/2);const add=(st_)=>{const k=document.createElement('i');k.className='ln';k.style.cssText=st_;rw.appendChild(k)};
-    const a=Math.min(px,...cs),b=Math.max(px,...cs);add(`left:${px}px;top:0;height:11px;width:0`);if(b-a>1)add(`left:${a}px;top:11px;width:${b-a}px;height:0`);cs.forEach(x=>add(`left:${x}px;top:11px;height:11px;width:0`))}});root.style.minWidth=maxW+'px';
+   if(!rw.classList.contains('drop')){const px=cx-L,cs=[...rw.children].filter(e=>!e.classList.contains('ln')).map(e=>e.offsetLeft+e.offsetWidth/2);const add=(st_)=>{const k=document.createElement('i');k.className='ln';k.style.cssText=st_;rw.appendChild(k)};
+    const a=Math.min(px,...cs),b=Math.max(px,...cs);add(`left:${px}px;top:0;height:11px;width:0`);if(b-a>1)add(`left:${a}px;top:11px;width:${b-a}px;height:0`);cs.forEach(x=>add(`left:${x}px;top:11px;height:11px;width:0`));const ph=rw.querySelector('.ph');if(ph){const x=ph.offsetLeft+ph.offsetWidth/2;add(`left:${x}px;top:11px;height:${rw.offsetHeight-11+12}px;width:0`)}}});root.style.minWidth=maxW+'px';};window._lay();{
   const F=window._flip;window._flip=null;
   if(F){const rows=[...root.querySelectorAll('.row')];const card=[...root.querySelectorAll('.bal:not(.ph)')].find(e=>e.dataset.nm===F.n&&e.dataset.d==F.d);
    if(card){const nw=card.getBoundingClientRect();const dx=F.old.left-nw.left,dy=F.old.top-nw.top;
-    card.animate([{transform:`translate(${dx}px,${dy}px) scale(.92)`,easing:'cubic-bezier(.5,0,.2,1)'},{transform:'translate(0,6px) scale(1.06,.95)',offset:.6,easing:'cubic-bezier(.3,1.6,.5,1)'},{transform:'translate(0,-2px) scale(.98,1.02)',offset:.82},{transform:'none'}],{duration:560});
+    card.animate(F.open?[{transform:`translate(${dx}px,${dy}px) scale(.92)`,easing:'cubic-bezier(.5,0,.2,1)'},{transform:'translate(0,6px) scale(1.06,.95)',offset:.6,easing:'cubic-bezier(.3,1.6,.5,1)'},{transform:'translate(0,-2px) scale(.98,1.02)',offset:.82},{transform:'none'}]:[{transform:`translate(${dx}px,${dy}px)`,easing:'cubic-bezier(.5,0,.2,1)'},{transform:'translate(0,-5px) scale(1.04,.96)',offset:.65,easing:'cubic-bezier(.3,1.6,.5,1)'},{transform:'translate(0,1px)',offset:.85},{transform:'none'}],{duration:F.open?560:480});
     if(F.open){const dr=card.parentElement;dr.animate([{'--h':'0px',opacity:.3},{opacity:1}],{duration:300});
      rows.slice(rows.indexOf(dr)+1).forEach((x,j)=>x.animate([{opacity:0,transform:'translateY(-18px) scale(.94)'},{opacity:1,transform:'none'}],{duration:420,delay:280+j*80,fill:'backwards',easing:'cubic-bezier(.34,1.56,.64,1)'}))}}}}
  root.querySelectorAll('input[data-n]').forEach(i=>{i.onclick=e=>e.stopPropagation();i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render()}});
@@ -48,3 +48,4 @@ $('goalSel').onchange=e=>{st.goal=+e.target.value;save();render()};$('goalQty').
 $('resetBtn').onclick=()=>{st.own={};st.open={};save();render()};
 render();
 fetch('/prices.json?t='+Date.now()).then(r=>r.json()).then(j=>{P=j.prices||{};const t=Object.values(P).map(v=>v.t).filter(Boolean).sort().pop();PT=t?t.slice(0,16).replace('T',' '):'';render()}).catch(()=>{});
+document.fonts&&document.fonts.ready.then(()=>window._lay&&window._lay());addEventListener('resize',()=>window._lay&&window._lay());
