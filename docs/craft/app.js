@@ -34,7 +34,10 @@ function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');
   let bb={x1:xs[0],x2:xs[xs.length-1]+ks[ks.length-1].el._w,y1:y,y2:y+H};const placed=[];
   ks.forEach((k,i)=>{if(!k.open){out.pos.push([k.el,xs[i],y]);out.lines.push([cs[i],by,cs[i],y]);return}
    let dy=y+H+DG,sub,tmp;for(let t=0;t<50;t++){tmp={pos:[],lines:[]};sub=layOpen(k,xs[i],dy,tmp);const hit=placed.filter(p=>ov(p,sub));if(!hit.length)break;dy=Math.max(...hit.map(p=>p.y2))+SG}
-   out.pos.push(...tmp.pos);out.lines.push(...tmp.lines,[cs[i],by,cs[i],dy]);placed.push(sub);
+   out.pos.push(...tmp.pos);out.lines.push(...tmp.lines);const bl=placed.filter(p=>p.y1<dy&&p.y2>by);
+   if(dy>y+H+DG&&bl.length){const L=Math.min(...bl.map(p=>p.x1))-GAP/2,R=Math.max(...bl.map(p=>p.x2))+GAP/2;const lx=(L>=0&&cs[i]-L<R-cs[i])?L:R,jy=dy-SG/2;
+    out.lines.push([cs[i],by,lx,by],[lx,by,lx,jy],[lx,jy,cs[i],jy],[cs[i],jy,cs[i],dy]);sub.x1=Math.min(sub.x1,lx);sub.x2=Math.max(sub.x2,lx)}
+   else out.lines.push([cs[i],by,cs[i],dy]);placed.push(sub);
    bb={x1:Math.min(bb.x1,sub.x1),x2:Math.max(bb.x2,sub.x2),y1:y,y2:Math.max(bb.y2,sub.y2)}});
   return bb}
  if(!window._gx)window._gx=Math.max(g._w/2,root.parentElement.parentElement.clientWidth/2);
