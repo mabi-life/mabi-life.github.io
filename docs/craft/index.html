@@ -20,9 +20,9 @@ select,input[type=number]{background:#120e28;border:1px solid var(--line);color:
 input[type=number]{width:72px}
 .totals{display:flex;gap:22px;flex-wrap:wrap;align-items:center;padding:10px 18px;background:var(--card);border:1px solid var(--line);border-radius:16px;font-size:13px;margin-bottom:10px}.totals b{color:var(--gold)}
 .cond{font-size:12.5px;color:var(--mu);margin-bottom:22px}.cond b{color:var(--gold)}
-.scroll{overflow-x:auto;padding-bottom:10px}
+.scroll{overflow-x:auto;padding-bottom:10px;width:calc(100vw - 28px);position:relative;left:50%;transform:translateX(-50%)}
 .tree{position:relative;display:inline-block;min-width:100%}svg{position:absolute;inset:0;pointer-events:none;overflow:visible;width:100%;height:100%}
-.branch{display:flex;align-items:flex-start;gap:56px}.kids{display:flex;flex-direction:column;gap:12px}.kids.hide{display:none}
+#root{display:flex;align-items:flex-start;gap:56px}.col{display:flex;flex-direction:column;gap:12px;justify-content:flex-start}
 .node{background:linear-gradient(160deg,#241d48,#17122f);border:2px solid #3a3170;border-radius:22px;padding:10px 16px;min-width:230px;position:relative;box-shadow:0 4px 14px #0006}
 .node.goal{border-color:var(--gold);min-width:260px}.node.craft{cursor:pointer}.node.craft:hover{border-color:#f7d98bbb}
 .chev{position:absolute;top:8px;right:12px;color:#f7d98b88;font-size:11px}
@@ -44,5 +44,5 @@ input[type=number]{width:72px}
 <div class="scroll"><div class="tree" id="tree"><svg id="svg"></svg><div id="root"></div></div></div>
 </div>
 <footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br>시세는 10분 단위로 갱신되고 있습니다.<br>마비노기 공식 서비스와 관련 없는 비공식 팬 도구입니다.<br><a href="/privacy/">개인정보처리방침</a></footer>
-<script src="app.js?v=0.1"></script>
+<script src="app.js?v=0.3"></script>
 </body></html>
