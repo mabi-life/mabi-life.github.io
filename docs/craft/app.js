@@ -30,7 +30,9 @@ function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');root.in
    if(open){nx=r.c;nm=z.sub.runs;pn=nd;const ph=nd.cloneNode(true);ph.querySelectorAll('input').forEach(i=>i.disabled=true);ph.className+=' ph';ph._real=nd;return ph}return nd});
   const rw=row(els.filter(e=>e!==pn));rw._p=prev;if(!nx){st.path.length=d;break}const dr=row([pn]);dr.classList.add('drop');dr._p=rw.querySelector('.ph');prev=pn;list=nx;mult=nm;d++}
  {let maxW=0;root.querySelectorAll('.row').forEach(rw=>{if(!rw._p)return;const pr_=rw._p.getBoundingClientRect(),rr=root.getBoundingClientRect();
-   const cx=pr_.left+pr_.width/2-rr.left;let L=cx-rw.offsetWidth/2;if(L<0)L=0;rw.style.marginLeft=L+'px';rw.style.setProperty('--px',(cx-L)+'px');maxW=Math.max(maxW,L+rw.offsetWidth)});root.style.minWidth=maxW+'px';
+   const cx=pr_.left+pr_.width/2-rr.left;let L=cx-rw.offsetWidth/2;if(L<0)L=0;rw.style.marginLeft=L+'px';rw.style.setProperty('--px',(cx-L)+'px');maxW=Math.max(maxW,L+rw.offsetWidth);
+   if(!rw.classList.contains('drop')){const px=cx-L,cs=[...rw.children].map(e=>e.offsetLeft+e.offsetWidth/2);const add=(st_)=>{const k=document.createElement('i');k.className='ln';k.style.cssText=st_;rw.appendChild(k)};
+    const a=Math.min(px,...cs),b=Math.max(px,...cs);add(`left:${px}px;top:0;height:11px;width:0`);if(b-a>1)add(`left:${a}px;top:11px;width:${b-a}px;height:0`);cs.forEach(x=>add(`left:${x}px;top:11px;height:11px;width:0`))}});root.style.minWidth=maxW+'px';
   const F=window._flip;window._flip=null;
   if(F){const rows=[...root.querySelectorAll('.row')];const card=[...root.querySelectorAll('.bal:not(.ph)')].find(e=>e.dataset.nm===F.n&&e.dataset.d==F.d);
    if(card){const nw=card.getBoundingClientRect();const dx=F.old.left-nw.left,dy=F.old.top-nw.top;
