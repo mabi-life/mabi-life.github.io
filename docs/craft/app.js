@@ -18,28 +18,29 @@ function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');
  const card=(id,cls,html,title)=>{const e=document.createElement('div');e.className='bal nd '+cls;e.dataset.id=id;e.innerHTML=html;if(title)e.title=title;root.appendChild(e);return e};
  const mk=(c,mult,pid,dep)=>{const [n,k,r]=c;const z=nodeCost(c,mult);const id=pid+'/'+n;const open=!!(r&&st.open[id]);
   const el=card(id,(r?'craft':'')+(open?' open':''),bal(n,z.all,+st.own[n]||0,r?'제작':(z.p?'구매':'채집'),r?`<span class="chev">${open?'▾':'▸'}</span>`:''),r?`${r.skill}${r.out>1?' ×'+r.out:''} · 클릭: 펼치기/접기`:'');
-  el.dataset.dep=dep;const nd={id,el,open,dep,kids:open?r.c.map(x=>mk(x,z.sub.runs,id,dep+1)):null};
+  el.dataset.dep=dep;const nd={id,el,open,dep,craft:!!r,kids:open?r.c.map(x=>mk(x,z.sub.runs,id,dep+1)):null};
   if(r)el.onclick=()=>toggle(id,el);return nd};
  const g=card('G','goal craft',bal(R.n,q,+st.own[R.n]||0,'제작',`<span class="chev">${st.closed?'▸':'▾'}</span>`),'클릭: 펼치기/접기');
  g.onclick=()=>{st.closed=!st.closed;save();render()};
  const kids=st.closed?[]:R.c.map(c=>mk(c,q,'',1));
  const all=[...root.querySelectorAll('.nd')];all.forEach(e=>{e._w=e.offsetWidth;e._h=e.offsetHeight});
- const GAP=6,VG=22,DG=16,SG=14;const pos=[],lines=[];
-  function layOpen(nd,x,dy,out){const el=nd.el;out.pos.push([el,x,dy]);let bb={x1:x,x2:x+el._w,y1:dy,y2:dy+el._h};
-  if(nd.kids&&nd.kids.length){const r=layRow(nd.kids,x+el._w/2,dy+el._h,dy+el._h+VG,out);bb={x1:Math.min(bb.x1,r.x1),x2:Math.max(bb.x2,r.x2),y1:dy,y2:Math.max(bb.y2,r.y2)}}return bb}
- function layRow(ks,px,pb,y,out){const H=Math.max(...ks.map(k=>k.el._h));const W=ks.reduce((s,k)=>s+k.el._w,0)+GAP*(ks.length-1);
-  let x=Math.max(0,px-W/2);const xs=ks.map(k=>{const v=x;x+=k.el._w+GAP;return v});const cs=ks.map((k,i)=>xs[i]+k.el._w/2);
-  const by=y-VG/2;out.lines.push([px,pb,px,by],[Math.min(px,...cs),by,Math.max(px,...cs),by]);
-  let bb={x1:xs[0],x2:xs[xs.length-1]+ks[ks.length-1].el._w,y1:y,y2:y+H};const dy=y+H+DG,jy=y+H+DG/2;let prevR=-1e9;
-  ks.forEach((k,i)=>{if(!k.open){out.pos.push([k.el,xs[i],y]);out.lines.push([cs[i],by,cs[i],y]);return}
-   const tmp={pos:[],lines:[]};const sub=layOpen(k,xs[i],dy,tmp);const sh=Math.max(0,prevR+GAP*2-sub.x1);
-   if(sh){tmp.pos.forEach(p=>p[1]+=sh);tmp.lines.forEach(l=>{l[0]+=sh;l[2]+=sh});sub.x1+=sh;sub.x2+=sh}
-   prevR=sub.x2;out.pos.push(...tmp.pos);out.lines.push(...tmp.lines);const cx=cs[i]+sh;
-   if(sh)out.lines.push([cs[i],by,cs[i],jy],[cs[i],jy,cx,jy],[cx,jy,cx,dy]);else out.lines.push([cs[i],by,cs[i],dy]);
-   bb={x1:Math.min(bb.x1,sub.x1),x2:Math.max(bb.x2,sub.x2,cx),y1:y,y2:Math.max(bb.y2,sub.y2)}});
-  return bb}
+ const GAP=6,VG=22,RH=Math.max(...all.map(e=>e._h)),RY=RH+VG;
+ // relative layout: node card centered at x=0 on row 0; prof[row]=[x1,x2]
+ function shiftL(L,dx,dr){L.pos.forEach(p=>{p[1]+=dx;p[2]+=dr});L.lines.forEach(l=>{l[0]+=dx;l[2]+=dx;l[1]+=dr*RY;l[3]+=dr*RY});const P={};for(const r in L.prof)P[+r+dr]=[L.prof[r][0]+dx,L.prof[r][1]+dx];L.prof=P}
+ function pack(Ls,row){let acc=null;Ls.forEach(L=>{shiftL(L,0,row);if(acc){let sh=-1e9;for(const r in L.prof)if(acc[r])sh=Math.max(sh,acc[r][1]+GAP-L.prof[r][0]);if(sh===-1e9)sh=0;shiftL(L,sh,0)}acc=acc||{};for(const r in L.prof)acc[r]=acc[r]?[Math.min(acc[r][0],L.prof[r][0]),Math.max(acc[r][1],L.prof[r][1])]:L.prof[r].slice()});
+  const a=Ls[0].cx,b=Ls[Ls.length-1].cx;const m=(Ls[0].pos[0][1]+Ls[0].el._w/2+Ls[Ls.length-1].pos[0][1]+Ls[Ls.length-1].el._w/2)/2;Ls.forEach(L=>shiftL(L,-m,0))}
+ function lay(nd,split){const w=nd.el._w;const L={el:nd.el,pos:[[nd.el,-w/2,0]],lines:[],prof:{0:[-w/2,w/2]}};
+  if(!(nd.open||nd===GN)||!nd.kids||!nd.kids.length)return L;
+  const ks=nd.kids.map(k=>lay(k,true));const lv=split?ks.filter((x,i)=>!nd.kids[i].craft):[],cr=split?ks.filter((x,i)=>nd.kids[i].craft):ks;
+  const groups=[];if(lv.length)groups.push([lv,1]);if(cr.length)groups.push([cr,lv.length?2:1]);
+  groups.forEach(([g,row])=>{pack(g,row);const by=row*RY-VG/2;const cs=g.map(x=>x.pos[0][1]+x.el._w/2);
+   L.lines.push([0,by,0,by],[Math.min(0,...cs),by,Math.max(0,...cs),by]);cs.forEach(c=>L.lines.push([c,by,c,row*RY]));
+   g.forEach(x=>{L.pos.push(...x.pos);L.lines.push(...x.lines);for(const r in x.prof)L.prof[r]=L.prof[r]?[Math.min(L.prof[r][0],x.prof[r][0]),Math.max(L.prof[r][1],x.prof[r][1])]:x.prof[r]})});
+  const deep=groups[groups.length-1][1];L.lines.push([0,nd.el._h,0,deep*RY-VG/2]);return L}
+ const GN={el:g,open:!st.closed,kids};const T=lay(GN,false);
  if(!window._gx)window._gx=Math.max(g._w/2,root.parentElement.parentElement.clientWidth/2);
- const out={pos:[[g,window._gx-g._w/2,0]],lines:[]};if(kids.length)layRow(kids,window._gx,g._h,g._h+VG,out);
+ let minx=Math.min(...T.pos.map(p=>p[1]));const ox=Math.max(window._gx,-minx);
+ const out={pos:T.pos.map(([e,x,r])=>[e,x+ox,r*RY]),lines:T.lines.map(l=>[l[0]+ox,l[1],l[2]+ox,l[3]])};
  let mw=0,mh=0;out.pos.forEach(([e,x,y])=>{e.style.left=x+'px';e.style.top=y+'px';mw=Math.max(mw,x+e._w);mh=Math.max(mh,y+e._h)});
  root.style.width=mw+'px';root.style.height=mh+4+'px';
  const sv=document.createElementNS('http://www.w3.org/2000/svg','svg');sv.setAttribute('class','lines');sv.setAttribute('width',mw);sv.setAttribute('height',mh+4);
