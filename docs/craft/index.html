@@ -52,6 +52,10 @@ input[type=number]{width:72px}
 .row .bal.open{outline:2px solid #e8c66a;box-shadow:0 4px 12px #e8c66a33}
 .row.drop{padding-top:14px}.row.drop:before{height:14px;border-left-style:dashed}
 .row{transition:opacity .2s,transform .2s}.row.out{opacity:0;transform:translateY(-10px)}
+.bal.ph{visibility:visible!important;opacity:.28;filter:grayscale(1);background:transparent!important;border:1px solid #c9a24a88!important;pointer-events:none;box-shadow:none!important;outline:0!important;cursor:default}
+.bal.press{transform:scale(.95);transition:transform .1s;box-shadow:0 0 0 3px #e8c66a55}
+.row:before{top:-1px;height:23px}.row.drop{padding-top:12px}.row.drop:before{top:-1px;height:13px;border-left:2px solid #e8c66a}.row.drop+.row:before{border-left:2px solid #e8c66a}
+.row.drop+.row{padding-top:22px}
 </style>
   <script type="text/javascript" src="https://openapi.nexon.com/js/analytics.js?app_id=355270" async></script>
 <link rel="stylesheet" href="/css/site-chrome.css?v=1"><style>.head{text-align:left!important}.head h1{letter-spacing:.5px!important}</style>
@@ -65,5 +69,5 @@ input[type=number]{width:72px}
 <div class="scroll"><div class="tree" id="tree"><div id="root"></div></div></div>
 </div>
 <footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br>시세는 10분 단위로 갱신되고 있습니다.<br>마비노기 공식 서비스와 관련 없는 비공식 팬 도구입니다.<br><a href="/privacy/">개인정보처리방침</a></footer>
-<script src="app.js?v=0.9"></script>
+<script src="app.js?v=1.0"></script>
 </body></html>
