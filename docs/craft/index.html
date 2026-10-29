@@ -24,7 +24,7 @@ input[type=number]{width:72px}
 .tree{display:inline-block;min-width:100%;text-align:center}
 .tree ul{display:flex;justify-content:center;list-style:none;margin:0;padding:18px 0 0;position:relative}
 #root>ul{padding-top:0}
-.tree li{display:flex;flex-direction:column;align-items:center;position:relative;padding:18px 5px 0}
+.tree li{display:flex;flex-direction:column;align-items:center;position:relative;padding:18px 2px 0;min-width:0}
 #root>ul>li{padding-top:0}
 .tree li:before,.tree li:after{content:"";position:absolute;top:0;width:50%;border-top:1px solid #c9a24a99}
 .tree li:before{right:50%}.tree li:after{left:50%;border-left:1px solid #c9a24a99;height:18px}
@@ -34,6 +34,7 @@ input[type=number]{width:72px}
 #root>ul>li:before,#root>ul>li:after{display:none}
 .tree ul ul:before{content:"";position:absolute;top:0;left:50%;height:18px;border-left:1px solid #c9a24a99}
 .bal{display:inline-flex;flex-direction:column;align-items:center;gap:3px;background:#16213a;border:1px solid #c9a24a66;border-radius:8px;padding:6px 9px;white-space:nowrap;font-size:13px}
+.tree ul ul .bal{padding:4px 6px;font-size:12px;max-width:118px;white-space:normal;text-align:center}.tree ul ul .bal .t{flex-wrap:wrap;justify-content:center;gap:3px}.tree ul ul .q{white-space:nowrap}
 .bal.craft{cursor:pointer}.bal.craft:hover{border-color:#e8c66a}
 .bal .t{display:flex;align-items:center;gap:5px}.bal b{font-weight:600}
 .bal.goal{background:#2a2410;border-color:#e8c66a;padding:8px 14px}.bal.goal b{font-size:14px;color:#e8c66a}
@@ -57,5 +58,5 @@ input[type=number]{width:72px}
 <div class="scroll"><div class="tree" id="tree"><div id="root"></div></div></div>
 </div>
 <footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br>시세는 10분 단위로 갱신되고 있습니다.<br>마비노기 공식 서비스와 관련 없는 비공식 팬 도구입니다.<br><a href="/privacy/">개인정보처리방침</a></footer>
-<script src="app.js?v=0.5"></script>
+<script src="app.js?v=0.6"></script>
 </body></html>
