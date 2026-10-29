@@ -15,7 +15,9 @@ def recipe(n):
   prod=items(sec(t,'<dt>생산품</dt>','</dl>'));mats=items(sec(t,'<dt>재료</dt>','</dl>'))
   def names(h):
     s=sec(t,f'<dt>{h}</dt>','</dl>');return [html.unescape(re.sub(r'<[^>]+>|\s+',' ',x).strip()) for x in re.findall(r'<li>(.*?)</li>',s,re.S) if re.sub(r'<[^>]+>','',x).strip()]
-  return dict(skill=sk,prod=prod,mats=mats,tool=names('제작 시 필요한 도구'),fac=names('필요 시설/오브젝트'))
+  pc=re.search(r'제작 시 (\d+)%까지 완성 가능',t)
+  fs=sec(t,'<dt>마감 재료</dt>','</dl>');fin=[[[n,q] for n,_,q in items(b)] for b in re.split(r'\[마감 타입\d+\]',fs)[1:]]
+  return dict(skill=sk,prod=prod,mats=mats,tool=names('제작 시 필요한 도구'),fac=names('필요 시설/오브젝트'),pct=int(pc.group(1)) if pc else None,fin=[x for x in fin if x])
 def item_recipes(i):
   t=get(f'item/detail.php?n={i}');s=sec(t,'comp-title1">제작법','재료로 쓰이는 제작법')
   return [int(x) for x in re.findall(r'recipe/detail\.php\?n=(\d+)',s)]
@@ -31,7 +33,10 @@ def node(name,i,q,dep,path):
   return [name,q,d]
 def top(n):
   r=recipe(n);p=r['prod'][0];IDS[p[0]]=p[1]
-  return dict(n=p[0],skill=r['skill'],tool=', '.join(r['tool']) or '-',fac=', '.join(r['fac']) or '-',src=n,c=[node(a,b,c,1,{p[0]}) for a,b,c in r['mats']])
+  d=dict(n=p[0],skill=r['skill'],tool=', '.join(r['tool']) or '-',fac=', '.join(r['fac']) or '-',src=n,c=[node(a,b,c,1,{p[0]}) for a,b,c in r['mats']])
+  if r['pct']:d['pct']=r['pct']
+  if r['fin']:d['fin']=r['fin']
+  return d
 R=[top(int(n)) for n in sys.argv[1:]]
 json.dump(R,open('docs/craft/recipes.json','w'),ensure_ascii=False,separators=(',',':'))
 json.dump(IDS,open('/tmp/spc_ids.json','w'),ensure_ascii=False)

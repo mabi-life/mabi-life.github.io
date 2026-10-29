@@ -19,19 +19,21 @@ function rcTip(n,r){const o=r.out||1;return `<b>${n}</b> ${o}개 제작 · ${r.s
 (()=>{const t=document.createElement('div');t.id='rcTip';t.style.cssText='position:fixed;z-index:9999;display:none;pointer-events:none;max-width:280px;background:#1b1f2a;color:#e8e8e8;border:1px solid #e8c66a66;border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.55;box-shadow:0 6px 20px #0008';document.body.appendChild(t);
  document.addEventListener('mouseover',e=>{const b=e.target.closest&&e.target.closest('[data-rc]');if(!b){t.style.display='none';return}t.innerHTML=b.dataset.rc;t.style.display='block'});
  document.addEventListener('mousemove',e=>{if(t.style.display==='none')return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.min(e.clientX+14,innerWidth-w-6)+'px';t.style.top=(e.clientY+h+20>innerHeight?e.clientY-h-10:e.clientY+16)+'px'})})();
-function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');
+const stepsOf=R=>R.pct?Math.max(1,+(st.steps||{})[R.n]||Math.ceil(100/(R.pct*.75))):1;
+const matsOf=R=>{const s=stepsOf(R);return R.c.map(c=>[c[0],c[1]*s,c[2]]).concat(((R.fin||[])[0]||[]).map(x=>[x[0],x[1],null,1]))};
+function render(){const R=RECIPES[st.goal],q=st.qty,M=matsOf(R),S=stepsOf(R);const root=$('root');
  const old={};root.querySelectorAll('.nd').forEach(e=>old[e.dataset.id]={x:parseFloat(e.style.left),y:parseFloat(e.style.top)});
  root.innerHTML='';st.open=st.open||{};
- let tot=0,miss=0;R.c.forEach(c=>{const z=nodeCost(c,q);tot+=z.best;miss+=z.miss});const gp=pr(R.n);
+ let tot=0,miss=0;M.forEach(c=>{const z=nodeCost(c,q);tot+=z.best;miss+=z.miss});const gp=pr(R.n);
  const card=(id,cls,html,title)=>{const e=document.createElement('div');e.className='bal nd '+cls;e.dataset.id=id;e.innerHTML=html;if(title)e.title=title;root.appendChild(e);return e};
  const BC=['#4fc3f7','#ff8a65','#81c784','#ba68c8','#ffd54f','#f06292','#4db6ac','#9575cd','#aed581','#e57373'];
- const mk=(c,mult,pid,dep,bi)=>{const [n,k,r]=c;const z=nodeCost(c,mult);const id=pid+'/'+n;const open=!!(r&&st.open[id]);
-  const el=card(id,(r?'craft':'')+(open?' open':''),bal(n,z.all,+st.own[n]||0,r?'제작':(z.p?'구매':(z.cn?'코인':'채집')),(r?`<span class="chev">${open?'▾':'▸'}</span>`:''),z),'');if(r)el.dataset.rc=rcTip(n,r);
+ const mk=(c,mult,pid,dep,bi)=>{const [n,k,r,fz]=c;const z=nodeCost(c,mult);const id=pid+'/'+n;const open=!!(r&&st.open[id]);
+  const el=card(id,(r?'craft':'')+(open?' open':''),bal(n,z.all,+st.own[n]||0,r?'제작':(z.p?'구매':(z.cn?'코인':'채집')),(r?`<span class="chev">${open?'▾':'▸'}</span>`:'')+(fz?'<span class="tag" style="color:#ffb74d;border-color:#ffb74d55;margin-left:4px">마감재</span>':''),z),'');if(r)el.dataset.rc=rcTip(n,r);
   el.dataset.dep=dep;const nd={id,el,open,dep,craft:!!r,col:BC[bi%BC.length],kids:open?r.c.map(x=>mk(x,z.sub.runs,id,dep+1,bi)):null};
   if(r)el.onclick=()=>toggle(id,el);return nd};
  const g=card('G','goal craft',bal(R.n,q,+st.own[R.n]||0,'제작',`<span class="chev">${st.closed?'▸':'▾'}</span>`),'');g.dataset.rc=rcTip(R.n,{skill:R.skill,out:1,c:R.c});
  g.onclick=()=>{st.closed=!st.closed;save();render()};
- const kids=st.closed?[]:R.c.map((c,i)=>{const k=mk(c,q,'',1,i);return k});
+ const kids=st.closed?[]:M.map((c,i)=>{const k=mk(c,q,'',1,i);return k});
  const paint=(n)=>{n.el.style.borderColor=n.col;n.el.style.boxShadow='inset 3px 0 0 '+n.col;(n.kids||[]).forEach(paint)};kids.forEach(paint);
  const all=[...root.querySelectorAll('.nd')];all.forEach(e=>{e._w=e.offsetWidth;e._h=e.offsetHeight});
  const GAP=6,VG=22,RH=Math.max(...all.map(e=>e._h)),RY=RH+VG;
@@ -72,8 +74,9 @@ function render(){const R=RECIPES[st.goal],q=st.qty;const root=$('root');
      :[{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:me?(A.open?560:480):480,easing:me?undefined:'cubic-bezier(.34,1.3,.64,1)'})}
    else{const d=e.dataset.id.startsWith(A.id+'/')?(+e.dataset.dep-A.dep-1):0;e.animate([{opacity:0,transform:'translateY(-18px) scale(.94)'},{opacity:1,transform:'none'}],{duration:420,delay:280+d*90+(moved++%12)*18,fill:'backwards',easing:'cubic-bezier(.34,1.56,.64,1)'})}})}
  root.querySelectorAll('input[data-n]').forEach(i=>{i.onclick=e=>e.stopPropagation();i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render()}});
- $('tot').innerHTML=`<span>목표 <b>${R.n}</b> ×${q}</span><span>1단계 재료 ${R.c.length}종</span><span>최저 재료비 <b>${f(tot)}</b>${miss?` · 시세 없는 재료 ${miss}종 제외`:''}</span><span>경매장 완제품 <b>${gp?f(gp):'—'}</b></span>`;
- $('cond').innerHTML=`제작 조건 · 스킬 <b>${R.skill}</b> · 도구 <b>${R.tool}</b> · 시설 <b>${R.fac}</b> · 레시피 출처 mabinogi.shimplace.com · 시세 ${PT||'—'}<br>구슬 시세 · ${Object.keys(MC.SHOPS||{}).map(t=>`<a href="#coin-${t}">${MC.SHOPS[t].name}</a> <b>${BP[t]?f(Math.round(BP[t].p))+'G':'—'}</b>`).join(' · ')} <small>(아래 정가 코인 섹션의 직접 입력값 공유 · 재료비는 경매/코인/제작 중 최저)</small>`}
+ $('tot').innerHTML=`<span>목표 <b>${R.n}</b> ×${q}</span><span>1단계 재료 ${R.c.length}종${R.fin?` + 마감재 ${(R.fin[0]||[]).length}종`:''}</span>${R.pct?`<span>공정 횟수 <input id="stepsIn" type="number" min="1" value="${S}" style="width:4em" title="기본값 = 평균 공정률(${R.pct*.75}%) 기준 ${Math.ceil(100/(R.pct*.75))}회">회 <small>(재료 ×${S}세트)</small></span>`:''}<span>최저 재료비 <b>${f(tot)}</b>${miss?` · 시세 없는 재료 ${miss}종 제외`:''}</span><span>경매장 완제품 <b>${gp?f(gp):'—'}</b></span>`;
+ $('cond').innerHTML=`제작 조건 · 스킬 <b>${R.skill}</b> · 도구 <b>${R.tool}</b> · 시설 <b>${R.fac}</b>${R.pct?` · 공정 1회당 최대 <b>${R.pct}%</b> (공정 성공 시 ${R.pct/2}~${R.pct}% · 대성공 시 최대 ${R.pct*1.5}% · 실패 시 0~${R.pct/2}% 랜덤) → 평균 약 <b>${Math.ceil(100/(R.pct*.75))}회</b>, 최소 ${Math.ceil(100/(R.pct*1.5))}회 · 매 공정 재료 1세트 소모, 재료비 ×${S} 반영<br><small>공정률 증가: 해당 스킬 파티(풀파티일수록↑), 레인캐스팅(천옷)만 적용 · 월요일·풍년가·세공은 성공률/품질만</small>`:''}${R.fin?`<br>마감 재료 · ${R.fin.map((t,i)=>`[타입${i+1}] `+t.map(x=>`${x[0]} <b>×${x[1]}</b>`).join(', ')).join(' / ')} <small>(100% 완성 후 마감 1회 · 재료비 포함)</small>`:''} · 레시피 출처 mabinogi.shimplace.com · 시세 ${PT||'—'}<br>구슬 시세 · ${Object.keys(MC.SHOPS||{}).map(t=>`<a href="#coin-${t}">${MC.SHOPS[t].name}</a> <b>${BP[t]?f(Math.round(BP[t].p))+'G':'—'}</b>`).join(' · ')} <small>(아래 정가 코인 섹션의 직접 입력값 공유 · 재료비는 경매/코인/제작 중 최저)</small>`}
+$('tot').addEventListener('change',e=>{if(e.target.id!=='stepsIn')return;const R=RECIPES[st.goal];st.steps=st.steps||{};st.steps[R.n]=Math.max(1,+e.target.value||1);save();render()});
 let busy=0;
 function toggle(id,el){if(busy)return;const root=$('root');const dep=+el.dataset.dep;
  if(st.open[id]){busy=1;const sub=[...root.querySelectorAll('.nd')].filter(e=>e.dataset.id.startsWith(id+'/'));
