@@ -35,6 +35,19 @@ for n,f in SK.items():
   if not os.path.exists(f'{D}/2x/{k}.png'): up(im).save(f'{D}/2x/{k}.png',optimize=True)
   ic[n]={"id":k,"w":im.width,"h":im.height,"src":"spkuma"};print('+',n,k)
 if 'spkuma' not in J['source']: J['source']=J['source'].replace(';',' + spkuma(마비쿠마) icons (sk* ids);',1)
+
+# Prilus 교역품 이미지(공개 CDN): mabires.pril.cc/barterimage/kr/<barter id>/<id>.png — goods[].id 가 Prilus 물교 id (데이터 출처 동일)
+for g in d['goods']:
+  n=g['name']
+  if n in ic: continue
+  k=f"pb{g['id']}";o=f'{D}/orig/{k}.png'
+  if not os.path.exists(o):
+    b=urllib.request.urlopen(urllib.request.Request(f"https://mabires.pril.cc/barterimage/kr/{g['id']}/{g['id']}.png",headers={'User-Agent':'Mozilla/5.0'})).read()
+    open(o,'wb').write(b);time.sleep(.5)
+  im=Image.open(o);assert im.format=='PNG'
+  if not os.path.exists(f'{D}/2x/{k}.png'): up(im).save(f'{D}/2x/{k}.png',optimize=True)
+  ic[n]={"id":k,"w":im.width,"h":im.height,"src":"prilus"};print('+',n,k)
+if 'prilus' not in J['source']: J['source']=J['source'].replace(';',' + Prilus barter images (pb* ids);',1)
 json.dump(J,open(f'{D}/icons.json','w'),ensure_ascii=False,indent=0)
 m=d['materials'];miss=[x for x in m if x not in ic]
 print(len(m)-len(miss),'/',len(m),'materials; missing',len(miss),miss)
