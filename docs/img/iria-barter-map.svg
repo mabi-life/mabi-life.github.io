@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" font-family="Gothic A1,Malgun Gothic,sans-serif">
+<title>이리아 교역 약도 (자체 제작 · 개략)</title>
+<rect width="640" height="420" fill="#0f1a33"/>
+<path d="M70 210 C60 140 120 70 210 55 C300 35 420 40 500 70 C580 100 610 170 590 240 C575 300 520 360 430 375 C330 392 220 385 150 350 C95 322 78 270 70 210Z" fill="#241f45" stroke="#6b62b0" stroke-width="2"/>
+<g fill-opacity=".55" stroke="none">
+<path d="M210 55 C300 35 420 40 500 70 L470 140 L240 140 Z" fill="#3a4f7a"/>
+<path d="M500 70 C580 100 610 170 590 240 L490 220 L470 140Z" fill="#4a3c6e"/>
+<path d="M70 210 C60 140 120 70 210 55 L240 140 L230 300 L150 350 C95 322 78 270 70 210Z" fill="#6e3a3a"/>
+<path d="M240 140 L470 140 L490 220 L430 300 L230 300Z" fill="#7a6a3a"/>
+<path d="M230 300 L430 300 L490 220 L590 240 C575 300 520 360 430 375 C330 392 220 385 150 350Z" fill="#2f5a3e"/>
+</g>
+<g fill="#cfc8f5" font-size="15" font-weight="700" text-anchor="middle" opacity=".8">
+<text x="350" y="100">피시스</text><text x="540" y="160">자르딘</text><text x="150" y="190">라노</text><text x="360" y="200">콘누스</text><text x="400" y="345">쿠르클레</text></g>
+<g fill="none" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 7">
+<path d="M165 255 L120 300 L95 230" stroke="#ff9a5c"/>
+<path d="M440 260 L360 230 L280 160" stroke="#5cd6ff"/></g>
+<g font-size="12" fill="#ece8ff">
+<circle cx="165" cy="255" r="7" fill="#ff9a5c"/><text x="175" y="259">① 페라</text>
+<circle cx="120" cy="300" r="7" fill="#ff9a5c"/><text x="130" y="318">② 칼리다</text>
+<circle cx="440" cy="260" r="7" fill="#5cd6ff"/><text x="450" y="264">① 카루숲</text>
+<circle cx="360" cy="230" r="7" fill="#5cd6ff"/><text x="330" y="252">② 오아시스</text>
+<circle cx="200" cy="370" r="7" fill="#f7d98b"/><text x="212" y="380">스카하</text>
+<path d="M88 222 l7 -14 l7 14z" fill="#f7d98b"/><text x="40" y="215">⚓ 셀라 항구</text>
+<path d="M273 152 l7 -14 l7 14z" fill="#f7d98b"/><text x="292" y="150">⚓ 콘누스 항구</text></g>
+<g font-size="11" fill="#a9a2d6"><rect x="440" y="14" width="190" height="52" rx="8" fill="#141029" opacity=".85"/>
+<line x1="452" y1="30" x2="480" y2="30" stroke="#ff9a5c" stroke-width="4" stroke-dasharray="8 5"/><text x="486" y="34">페라→칼리다→셀라</text>
+<line x1="452" y1="50" x2="480" y2="50" stroke="#5cd6ff" stroke-width="4" stroke-dasharray="8 5"/><text x="486" y="54">카루숲→오아시스→콘누스</text>
+<text x="10" y="410">자체 제작 개략도 · 위치는 대략적 · 지명/지리 © NEXON (마비노기)</text></g>
+</svg>
