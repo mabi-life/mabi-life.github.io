@@ -96,8 +96,10 @@ const gradeBase=n=>n>=100?600:n>=50?360:240;const mul=()=>S.set.mult[S.buff]||1;
 const unit=r=>(!r.useApi&&r.price!=null)?r.price:(r.apiPrice!=null?r.apiPrice:(r.price!=null?r.price:null));
 function count(r,B){if(!r.pts)return 0;let q=Math.floor(B/r.pts);return r.max?Math.min(q,r.max):q}
 const rgold=(r,B)=>{if(r.excl)return null;const u=unit(r);return(u==null||!r.qty||!r.pts)?null:count(r,B)*u*r.qty};
+/*체결 0(거래량 확인됨=0)인 경매가는 최고보상·조합에서 제외. 수동가격·거래량 미확인은 유지*/
+const noTrade=r=>{if(!r.useApi&&r.price!=null)return false;const m=hotMetric(r);return !!m&&!(m.v>0)};
 function best(j,B){B=jb(j);let b=null;const thr=feedHotMin??HOT_MIN;
- j.rewards.forEach(r=>{const g=rgold(r,B);if(g==null)return;const m=hotMetric(r),v=m?m.v:0,hot=v>=thr?1:0,liq=v>0?1:0,x={r,g,hot,liq};
+ j.rewards.forEach(r=>{if(noTrade(r))return;const g=rgold(r,B);if(g==null)return;const m=hotMetric(r),v=m?m.v:0,hot=v>=thr?1:0,liq=v>0?1:0,x={r,g,hot,liq};
   if(!b||x.hot>b.hot||(x.hot===b.hot&&(x.liq>b.liq||(x.liq===b.liq&&x.g>b.g))))b=x});// 최고: 🔥활발 → 거래량 있음 → 골드
  return b?{r:b.r,g:b.g}:null}
 function knap(items,B){const n=items.length,dp=[new Array(B+1).fill(0)],ch=[];
@@ -105,7 +107,7 @@ function knap(items,B){const n=items.length,dp=[new Array(B+1).fill(0)],ch=[];
   for(let b=0;b<=B;b++)for(let k=1;k<=m&&k*j.pts<=b;k++){const g=prev[b-k*j.pts]+k*v;if(g>cur[b]){cur[b]=g;c[b]=k}}dp.push(cur);ch.push(c)});
  let b=B;const bestG=dp[n][B];while(b>0&&dp[n][b-1]===bestG)b--;const used=b,pick=[];
  for(let i=n-1;i>=0;i--){const k=ch[i][b];if(k){pick.push([items[i],k]);b-=k*items[i].pts}}return{gold:bestG,used,left:B-used,pick:pick.reverse()}}
-const mixOf=(j,B)=>(B=jb(j),knap(j.rewards.filter(r=>rgold(r,B)!=null&&r.pts>0),B));
+const mixOf=(j,B)=>(B=jb(j),knap(j.rewards.filter(r=>!noTrade(r)&&rgold(r,B)!=null&&r.pts>0),B));
 const toM=t=>{if(!t)return null;const[h,m]=t.split(':').map(Number);return h*60+(m||0)};
 function erinMin(){return ((erinAbs()%1440)+1440)%1440}// 에린 1분 = 현실 1.5초 (1일=36분), 유닉스 기준 정렬(추정)
 const hm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
