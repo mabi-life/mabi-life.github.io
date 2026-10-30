@@ -3,14 +3,14 @@
 Lv = round(값 / 최대 * 10). 키는 NEXON_API_KEY 환경변수."""
 import json, os, re, sys, time, datetime, urllib.request, urllib.parse, collections
 H = os.path.dirname(os.path.abspath(__file__))
-KEY = os.environ.get('NEXON_API_KEY') or sys.exit('NEXON_API_KEY 필요')
+KEY = os.environ.get('NEXON_API_KEY_SERVICE') or os.environ.get('NEXON_API_KEY') or sys.exit('NEXON_API_KEY 필요')
 KST = datetime.timezone(datetime.timedelta(hours=9))
 NAMES = ['무리아스의 유물', '무리아스의 유물(이데아)']
 KW = ['대미지', '지속 시간', '회복량', '매초', '속성 에너지', '과열', '폭발', '캐릭터', '쿨타임', '재사용', '공격', '사거리', '범위', '최대', '치명타', '횟수', '소모', '획득', '효과', '확률', '이동']
-def get(q):
+def get(q, ep='list'):
     for a in range(4):
         try:
-            r = urllib.request.Request('https://open.api.nexon.com/mabinogi/v1/auction/list?' + q, headers={'x-nxopen-api-key': KEY})
+            r = urllib.request.Request('https://open.api.nexon.com/mabinogi/v1/auction/' + ep + '?' + q, headers={'x-nxopen-api-key': KEY})
             return json.load(urllib.request.urlopen(r, timeout=30))
         except Exception:
             time.sleep(2 * (a + 1))
@@ -71,4 +71,31 @@ out = {'updated': datetime.datetime.now(KST).isoformat(timespec='seconds'), 'lis
        'skills': [{'name': a, 'options': sorted(skills[a], key=lambda o: (o['i'], o['name']))} for a in [x for x, _ in ARC] + ['기타'] if skills.get(a)]}
 os.makedirs(f'{H}/docs/relics', exist_ok=True)
 json.dump(out, open(f'{H}/docs/relics/data.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+# 체결 이력: auction/history는 최근 ~1시간만 → 10분마다 auction_buy_id로 중복 제거하며 history.json에 누적 (30일 보관)
+hp = f'{H}/docs/relics/history.json'
+try: hist = json.load(open(hp, encoding='utf-8'))
+except Exception: hist = {}
+seen = set(hist.get('ids') or []); tr = hist.get('t') or {}
+for n in NAMES:
+    cur = None
+    for _ in range(20):
+        d = get('item_name=' + urllib.parse.quote(n) + ('&cursor=' + cur if cur else ''), 'history')
+        for x in d.get('auction_history') or []:
+            bid, p, ts = x.get('auction_buy_id'), x.get('auction_price_per_unit'), x.get('date_auction_buy')
+            if x.get('item_name') != n or not bid or bid in seen or not p or not ts: continue
+            seen.add(bid)
+            for o in x.get('item_option') or []:
+                if o.get('option_type') != '무리아스 유물': continue
+                m = RX.match(o.get('option_value') or '')
+                if not m: continue
+                sk, opt = skill_of(m.group(1))
+                lv = max(1, min(10, round(float(m.group(2)) / float(m.group(5)) * 10)))
+                tr.setdefault(f'{sk} {opt or m.group(1)}|{lv}', []).append([ts[:16], p])
+        cur = d.get('next_cursor')
+        if not cur: break
+cut = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=30)).strftime('%Y-%m-%dT%H:%M')
+tr = {k: sorted(v for v in vs if v[0] >= cut) for k, vs in tr.items()}
+tr = {k: v for k, v in tr.items() if v}
+json.dump({'updated': out['updated'], 'ids': sorted(seen)[-20000:], 't': tr}, open(hp, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+print('relics history:', sum(map(len, tr.values())), 'trades')
 print('relics:', len(rows), 'listings,', len(skills), 'skills')
