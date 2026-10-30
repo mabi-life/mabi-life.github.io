@@ -164,7 +164,7 @@ const route=()=>D.routes.find(r=>r.id===S.route)||D.routes[0];
 const selRoutes=()=>{let ids=(Array.isArray(S.routes)?S.routes:[S.route]).filter(id=>id==='pk'||id==='ko');if(!ids.length)ids=['pk','ko'];return D.routes.filter(r=>ids.includes(r.id))};
 const selGoods=()=>selRoutes().flatMap(routeGoods),selName=()=>selRoutes().length>1?'두 루트 합산':selRoutes()[0].name;
 const SECS=[['sk','스카하','']];
-function xMap(){return '<img src="../img/iria-barter-map.svg" alt="이리아 물교 지도" style="width:100%;max-width:900px;display:block;margin:8px auto 0">'}
+function xMap(){return '<img src="../img/iria-barter-map.png" alt="이리아 물교 지도" style="width:100%;max-width:900px;display:block;margin:8px auto 0">'}
 function xSk(){return D.routes.find(r=>r.id==='sk').posts.flatMap(activeGoods).map(rowHtml).join('')}
 const skProg=()=>{const g=routeGoods(D.routes.find(r=>r.id==='sk'));return g.reduce((a,x)=>a+Math.min(doneOf(x),qtyOf(x)),0)+'/'+g.reduce((a,x)=>a+qtyOf(x),0)};
 const tabLabel=r=>{const port=r.name.split('→').pop().trim();return esc(r.posts.join('→')+'→'+port.replace(/\s*항구$/,''))+` <small>⛵ ${esc(port)}</small>`};
