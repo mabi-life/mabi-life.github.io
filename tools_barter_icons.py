@@ -3,7 +3,9 @@
 import json,os,re,time,urllib.request
 from PIL import Image
 D='docs/assets/icons'
-B={"고급 실크":60013,"고급 옷감":60021,"고급 가죽끈":60029,"최고급 가죽끈":60030,"빤짝이 종이":64051,"밀가루":50022,"보릿가루":50023,"검은색 수정":64075}
+B={"고급 실크":60013,"고급 옷감":60021,"고급 가죽끈":60029,"최고급 가죽끈":60030,"빤짝이 종이":64051,"밀가루":50022,"보릿가루":50023,"검은색 수정":64075,
+ # 스카하 재료: KR 게임 id는 mrgrin.kr /api/item-library 정확 이름 일치로 확인, 아이콘은 MabiBase
+ "장식용 해산물":64073,"단단한 목재":64074,"하얀색 수정":64076,"끈적거리는 무거운 물":64077,"반짝거리는 가죽":64078,"심해어":64079,"길쭉한 수정":64080}
 ids=json.load(open('data/item_ids.json'));ids.update(B)
 json.dump(dict(sorted(ids.items())),open('data/item_ids.json','w'),ensure_ascii=False,indent=0)
 h=open('docs/barter/index.html').read()

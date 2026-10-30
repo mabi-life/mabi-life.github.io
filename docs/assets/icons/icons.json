@@ -1,5 +1,5 @@
 {
-"source": "MabiBase item icons + labanyu thumbnails (lb* ids + spkuma(마비쿠마) icons (sk* ids) + Prilus barter images (pb* ids); game client assets, ©NEXON)",
+"source": "MabiBase item icons + labanyu thumbnails (lb* ids + spkuma(마비쿠마) icons (sk* ids) + Prilus barter images (pb* ids) + Prilus barter images (pb* ids); game client assets, ©NEXON)",
 "upscale": "2x Lanczos, premultiplied alpha",
 "icons": {
 "소울 리버레이트 힐링 원드": {
@@ -1660,6 +1660,41 @@
 "w": 48,
 "h": 48,
 "src": "prilus"
+},
+"길쭉한 수정": {
+"id": 64080,
+"w": 24,
+"h": 72
+},
+"끈적거리는 무거운 물": {
+"id": 64077,
+"w": 24,
+"h": 48
+},
+"단단한 목재": {
+"id": 64074,
+"w": 24,
+"h": 72
+},
+"반짝거리는 가죽": {
+"id": 64078,
+"w": 48,
+"h": 48
+},
+"심해어": {
+"id": 64079,
+"w": 48,
+"h": 24
+},
+"장식용 해산물": {
+"id": 64073,
+"w": 48,
+"h": 48
+},
+"하얀색 수정": {
+"id": 64076,
+"w": 24,
+"h": 24
 }
 }
 }
