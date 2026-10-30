@@ -34,7 +34,7 @@ body{min-height:100vh;font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun G
 #mod h5{color:#d59bff;font-size:15px;display:flex;gap:8px}#mod h5 span{flex:1}#mod h5 button{background:none;border:0;color:var(--mu);font-size:20px;cursor:pointer}
 #mod p{font-size:12.5px;color:var(--mu);margin:6px 0}#mod p b{color:var(--gold)}#mod svg{width:100%;height:auto;display:block}
 .siteFoot{margin:28px auto 18px;padding:22px 16px 28px;max-width:1180px;text-align:center;font-size:12.5px;line-height:1.65;color:#8a90a0;position:relative;border-top:1px solid #232733}.siteFoot .gold{position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:80px;height:2px;background:linear-gradient(90deg,transparent,#f7d98b,transparent)}.siteFoot a{color:inherit;text-decoration:none}.siteFoot a:hover{text-decoration:underline}
-</style><link rel="stylesheet" href="/css/kit.css?v=9"><script src="/js/kit.js?v=9" defer></script></head>
+.lv button b.ls{opacity:.6;font-style:italic}</style><link rel="stylesheet" href="/css/kit.css?v=9"><script src="/js/kit.js?v=9" defer></script></head>
 <body><div class="wrap">
 <nav class="siteNav" aria-label="도우미 이동"><a href="/">홈</a><a href="/alba/">알바</a><a href="/barter/">물교</a><a href="/dungeon/">던전</a><a href="/bunbae/">분배</a><a href="/craft/">제작</a><span class="on" aria-current="page">유물</span></nav>
 <div class="head"><h1>유물 도우미</h1><p>무리아스의 유물 옵션 레벨별 경매장 최저가 · 매물 수</p></div>
@@ -54,6 +54,7 @@ const skIc=n=>ic(I.skills[Object.keys(I.skills).filter(k=>n.startsWith(k)).sort(
 Promise.all([fetch('data.json?t='+Date.now()).then(r=>r.json()),fetch('icons/icons.json').then(r=>r.json()).catch(()=>I),fetch('history.json?t='+Date.now()).then(r=>r.json()).catch(()=>({t:{}}))]).then(([d,i,h])=>{D=d;I=i;Hs=h.t||{};
  $('upd').textContent='갱신 '+new Date(d.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' · 매물 '+d.listings+'건';draw();});
 function val(o,l){const m=String(o.step).match(/^([\d.]+)(.*)$/);return m?'+'+(+(m[1]*l).toFixed(2))+m[2]:''}
+let L;function lk(n,l){const h=Hs[n+'|'+l];return h&&h.length?h[h.length-1]:null}
 function cnt(s){return s.options.reduce((a,o)=>a+Object.values(o.lv).reduce((b,v)=>b+v[1],0),0)}
 function draw(){
  const has=$('has').checked;
@@ -65,8 +66,8 @@ function draw(){
  const t10=s.options.map(o=>o.lv['10']),miss=s.options.length-t10.filter(Boolean).length,sum=t10.reduce((a,v)=>a+(v?v[0]:0),0);
  $('info').innerHTML=`<b>${s.name}</b> · 옵션 ${s.options.length}종 · 매물 ${cnt(s)}건 · <span class="full" title="옵션 3종 각각의 Lv10 최저가 합">풀셋(Lv10) ${sum?man(sum):'-'}${miss?` <small>(${miss}종 Lv10 매물 없음 · 부분합)</small>`:' <small>= Lv10 최저가 3종 합</small>'}</span>`;
  $('list').innerHTML=s.options.map(o=>{const t=o.lv['10'];
-  return `<div class="blk"><h4>${skIc(o.name)}<span>${o.name}</span>${t?`<b>Lv10 ${t[0].toLocaleString()} G</b>`:'<b class="no">Lv10 매물 없음</b>'}</h4><p>${o.desc}</p><div class="lv">${
-   [10,9,8,7,6,5,4,3,2,1].map(l=>{const v=o.lv[l];return `<button data-o="${o.name}" data-l="${l}" class="${l==10?'top':''}${v?'':' x'}">Lv${l}<i>${val(o,l)}</i><b>${v?man(v[0]):'-'}</b>${v?v[1]+'건':'없음'}</button>`}).join('')}</div></div>`}).join('');
+  return `<div class="blk"><h4>${skIc(o.name)}<span>${o.name}</span>${t?`<b>Lv10 ${t[0].toLocaleString()} G</b>`:(L=lk(o.name,10))?`<b class="no">매물 없음 · 최근 거래가 ${man(L[1])}</b>`:'<b class="no">Lv10 매물 없음</b>'}</h4><p>${o.desc}</p><div class="lv">${
+   [10,9,8,7,6,5,4,3,2,1].map(l=>{const v=o.lv[l];return `<button data-o="${o.name}" data-l="${l}" class="${l==10?'top':''}${v?'':' x'}">Lv${l}<i>${val(o,l)}</i>${v?`<b>${man(v[0])}</b>${v[1]}건`:(L=lk(o.name,l))?`<b class="ls">${man(L[1])}</b>최근 거래가`:`<b>-</b>없음`}</button>`}).join('')}</div></div>`}).join('');
 }
 $('chips').onclick=e=>{const b=e.target.closest('.chip');if(b){cur=localStorage.relicArc=b.dataset.s;draw()}};
 $('has').onchange=draw;
