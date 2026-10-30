@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-SJP2KJK2XP"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-SJP2KJK2XP');</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141029">
+<title>유물 도우미 — 마비노기 생활도우미</title><meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--card:rgba(255,255,255,.05);--line:rgba(247,217,139,.25);--gold:#f7d98b;--tx:#ece8ff;--mu:#a9a2d6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#0b0918 radial-gradient(circle at 50% 0%,#2b2357 0%,#141029 55%,#0b0918 100%) no-repeat fixed;color:var(--tx);padding:18px 14px}
+.wrap{max-width:640px;margin:0 auto}
+.siteNav{display:flex;align-items:center;gap:2px;margin:0 0 10px;font-size:12.5px;flex-wrap:wrap}.siteNav a,.siteNav span{color:#a9a2d4;text-decoration:none;padding:3px 10px;border-radius:999px}.siteNav a:hover{color:#ffe7a3}.siteNav .on{color:#f7d98b}
+.head{margin:10px 0 14px}.head h1{font-size:30px;font-weight:800;background:linear-gradient(90deg,#f7d98b,#fff3cf,#f7d98b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.verBadge{font-size:11px;color:var(--mu);border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:middle;font-weight:500;-webkit-text-fill-color:var(--mu)}
+.head p{margin-top:6px;color:var(--mu);font-size:14px}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px;color:var(--mu)}
+input.q{flex:1;min-width:160px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:#120e28;color:var(--tx);font:inherit;font-size:14px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px}
+.chip{white-space:nowrap;padding:6px 14px;border-radius:999px;background:#1a1530;border:1px solid #3a2f66;color:#cfc8f5;font:inherit;font-size:14px;cursor:pointer}
+.chip.on{background:linear-gradient(#f7d98b,#c9a24a);color:#1a1530;font-weight:700;border-color:#f7d98b}
+.info{font-size:13px;color:var(--mu);margin:0 0 10px}.info b{color:var(--gold)}
+.blk{background:#1a1530;border:1px solid #3a2f66;border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.blk h4{margin:0;display:flex;justify-content:space-between;gap:8px;color:#d59bff;font-size:16px}.blk h4 b{color:#f7d98b;font-size:15px;white-space:nowrap}.blk h4 b.no{color:#6f6a90;font-weight:500}
+.blk p{margin:2px 0 8px;font-size:13px;color:var(--mu)}
+.lv{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.lv div{background:#120e28;border-radius:8px;padding:6px 2px;text-align:center;font-size:12px;color:#8a85b0}
+.lv div b{display:block;color:#e8c66a;font-size:13px}.lv div.top{outline:1px solid #e8c66a}.lv div.top b{color:#f7d98b}.lv div.x{opacity:.35}
+.siteFoot{margin:28px auto 18px;padding:22px 16px 28px;max-width:1180px;text-align:center;font-size:12.5px;line-height:1.65;color:#8a90a0;position:relative;border-top:1px solid #232733}.siteFoot .gold{position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:80px;height:2px;background:linear-gradient(90deg,transparent,#f7d98b,transparent)}.siteFoot a{color:inherit;text-decoration:none}.siteFoot a:hover{text-decoration:underline}
+</style></head>
+<body><div class="wrap">
+<nav class="siteNav" aria-label="도우미 이동"><a href="/">홈</a><a href="/alba/">알바</a><a href="/barter/">물교</a><a href="/dungeon/">던전</a><a href="/bunbae/">분배</a><a href="/craft/">제작</a><span class="on" aria-current="page">유물</span></nav>
+<div class="head"><h1>유물 도우미<span class="verBadge">test</span></h1><p>무리아스의 유물 옵션 레벨별 경매장 최저가 · 매물 수</p></div>
+<div class="bar"><input class="q" id="q" placeholder="스킬 검색 (예: 윈드밀)"><label><input type="checkbox" id="has" checked> 매물 있는 것만</label></div>
+<div class="chips" id="chips"></div>
+<p class="info" id="info"></p>
+<div id="list"></div>
+</div>
+<footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br><span id="upd"></span><br>Lv = 옵션 수치 ÷ 최대치 × 10 (반올림) · 무리아스의 유물 + (이데아) 합산<br>마비노기 공식 서비스와 관련 없는 비공식 팬 도구입니다.<br><a href="/privacy/">개인정보처리방침</a></footer>
+<script>
+const $=id=>document.getElementById(id);
+const man=p=>p>=1e8?(p/1e8).toFixed(p%1e8?1:0).replace(/\.0$/,'')+'억':p>=1e4?(+(p/1e4).toFixed(p>=1e5?0:1))+'만':p.toLocaleString();
+let D,cur=localStorage.relicSkill||'';
+fetch('data.json?t='+Date.now()).then(r=>r.json()).then(d=>{D=d;
+ $('upd').textContent='갱신 '+new Date(d.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' · 매물 '+d.listings+'건';draw();});
+function cnt(s){return s.options.reduce((a,o)=>a+Object.values(o.lv).reduce((b,v)=>b+v[1],0),0)}
+function draw(){
+ const q=$('q').value.trim(),has=$('has').checked;
+ const sk=D.skills.filter(s=>(!q||s.name.includes(q)||s.options.some(o=>o.name.includes(q)))&&(!has||cnt(s)));
+ if(!sk.find(s=>s.name===cur))cur=sk[0]?.name||'';
+ $('chips').innerHTML=sk.map(s=>`<button class="chip${s.name===cur?' on':''}" data-s="${s.name}">${s.name}</button>`).join('');
+ const s=sk.find(s=>s.name===cur);
+ if(!s){$('info').textContent='검색 결과가 없습니다.';$('list').innerHTML='';return}
+ $('info').innerHTML=`<b>${s.name}</b> · 옵션 ${s.options.length} · 매물 ${cnt(s)}건`;
+ $('list').innerHTML=s.options.map(o=>{const t=o.lv['10'];
+  return `<div class="blk"><h4>${o.name}${t?`<b>Lv10 ${t[0].toLocaleString()} G</b>`:'<b class="no">Lv10 매물 없음</b>'}</h4><p>${o.desc}</p><div class="lv">${
+   [10,9,8,7,6,5,4,3,2,1].map(l=>{const v=o.lv[l];return `<div class="${l==10?'top':''}${v?'':' x'}">Lv${l}<b>${v?man(v[0]):'-'}</b>${v?v[1]+'건':'없음'}</div>`}).join('')}</div></div>`}).join('');
+}
+$('chips').onclick=e=>{const b=e.target.closest('.chip');if(b){cur=localStorage.relicSkill=b.dataset.s;draw()}};
+$('q').oninput=draw;$('has').onchange=draw;
+</script>
+</body></html>
