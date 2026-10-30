@@ -62,10 +62,11 @@ html{background:#0b0918}.xs{margin-bottom:10px;border-radius:14px;background:rgb
 .flip{position:relative;margin:0 12px 30px 0;cursor:pointer;user-select:none;display:flex;min-width:0}
 .flip::before{content:"";position:absolute;inset:0;transform:translate(12px,12px);background:#1c1830;border:1px solid #4a3b6b;border-radius:16px;box-shadow:0 8px 20px #0008;z-index:0}
 .flip.on::before{background:#141c28;border-color:#2f4f6e}
-.flip .peek{position:absolute;right:-14px;bottom:-26px;font-size:12px;color:#d3bfff;background:#3b2d5a;padding:2px 10px;border-radius:0 0 10px 10px;z-index:2}
+.flip{cursor:default}.flip .face{cursor:pointer}.flip .face:hover{border-color:#7a66b0}.flip .peek{cursor:pointer;border:0;font:inherit;font-size:12px;position:absolute;right:-14px;bottom:-26px;font-size:12px;color:#d3bfff;background:#3b2d5a;padding:2px 10px;border-radius:0 0 10px 10px;z-index:2}
 .flip.on .peek{color:#9fd2ff;background:#24405a}
 .flip .face{position:relative;z-index:1;flex:1;min-width:0;min-height:340px;padding:16px 18px;transform:none;background:#1b1734;box-shadow:0 6px 18px #000a;animation:fl .35s ease}
 .flip.on .face{border-color:#4a3b6b}@keyframes fl{from{opacity:.35}to{opacity:1}}
+.epaste{margin-top:10px}.dbk{position:fixed;inset:0;background:#000a;z-index:20}.dbox{position:fixed;z-index:21;left:50%;top:50%;transform:translate(-50%,-50%);width:min(1100px,94vw);max-height:88vh;overflow:auto;background:#1d1838;border:1px solid rgba(247,217,139,.4);border-radius:14px;padding:16px 18px;box-shadow:0 10px 40px #000c}.dhd{display:flex;justify-content:space-between;align-items:center;gap:10px}.dbox .rt td{vertical-align:top}.dbox h2 .rtag{font-size:11px;padding:2px 8px;border-radius:10px;background:#3b2d5a;color:#d3bfff;margin-left:6px}
 .flip .hint{position:absolute;right:14px;top:12px;font-size:11px;color:#8f88bb}
 .flip h2 .rtag{font-size:11px;padding:2px 8px;border-radius:10px;background:#24405a;color:#9fd2ff;margin-left:6px;font-weight:700}.flip.on h2 .rtag{background:#3b2d5a;color:#d3bfff}
 .esum{display:flex;gap:16px;margin-top:10px;color:#a9a2d6;font-size:13px;flex-wrap:wrap}.esum b{color:#fff}
@@ -116,7 +117,7 @@ function def(){const p={};const sp=SNAP&&SNAP.prices||{};for(const m of D.materi
 function migrate(o){const d=def();if(!o||!Array.isArray(o.chars))return d;o=Object.assign(d,o);for(const c of o.chars){c.done=c.done||{};c.owned=c.owned||{}}o.active6=Object.assign(d.active6,o.active6);if(!Array.isArray(o.routes)||!o.routes.length)o.routes=[o.route==='ko'?'ko':'pk'];o.v=2;if(o.cur>=o.chars.length)o.cur=0;return o}
 let S;try{S=JSON.parse(localStorage.getItem(LS))}catch(e){}S=migrate(S);
 if(SNAP&&SNAP.t&&S.snapT!==SNAP.t){for(const[m,v]of Object.entries(SNAP.prices))if(!S.prices[m]||S.prices[m].src!=='manual')S.prices[m]={p:v,src:'snap'};S.snapT=SNAP.t}
-let open=null,layer=null;const hist=[];
+let open=null,layer=null,dOpen=null;const hist=[];
 function save(){localStorage.setItem(LS,JSON.stringify(S))}
 function mut(f,msg){hist.push(JSON.stringify(S));if(hist.length>100)hist.shift();f();save();render();if(msg)toast(msg)}
 function undo(){if(!hist.length)return toast('되돌릴 내용 없음');S=JSON.parse(hist.pop());save();render();toast('되돌렸습니다')}
@@ -161,7 +162,7 @@ const UIK='mabiBarter.ui';let UI={};try{UI=JSON.parse(localStorage.getItem(UIK))
 const route=()=>D.routes.find(r=>r.id===S.route)||D.routes[0];
 const selRoutes=()=>{let ids=(Array.isArray(S.routes)?S.routes:[S.route]).filter(id=>id==='pk'||id==='ko');if(!ids.length)ids=['pk','ko'];return D.routes.filter(r=>ids.includes(r.id))};
 const selGoods=()=>selRoutes().flatMap(routeGoods),selName=()=>selRoutes().length>1?'두 루트 합산':selRoutes()[0].name;
-const SECS=[['goods','📦 교역품 상세표','판매가·손익·6티어 시즌'],['sk','스카하','']];
+const SECS=[['sk','스카하','']];
 function xMap(){return '<img src="../img/iria-barter-map.svg" alt="이리아 교역 경로 약도" style="width:100%;max-width:640px;display:block;margin:8px auto 0">'}
 function xSk(){return D.routes.find(r=>r.id==='sk').posts.flatMap(activeGoods).map(rowHtml).join('')}
 const skProg=()=>{const g=routeGoods(D.routes.find(r=>r.id==='sk'));return g.reduce((a,x)=>a+Math.min(doneOf(x),qtyOf(x)),0)+'/'+g.reduce((a,x)=>a+qtyOf(x),0)};
@@ -181,7 +182,7 @@ function xGoods(){const c=C(),r=route();let h=`<div style="display:flex;gap:12px
  h+=`<div class="tot" style="margin-top:8px">🧾 ${r.name} 총계: 재료비 <span class="neg">${gk(RT.cost)} G</span> · 매출 <span class="pos">${gk(RT.rev)} G</span> · 순이익 <span class="${RT.rev-RT.cost>=0?'pos':'neg'}">${gk(RT.rev-RT.cost)} G</span> · ${esc(c.name)} 진행 ${RT.doneCnt}/${RT.cnt}${RT.unk?' <span class="warn">(가격 모르는 재료 있음)</span>':''} <span class="mut" style="font-weight:400;font-size:12px">· 판매가의 두카트는 ⚙ 두카트→골드 환산값 사용</span></div>`;
  h+=`<div class="mut" style="margin-top:4px;font-size:12px">진행 요약 (전체 경로): ${S.chars.map(ch=>{let a=0,b=0;for(const g of D.routes.flatMap(x=>x.posts).flatMap(activeGoods)){b+=qtyOf(g);a+=Math.min(ch.done[g.id]||0,qtyOf(g))}return esc(ch.name)+' '+a+'/'+b}).join(' · ')}</div>`;return h}
 function faceHtml(r,ru,n,pl){const port=r.name.split('→').pop().trim().replace(/\s*항구$/,''),rt=esc(r.posts.join(' → ')+' → '+port);
- let h=`<span class="hint">클릭 ⇄ ${n===1?2:1}회차</span><h2>${rt}<span class="rtag">${n}회차</span></h2>`;
+ let h=`<span class="hint">클릭 → 상세표</span><h2>${rt}<span class="rtag">${n}회차</span></h2>`;
  if(!ru)return h+`<div class="pos" style="margin-top:20px">${n}회차 남은 교환 없음 🎉</div>`;
  let cost=0,rv=0,unk=0,sale=false;for(const x of ru.L){const u=unitCost(x.g);cost+=u.s*x.q;unk+=u.u;rv+=rev(x.g,x.q);if(hasSale(x.g))sale=true}
  const rows=byPost(ru.L).map(x=>`<tr><td><span class="t t${x.g.tier||0}">T${x.g.tier||'—'}</span></td><td>${x.g.post}</td><td>${x.g.name}${x.g.mats.some(([m,k])=>(C().owned[m]||0)<k*x.q)?' <span class="neg" title="재료 부족">❗</span>':''}</td><td class="r">${x.q}</td><td class="r mut">${x.q*x.g.weight}</td><td class="r mut">${Math.ceil(x.q/x.g.perSlot)}</td></tr>`).join('');
@@ -189,7 +190,17 @@ function faceHtml(r,ru,n,pl){const port=r.name.split('→').pop().trim().replace
  <div class="esum"><span>무게 <b class="${ru.w>pl.W?'neg':''}">${fmt(ru.w)} / ${fmt(pl.W)}</b></span><span>슬롯 <b class="${ru.s>pl.SL?'neg':''}">${ru.s} / ${pl.SL}</b></span><span>재료비 <b class="neg">${gk(cost)}</b>${unk?'<span class="warn">+?</span>':''}</span><span>예상 ${sale?`<b class="${rv-cost>=0?'pos':'neg'}">${rv-cost>=0?'+':''}${gk(rv-cost)}G</b>`:'<span class="mut">판매가 미입력</span>'}</span></div>
  ${pl.runs.length>2&&n===2?'<div class="footnote warn">⚠ 2회차 안에 다 못 실음 (추가 '+(pl.runs.length-2)+'회차)</div>':''}`}
 function cardHtml(r){const pl=plan(r),on=!!UI['flip_'+r.id],n=on?2:1;
- return `<div class="flip ${on?'on':''}" data-a="flip" data-r="${r.id}"><div class="card face">${faceHtml(r,pl.runs[n-1],n,pl)}</div><span class="peek">${on?1:2}회차 ▸</span></div>`}
+ return `<div class="flip ${on?'on':''}" data-r="${r.id}"><div class="card face" data-a="detail" data-r="${r.id}" role="button" tabindex="0" title="클릭하면 상세표 팝업">${faceHtml(r,pl.runs[n-1],n,pl)}</div><button type="button" class="peek" data-a="flip" data-r="${r.id}" aria-label="${on?1:2}회차로 전환" title="${on?1:2}회차로 전환">${on?1:2}회차 ⇄</button></div>`}
+function detailHtml(r){const pl=plan(r),n=UI['flip_'+r.id]?2:1,ru=pl.runs[n-1],c=C();
+ let h=`<div class="dhd"><h2>${esc(r.name)} <span class="rtag">${n}회차</span></h2><button class="ghost" data-a="dclose" aria-label="닫기">✕</button></div>`;
+ if(!ru)return h+`<div class="pos">${n}회차 남은 교환 없음 🎉</div>`;
+ let tc=0,unk=0;const rows=byPost(ru.L).map(x=>{const g=x.g,u=unitCost(g);tc+=u.s*x.q;unk+=u.u;
+  const mats=g.mats.map(([m,k])=>{const nd=k*x.q,o=c.owned[m]||0,p=price(m);return `<div${o<nd?' class="neg"':''}>${esc(m)} ×${k} → ${fmt(nd)}${p!=null?` <span class="mut">@${fmt(p)}</span>`:''}${o<nd?` <span class="mut">(보유 ${fmt(o)})</span>`:''}</div>`}).join('');
+  return `<tr><td><span class="t t${g.tier||0}">T${g.tier||'—'}</span></td><td>${g.post}</td><td>${esc(g.name)}</td><td class="r">${qtyOf(g)}</td><td class="r">${x.q}</td><td class="r mut">${g.weight}/${g.perSlot}</td><td class="r mut">${x.q*g.weight}</td><td class="r mut">${Math.ceil(x.q/g.perSlot)}</td><td style="font-size:12px">${mats}</td><td class="r neg">${gk(u.s*x.q)}${u.u?'<span class="warn">+?</span>':''}<div class="mut" style="font-size:11px">개당 ${gk(u.s)}</div></td></tr>`}).join('');
+ return h+`<div style="overflow-x:auto"><table class="rt"><tr><th>티어</th><th>교역소</th><th>품목</th><th class="r">제한</th><th class="r">수량</th><th class="r">무게/슬롯당</th><th class="r">무게</th><th class="r">슬롯</th><th>재료 (개당 → 필요)</th><th class="r">재료비</th></tr>${rows}</table></div>
+ <div class="esum"><span>무게 <b class="${ru.w>pl.W?'neg':''}">${fmt(ru.w)} / ${fmt(pl.W)}</b></span><span>슬롯 <b>${ru.s} / ${pl.SL}</b></span><span>재료비 <b class="neg">${gk(tc)}</b>${unk?'<span class="warn">+?</span>':''}</span></div>`}
+function renderDetail(){let el=$('#dmodal');if(!el){el=document.createElement('div');el.id='dmodal';document.body.appendChild(el)}
+ const r=dOpen&&D.routes.find(x=>x.id===dOpen);el.innerHTML=r?`<div class="dbk" data-a="dclose"></div><div class="dbox" role="dialog" aria-modal="true">${detailHtml(r)}</div>`:''}
 function xMats(){const c=C(),nd=need([...routeGoods(D.routes[0]),...routeGoods(D.routes[1])],true),ms=Object.keys(nd).filter(m=>nd[m]>0).sort((x,y)=>Math.max(0,nd[y]-(c.owned[y]||0))-Math.max(0,nd[x]-(c.owned[x]||0))||x.localeCompare(y,'ko'));let tc=0,unk=0;
  const rows=ms.map(m=>{const n=nd[m],o=c.owned[m]||0,sh=Math.max(0,n-o),p=price(m);if(sh){if(p==null)unk++;else tc+=sh*p}
   return `<div class="er"><span class="nm" title="${esc(m)}">${m}</span><span class="r">${fmt(n)}</span><span style="white-space:nowrap"><button class="sm" data-a="om" data-m="${m}">−</button> <input class="n" style="width:64px" data-a="own" data-m="${m}" value="${o}"> <button class="sm" data-a="op" data-m="${m}">＋</button></span><span class="r ${sh?'short':'pos'}">${sh?fmt(sh):'✓'}</span></div>`});
@@ -197,7 +208,7 @@ function xMats(){const c=C(),nd=need([...routeGoods(D.routes[0]),...routeGoods(D
  return `<div class="emat" id="x-mats"><h3>🎒 재료 체크</h3><div class="cap">${esc(c.name)} · 두 루트 남은 교환</div>
  ${ms.length?`<div class="egrid"><div>${hd}${rows.slice(0,half).join('')}</div><div>${hd}${rows.slice(half).join('')}</div></div>`:'<div class="pos">남은 교환 없음 🎉</div>'}
  <div class="tot" style="margin-top:8px">부족분 구매비 <span class="neg">${gk(tc)} G</span>${unk?` <span class="warn">+가격 모름 ${unk}종</span>`:''}</div>
- <details ${UI.paste?'open':''}><summary data-a="pasteT">일괄 붙여넣기 (선택)</summary><div style="display:flex;gap:6px;margin-top:6px;align-items:stretch;max-width:620px"><textarea id="paste2" rows="3" style="flex:1;min-width:0" placeholder="금판 50&#10;동판 30"></textarea><div style="display:flex;flex-direction:column;gap:4px"><button class="sm" data-a="pasteSet" data-src="paste2">덮어쓰기</button><button class="sm" data-a="pasteAdd" data-src="paste2">더하기</button></div></div></details></div>`}
+ </div><div class="emat epaste"><details ${UI.paste?'open':''}><summary data-a="pasteT">일괄 붙여넣기 (선택)</summary><div style="display:flex;gap:6px;margin-top:6px;align-items:stretch;max-width:620px"><textarea id="paste2" rows="3" style="flex:1;min-width:0" placeholder="금판 50&#10;동판 30"></textarea><div style="display:flex;flex-direction:column;gap:4px"><button class="sm" data-a="pasteSet" data-src="paste2">덮어쓰기</button><button class="sm" data-a="pasteAdd" data-src="paste2">더하기</button></div></div></details></div>`}
 function renderDash(){const pv=$('#paste2')?$('#paste2').value:'';const c=C(),pl=plan(D.routes[0]);
  const all=[...routeGoods(D.routes[0]),...routeGoods(D.routes[1])];
  let dn=0,tot=0,buy=0,unk=0,rv=0,cost=0,anySale=false;
@@ -205,13 +216,13 @@ function renderDash(){const pv=$('#paste2')?$('#paste2').value:'';const c=C(),pl
  const nd=need(all,true);for(const[m,n]of Object.entries(nd)){const sh=Math.max(0,n-(c.owned[m]||0));if(sh){const p=price(m);if(p==null)unk++;else buy+=sh*p}}
  $('#week').innerHTML=`<span class="mut">주간</span><span>진행 <b>${dn}/${tot}</b></span><span>부족 구매비 <b class="neg">${gk(buy)}</b>${unk?'<span class="warn">+?</span>':''}</span><span>예상 수익 ${anySale?`<b class="${rv-cost>=0?'pos':'neg'}">${rv-cost>=0?'+':''}${gk(rv-cost)}</b>`:'<span class="mut">판매가 미입력</span>'}</span><span>운송 <b>${fmt(pl.W)} / ${pl.SL}</b> <span class="mut">${esc(CARRIERS[S.carrier]?.n||'')}</span></span>`;
  $('#dash').className='';$('#dash').innerHTML=`<div class="ecards">${D.routes.filter(x=>x.id!=='sk').map(cardHtml).join('')}</div>`+xMats();if($('#paste2'))$('#paste2').value=pv}
-function renderX(){const f={goods:xGoods,sk:xSk};
+function renderX(){const f={sk:xSk};
  $('#xtra').innerHTML=SECS.map(([k,n,d])=>`<div class="xs" id="x-${k}"><h3 data-a="sec" data-s="${k}">${UI[k]?'▾':'▸'} ${n} <span class="mut">${k==='sk'?skProg():d}</span></h3>${UI[k]?`<div class="xb">${f[k]()}</div>`:''}</div>`).join('')}
 function render(){checkReset();const c=C();
  $('#chars').innerHTML=S.chars.map((x,i)=>`<button class="${i===S.cur?'on':''}" data-a="char" data-i="${i}" title="우클릭/더블클릭: 이름 변경">${esc(x.name)}${S.chars.length>1?`<i class="cx" data-a="delChar" data-i="${i}" title="삭제">✕</i>`:''}</button>`).join('');
  $('#reset').textContent='초기화 '+new Date(Date.parse(S.week)+7*864e5).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit'})+' KST';
  renderDash();
- renderX();renderLayer()}
+ renderX();renderLayer();renderDetail()}
 // ---- 팝오버/모달
 function renderLayer(){const el=$('#layer');if(!layer){el.innerHTML='';return}let h='';const c=C();
  if(layer.t==='settings'){h=`<div class="pop" style="top:54px;right:24px;width:360px"><label>API 키 <input id="apikey" type="password" style="width:200px" value="${esc(localStorage.getItem(KEYLS)||'')}" placeholder="선택 · 공유 시세 실패 시에만 사용"></label>
@@ -239,7 +250,9 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
  if(a==='pick6'){const r=b.getBoundingClientRect();setLayer({t:'pick6',p:b.dataset.p,x:r.left,y:r.bottom+4})}
  if(a==='set6'){const g=G[b.dataset.g];layer=null;mut(()=>S.active6[g.post]=g.id,`${g.post} 6티어: ${g.name}`)}
 
- if(a==='flip'){if(e.target.closest('button,input'))return;const k='flip_'+b.dataset.r;UI[k]=!UI[k];try{localStorage.setItem(UIK,JSON.stringify(UI))}catch(x){}const r=D.routes.find(x=>x.id===b.dataset.r);b.outerHTML=cardHtml(r);return}
+ if(a==='detail'){dOpen=b.dataset.r;renderDetail();return}
+ if(a==='dclose'){dOpen=null;renderDetail();return}
+ if(a==='flip'){e.stopPropagation();const k='flip_'+b.dataset.r;UI[k]=!UI[k];try{localStorage.setItem(UIK,JSON.stringify(UI))}catch(x){}const r=D.routes.find(x=>x.id===b.dataset.r);b.closest('.flip').outerHTML=cardHtml(r);return}
  if(a==='pasteT'){UI.paste=!UI.paste;try{localStorage.setItem(UIK,JSON.stringify(UI))}catch(x){}return}
  if(a==='sec'){const k=b.dataset.s;UI[k]=!UI[k];try{localStorage.setItem(UIK,JSON.stringify(UI))}catch(x){}renderX();return}
  if(a==='rtab'){const id=b.dataset.r,cur=selRoutes().map(x=>x.id);if(cur.includes(id)&&cur.length<2)return toast('최소 한 루트는 켜져 있어야 합니다');mut(()=>{S.routes=cur.includes(id)?cur.filter(x=>x!==id):[...cur,id];S.route=S.routes[0]});return}
@@ -265,7 +278,7 @@ document.addEventListener('change',e=>{const t=e.target,a=t.dataset.a,c=C(),v=t.
  if(a==='own')mut(()=>c.owned[t.dataset.m]=Math.max(0,+v||0));
  if(a==='price')mut(()=>{if(v==='')delete S.prices[t.dataset.m];else S.prices[t.dataset.m]={p:+v,src:'manual'}});
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape')setLayer(null);if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();undo()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(dOpen){dOpen=null;renderDetail()}else setLayer(null)}if(e.key==='Enter'&&document.activeElement?.dataset?.a==='detail'){dOpen=document.activeElement.dataset.r;renderDetail()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();undo()}});
 $('#undoBtn').onclick=undo;
 function renChar(i){const x=S.chars[i];if(!x)return;const n=(prompt('캐릭터 이름 변경',x.name)||'').trim();if(n&&n!==x.name)mut(()=>S.chars[i].name=n,'이름 변경됨')}
 function delChar(i){const x=S.chars[i];if(!x)return;if(S.chars.length<2)return toast('마지막 캐릭터는 삭제할 수 없습니다');if(confirm(`'${x.name}' 캐릭터를 삭제할까요? (Ctrl+Z로 되돌리기 가능)`))mut(()=>{S.chars.splice(i,1);if(S.cur>i||S.cur>=S.chars.length)S.cur=Math.max(0,S.cur-1)},`'${x.name}' 삭제됨 (Ctrl+Z로 되돌리기)`)}
