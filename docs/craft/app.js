@@ -20,10 +20,10 @@ function tip(c,z,kind,q){const [n,,r,fz,ps,S]=c;const own=+st.own[n]||0;const L=
  if(ps)L.push(`공정 1회당 <b>×${f(ps)}</b> · <b>${S}회 공정</b>${q>1?` · ${q}개`:''} 기준 = <b>${f(z.all)}</b>`);
  else if(fz)L.push(`마감 1회분 <b>×${f(z.all/(q||1))}</b>${q>1?` × ${q}개`:''} (공정 횟수 무관)`);
  L.push(`필요 <b>${f(z.all)}</b> · 보유 ${f(own)} · 부족 <b>${f(z.need)}</b>`);
- L.push(`현재 경매가 ${z.p?`<b>${f(z.p)}G</b>/개${z.need?` → ${f(z.p*z.need)}G`:''}`:'<span style="opacity:.6">시세 없음</span>'}`);
- if(z.cn)L.push(`구슬 ${z.cn.shop} ${z.cn.cost}개/개${z.cn.g!=null?` ≈ ${f(Math.round(z.cn.g))}G${z.need?` → ${f(Math.round(z.cg))}G`:''}`:''}`);
+ L.push(`현재 경매가 ${z.p?`개당 <b>${f(z.p)}G</b>${z.need?` · ${f(z.need)}개 합계 ${f(z.p*z.need)}G`:''}`:'<span style="opacity:.6">시세 없음</span>'}`);
+ if(z.cn)L.push(`구슬 ${z.cn.shop} 개당 ${z.cn.cost}개${z.cn.g!=null?` ≈ ${f(Math.round(z.cn.g))}G${z.need?` · ${f(z.need)}개 합계 ${f(Math.round(z.cg))}G`:''}`:''}`);
  if(z.sub)L.push(`직접 제작 ${z.sub.runs}회 ${z.sub.miss?`(하위 시세 ${z.sub.miss}종 없음)`:`≈ <b>${f(Math.round(z.sub.tot))}G</b>`}`);
- if(z.need&&z.via)L.push(`최저: <b style="color:#e8c66a">${z.via}</b> ${f(Math.round(z.best))}G`);
+ if(z.need&&z.via)L.push(`최저: <b style="color:#e8c66a">${z.via}</b> · 개당 <b>${f(Math.round(z.best/z.need))}G</b> · 필요분(${f(z.need)}개) 합계 <b>${f(Math.round(z.best))}G</b>`);
  if(r)L.push('<hr style="border:0;border-top:1px solid #fff2;margin:4px 0">'+rcTip(n,r)+'<br><small>클릭: 펼치기/접기</small>');
  return L.join('<br>')}
 (()=>{const t=document.createElement('div');t.id='rcTip';t.style.cssText='position:fixed;z-index:9999;display:none;pointer-events:none;max-width:320px;background:#1b1f2a;color:#e8e8e8;border:1px solid #e8c66a66;border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.55;box-shadow:0 6px 20px #0008';document.body.appendChild(t);
