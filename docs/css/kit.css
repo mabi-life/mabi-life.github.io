@@ -1,0 +1,13 @@
+/* 도우미 키트 package v1 — visual layer only */
+html body{background:#14161b!important}
+nav.siteNav{flex-wrap:wrap!important;border:1px dashed #4a4f5e!important;border-radius:10px!important;padding:7px 10px!important;background:#1a1d23!important;gap:6px!important;margin-bottom:14px!important}
+nav.siteNav:before{content:"🎒 마비라이프 도우미 키트";font-weight:700;color:#e6e8ee;margin-right:10px;font-size:13px;white-space:nowrap}
+body.kit-narrow nav.siteNav:before{content:"🎒 키트"}
+nav.siteNav a,nav.siteNav span{border:1px solid #333846!important;border-top:3px solid var(--c,#555)!important;border-radius:6px!important;font-size:12.5px!important;padding:4px 9px!important;white-space:nowrap;background:transparent!important}
+nav.siteNav .on{background:#262a33!important;color:#fff!important}
+.kitHd{position:relative;display:flex;align-items:center;gap:12px;background:#1d2027;border:1px solid #333846;border-radius:12px;padding:12px 18px 12px 22px;margin:0 0 14px;text-align:left}
+.kitHd:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--kit,#f7d98b);border-radius:12px 0 0 12px}
+.kitHd .ki{font-size:24px}.kitHd b{font-size:18px;color:#e6e8ee}.kitHd .kp{font-size:12px;color:#8a90a0;margin-top:2px}
+.kitHd .kn{margin-left:auto;flex:none;font-size:10px;color:var(--kit);border:1px solid var(--kit);border-radius:4px;padding:0 6px}
+body.kit-hd .head:not(.coinHead),body.kit-hd .wrap>.hd{display:none!important}
+.card,.list,.blk,.totals{box-shadow:inset 4px 0 0 var(--kit,#f7d98b)!important;border-color:#333846!important;background:#1d2027!important;border-radius:12px!important}
