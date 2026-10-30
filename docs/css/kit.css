@@ -12,3 +12,9 @@ nav.siteNav .on{background:#262a33!important;color:#fff!important}
 .kitHd .kn{margin-left:auto;flex:none;font-size:10px;color:var(--kit);border:1px solid var(--kit);border-radius:4px;padding:0 6px}
 body.kit-hd .head:not(.coinHead),body.kit-hd .wrap>.hd{display:none!important}
 .card,.list,.blk,.totals{box-shadow:inset 4px 0 0 var(--kit,#f7d98b)!important;border-color:#333846!important;background:#1d2027!important;border-radius:12px!important}
+
+/* unified top bar: same position/width on every page */
+html body.kit-bar{margin-top:0!important;padding-top:0!important}
+body.kit-bar>.wrap,body.kit-bar>.page,body.kit-bar>main{padding-top:0!important;margin-top:0!important}
+.kitBar{position:sticky;top:0;z-index:1000;padding:10px 16px 0;margin:0 0 14px;background:linear-gradient(#14161b 70%,rgba(20,22,27,0))}
+.kitBar>nav.siteNav{position:static!important;max-width:1240px;margin:0 auto!important;box-sizing:border-box}

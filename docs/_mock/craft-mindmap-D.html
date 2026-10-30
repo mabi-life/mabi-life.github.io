@@ -1,0 +1,54 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>아이템 수량 계산기 – mock D</title>
+<!-- PREFS (사용자 확정): 클릭 한 번으로 펼치기/접기 토글(별도 ▶/◀ 버튼 없음), B 스타일 둥근 말풍선 카드,
+     「제작 재료로 나누기」 버튼 없음, 샘플 목표 = 소울 리버레이트 힐링원드.
+     DATA: 아이템명·경매장 최저가는 Nexon Open API(auction/keyword-search, 2026-10-29 조회) 실값.
+     Nexon Open API에는 제작 레시피 엔드포인트가 없어 재료 구성·수량은 임시(placeholder) — 실제 레시피 확인 후 교체 필요. -->
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0f1626;color:#d8dbe2;font:14px/1.5 "Pretendard","Noto Sans KR",sans-serif}
+.siteNav{display:flex;align-items:center;gap:22px;padding:14px 32px;background:#0b1120;border-bottom:1px solid #262a33}
+.logo{color:#e3b95a;font-weight:800;margin-right:18px}.siteNav a{color:#9aa1ae;text-decoration:none}.siteNav a.on{color:#e3b95a;border-bottom:2px solid #e3b95a;padding-bottom:4px}
+main{max-width:1240px;margin:0 auto;padding:24px 32px}h1{font-size:20px;margin:0 0 4px;color:#f0f1f4}.sub{color:#7d8492;margin-bottom:16px}
+.totals{display:flex;gap:28px;align-items:center;padding:10px 18px;background:#141d30;border:1px solid #2a2e38;border-radius:16px;font-size:13px;margin-bottom:26px}.totals b{color:#e3b95a}
+.wrap{position:relative}svg{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.branch{display:flex;align-items:center;gap:56px}.kids{display:flex;flex-direction:column;gap:14px}.kids.hide{display:none}
+.node{background:linear-gradient(160deg,#1a2540,#141d32);border:2px solid #2c3a5a;border-radius:22px;padding:11px 16px;min-width:200px;position:relative;box-shadow:0 4px 14px #0005}
+.node.goal{border-color:#e3b95a;box-shadow:0 0 0 1px #e3b95a33,0 6px 20px #0006;min-width:250px}
+.node.craft{cursor:pointer}.node.craft:hover{border-color:#e3b95a99}
+.node .chev{position:absolute;top:8px;right:12px;color:#e3b95a88;font-size:11px}
+.name{font-weight:700;color:#f0f1f4;padding-right:14px}.meta{font-size:12px;color:#8a92a3}.meta b{color:#e3b95a}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:10px;margin-left:6px}.buy{background:#2b3f66;color:#9cc0ff}.gather{background:#2d4a33;color:#9fe0a8}
+.hint{font-size:11px;color:#6f7a90;margin-top:4px}
+</style></head><body>
+<nav class="siteNav"><span class="logo">mabi-life</span><a href="#">시세</a><a href="#">알바</a><a href="#">교역</a><a class="on" href="#">제작</a><a href="#">던전</a></nav>
+<main><h1>아이템 수량 계산기</h1><div class="sub">목표 아이템을 왼쪽에, 재료가 오른쪽으로 뻗어 나갑니다. 카드를 클릭해서 펼치기·접기.</div>
+<div class="totals" id="tot"></div>
+<div class="wrap" id="wrap"><svg id="svg"></svg><div id="root"></div></div></main>
+<script>
+const T={n:"소울 리버레이트 힐링 원드",q:1,p:1050000000,goal:1,c:[
+ {n:"힐링 원드",q:1,c:[{n:"고급 가죽",q:5,p:19000,t:"buy"},{n:"최고급 실크",q:3,p:6500,t:"buy"},{n:"마나 허브",q:20,p:298,t:"gather"}]},
+ {n:"리버레이트 코어 (임시)",q:2,c:[{n:"마나 허브",q:10,p:298,t:"gather"},{n:"최고급 실크",q:2,p:6500,t:"buy"}]},
+ {n:"고급 가죽",q:4,p:19000,t:"buy"}]};
+const f=x=>x.toLocaleString('ko-KR');
+function cost(n,m){return n.c?n.c.reduce((s,k)=>s+cost(k,m*k.q),0):m*(n.p||0)}
+function leaves(n,m,a){n.c?n.c.forEach(k=>leaves(k,m*k.q,a)):(a[n.n]=(a[n.n]||0)+m);return a}
+function build(n,m){const b=document.createElement('div');b.className='branch';const d=document.createElement('div');
+ d.className='node'+(n.goal?' goal':'')+(n.c?' craft':'');
+ const tag=n.t?`<span class="tag ${n.t}">${n.t=='buy'?'구매':'채집'}</span>`:'';
+ d.innerHTML=(n.c?'<span class="chev">‹›</span>':'')+`<div class="name">${n.n}${tag}</div><div class="meta">×${m}`+
+ (n.c?` · 재료비 <b>${f(cost(n,m))}</b>`:` · 개당 ${f(n.p)} · <b>${f(n.p*m)}</b>`)+`</div>`+
+ (n.goal?`<div class="meta">경매장 최저가 <b>${f(n.p)}</b></div>`:'')+(n.c?'<div class="hint">클릭해서 펼치기·접기</div>':'');
+ b.appendChild(d);if(n.c){const k=document.createElement('div');k.className='kids';n.c.forEach(c=>k.appendChild(build(c,m*c.q)));b.appendChild(k);
+ d.onclick=()=>{k.classList.toggle('hide');draw()}}return b}
+function draw(){const s=document.getElementById('svg'),W=document.getElementById('wrap').getBoundingClientRect();let h='';
+ document.querySelectorAll('.branch').forEach(b=>{const k=b.querySelector(':scope>.kids');if(!k||k.classList.contains('hide'))return;
+  const p=b.querySelector(':scope>.node').getBoundingClientRect();const kids=[...k.children].map(c=>c.querySelector(':scope>.node').getBoundingClientRect());
+  const x0=p.right-W.left,y0=p.top+p.height/2-W.top,xm=x0+28;
+  const ys=kids.map(r=>r.top+r.height/2-W.top);const y1=Math.min(...ys),y2=Math.max(...ys);
+  h+=`<path d="M${x0} ${y0}H${xm}"/>`+`<path d="M${xm} ${Math.min(y1,y0)}V${Math.max(y2,y0)}"/>`;
+  kids.forEach((r,i)=>h+=`<path d="M${xm} ${ys[i]}H${r.left-W.left}"/>`)});
+ s.innerHTML=`<g stroke="#e3b95a" stroke-width="2" fill="none" stroke-linecap="round">${h}</g>`}
+document.getElementById('root').appendChild(build(T,1));
+const L=leaves(T,1,{}),mc=cost(T,1);
+document.getElementById('tot').innerHTML=`목표 <b>${T.n}</b> ×1`+`<span>재료 ${Object.keys(L).length}종 · ${Object.entries(L).map(([k,v])=>k+' '+v).join(' / ')}</span><span>총 재료비 <b>${f(mc)}</b></span><span>경매장 최저 <b>${f(T.p)}</b></span>`;
+draw();addEventListener('resize',draw);
+</script></body></html>

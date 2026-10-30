@@ -1,0 +1,49 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>알바 등급 안내 시안</title>
+<style>
+body{margin:0;font-family:system-ui,sans-serif;background:#1a1d24;color:#e8e6e0;padding:24px}
+h1{font-size:18px;margin:0 0 8px;color:#f0d9a8}
+.note{color:#a8a296;font-size:13px;margin-bottom:20px}
+.card{background:#232833;border:1px solid #3a414e;border-radius:10px;padding:14px 16px;margin:0 0 18px;max-width:720px}
+.lab{display:inline-block;background:#3a4a8a;color:#dce4ff;font-size:11px;padding:2px 8px;border-radius:999px;margin-bottom:8px}
+.fake-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#2a303c;border-radius:8px;padding:10px 12px}
+.fake-top h2{margin:0;font-size:16px}
+.chip{background:#3a3326;border:1px solid #c9a34e;color:#f7e2b2;border-radius:999px;padding:4px 10px;font-size:12px}
+.info{cursor:pointer;width:22px;height:22px;border-radius:50%;border:1px solid #8ab4ff;background:#1e3a5f;color:#cde;font-size:13px;display:inline-flex;align-items:center;justify-content:center}
+.pop{margin-top:10px;background:#1b2838;border:1px solid #4a6fa5;border-radius:8px;padding:12px;font-size:13px;line-height:1.55;max-width:360px}
+.pop table{width:100%;border-collapse:collapse;margin:8px 0}
+.pop th,.pop td{border:1px solid #3a5478;padding:6px 8px;text-align:left}
+.pop th{background:#243652;color:#cde}
+.hint{font-size:12px;color:#a8a296;margin-top:8px}
+.line{font-size:12.5px;color:#d8dae2;background:#2a303c;border-radius:8px;padding:8px 10px}
+</style></head><body>
+<h1>알바 등급 안내 — 배치 시안</h1>
+<p class="note">인게임: 업종별 성공 50회→중급, 100회→고급 / 일부는 실제 등급과 다를 수 있음</p>
+
+<div class="card">
+  <span class="lab">A안 · 추천</span>
+  <div class="fake-top">
+    <h2>🧺 알바 도우미 <span style="opacity:.6;font-size:12px">v1.6.6</span>
+      <button class="info" title="아르바이트 등급">i</button>
+    </h2>
+    <span class="chip">생활</span><span class="chip">생활+금요일</span>
+  </div>
+  <div class="pop">
+    <b>아르바이트 등급</b>
+    <p style="margin:6px 0">업종별 성공 횟수로 초급·중급·고급이 정해집니다. 일부는 실제 수주 등급과 다를 수 있어요.</p>
+    <table><tr><th>중급</th><td>50회 이상</td></tr><tr><th>고급</th><td>100회 이상</td></tr></table>
+    <div style="opacity:.75;font-size:12px">추가 보너스: 생활재능 · 금요일 · 파에아의 풍요 (상단 배율 칩)</div>
+  </div>
+</div>
+
+<div class="card">
+  <span class="lab">B안</span>
+  <div class="line">업종별 성공 50회→중급 · 100회→고급 · 일부는 등급이 다를 수 있음</div>
+  <p class="hint">헤더 힌트 줄에 한 줄로 상시 표시</p>
+</div>
+
+<div class="card">
+  <span class="lab">C안</span>
+  <div class="line">⚙ 설정 안에 「아르바이트 등급」 안내 블록</div>
+  <p class="hint">화면은 깔끔, 찾을 때만 봄</p>
+</div>
+</body></html>

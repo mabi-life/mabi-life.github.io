@@ -1,0 +1,77 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>+/− 버튼 시안</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"Gowun Dodum",system-ui,sans-serif;background:#14161b;color:#e6e8ee;padding:28px}
+h1{font-size:18px;color:#f7e2b2;margin:0 0 6px}
+.sub{color:#a8a296;font-size:13px;margin:0 0 22px}
+.card{background:#1f232c;border:1px solid #3a414e;border-radius:12px;padding:16px 18px;margin:0 0 16px;max-width:560px}
+.lab{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;background:#3a4a8a;color:#dce4ff;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #2c313c}
+.row:last-child{border-bottom:0}
+.name{width:7em;font-weight:600}
+.badge{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid #60a5fa;color:#60a5fa}
+.win{display:inline-flex;align-items:center;gap:6px}
+input{width:5.2em;text-align:right;background:#1b1f28;color:#e8e6e0;border:1px solid #555;border-radius:6px;padding:3px 6px;font-size:13px}
+.회{font-size:12.5px;color:#a8a296}
+
+/* A: soft pill */
+.a button{width:22px;height:22px;border:0;border-radius:999px;cursor:pointer;font-size:14px;line-height:1;font-weight:700}
+.a .m{background:#3d2a2a;color:#f5a5a5}.a .p{background:#243d2e;color:#8fd99a}
+.a .m:hover{background:#5a3434}.a .p:hover{background:#2f5a3f}
+
+/* B: outlined tone */
+.b button{width:22px;height:22px;border-radius:7px;cursor:pointer;font-size:13px;line-height:1;background:transparent}
+.b .m{border:1px solid #e07a7a;color:#e07a7a}.b .p{border:1px solid #6bcf8e;color:#6bcf8e}
+.b .m:hover{background:#e07a7a22}.b .p:hover{background:#6bcf8e22}
+
+/* C: filled chip (추천) */
+.c button{width:22px;height:22px;border:0;border-radius:6px;cursor:pointer;font-size:15px;line-height:1;font-weight:700;box-shadow:inset 0 -1px 0 #0004}
+.c .m{background:linear-gradient(180deg,#c76b6b,#a84848);color:#fff}.c .p{background:linear-gradient(180deg,#5fbe84,#3d9a5f);color:#fff}
+.c .m:hover{filter:brightness(1.08)}.c .p:hover{filter:brightness(1.08)}
+
+/* D: gold theme match site */
+.d button{width:22px;height:22px;border-radius:999px;cursor:pointer;font-size:13px;line-height:1;font-weight:700}
+.d .m{border:1px solid #8a6a3a;background:#2a2318;color:#e0b56a}.d .p{border:1px solid #c9a34e;background:#3a3326;color:#f7e2b2}
+.d .m:hover{background:#3a2e1c}.d .p:hover{background:#4a4030}
+
+.pick{margin-top:8px;font-size:12px;color:#a8a296}
+</style></head><body>
+<h1>등급 패널 +/− 버튼 시안</h1>
+<p class="sub">작게 · 색 구분 (− 붉은톤 / + 초록톤) · 숫자 입력은 가운데 유지</p>
+
+<div class="card a">
+  <span class="lab">A · 소프트 필</span>
+  <div class="row"><span class="name">의류점</span><span class="badge">중급</span>
+    <span class="win"><button class="m">−</button><input value="67"><button class="p">+</button><span class="회">회</span></span></div>
+  <div class="row"><span class="name">대장간</span><span class="badge" style="border-color:#f7c948;color:#f7c948">고급</span>
+    <span class="win"><button class="m">−</button><input value="142"><button class="p">+</button><span class="회">회</span></span></div>
+  <p class="pick">둥글고 배경만 옅게 — 부담 적음</p>
+</div>
+
+<div class="card b">
+  <span class="lab">B · 아웃라인</span>
+  <div class="row"><span class="name">의류점</span><span class="badge">중급</span>
+    <span class="win"><button class="m">−</button><input value="67"><button class="p">+</button><span class="회">회</span></span></div>
+  <div class="row"><span class="name">대장간</span><span class="badge" style="border-color:#f7c948;color:#f7c948">고급</span>
+    <span class="win"><button class="m">−</button><input value="142"><button class="p">+</button><span class="회">회</span></span></div>
+  <p class="pick">테두리만 색 — 가장 가벼움</p>
+</div>
+
+<div class="card c">
+  <span class="lab" style="background:#2d6a4f">C · 컬러 칩 (추천)</span>
+  <div class="row"><span class="name">의류점</span><span class="badge">중급</span>
+    <span class="win"><button class="m">−</button><input value="67"><button class="p">+</button><span class="회">회</span></span></div>
+  <div class="row"><span class="name">대장간</span><span class="badge" style="border-color:#f7c948;color:#f7c948">고급</span>
+    <span class="win"><button class="m">−</button><input value="142"><button class="p">+</button><span class="회">회</span></span></div>
+  <p class="pick">작고 또렷함 — 눌러도 티 남</p>
+</div>
+
+<div class="card d">
+  <span class="lab" style="background:#6b3d1a;color:#f7e2b2">D · 사이트 골드톤</span>
+  <div class="row"><span class="name">의류점</span><span class="badge">중급</span>
+    <span class="win"><button class="m">−</button><input value="67"><button class="p">+</button><span class="회">회</span></span></div>
+  <div class="row"><span class="name">대장간</span><span class="badge" style="border-color:#f7c948;color:#f7c948">고급</span>
+    <span class="win"><button class="m">−</button><input value="142"><button class="p">+</button><span class="회">회</span></span></div>
+  <p class="pick">생활도우미 금색 톤에 맞춤 — −/+ 색 차이는 약함</p>
+</div>
+</body></html>

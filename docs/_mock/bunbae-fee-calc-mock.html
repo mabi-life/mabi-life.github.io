@@ -1,0 +1,106 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>[시안] 분배 도우미 · 수수료 계산기</title><meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet"><style>
+:root{--card:rgba(255,255,255,.05);--line:rgba(247,217,139,.25);--gold:#f7d98b;--tx:#ece8ff;--mu:#a9a2d6;--ok:#6fd39b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#0b0918 radial-gradient(circle at 50% 0%,#2b2357 0%,#141029 55%,#0b0918 100%) no-repeat fixed;color:var(--tx);padding:28px 20px 40px}
+.wrap{max-width:980px;margin:0 auto}
+.siteNav{display:flex;align-items:center;gap:2px;margin:0 0 10px;font-size:12.5px}.siteNav a,.siteNav span{color:#a9a2d4;text-decoration:none;padding:3px 10px;border-radius:999px;white-space:nowrap;line-height:1.3}.siteNav a:hover{color:#ffe7a3;background:rgba(255,255,255,.06)}.siteNav .on{color:#ffe7a3;background:rgba(247,217,139,.14);font-weight:700}
+.head{text-align:center;margin:10px 0 22px}
+.head h1{font-size:34px;font-weight:800;letter-spacing:2px;background:linear-gradient(90deg,#f7d98b,#fff3cf,#f7d98b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.verBadge{font-size:11px;color:var(--mu);border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:middle;font-weight:500;-webkit-text-fill-color:var(--mu)}
+.head p{margin-top:6px;color:var(--mu);font-size:15px}
+.bar{display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap}
+.btn{white-space:nowrap;font:inherit;cursor:pointer;padding:8px 15px;border-radius:999px;font-size:14px;font-weight:700;background:rgba(255,255,255,.07);border:1px solid rgba(247,217,139,.35);color:#f3eccf}
+.btn:hover{background:rgba(247,217,139,.15)}.btn.on{color:var(--gold);border-color:var(--gold);background:rgba(247,217,139,.14)}
+.btn.gold{background:linear-gradient(90deg,#f7d98b,#e9bf5c);color:#2a2040;border-color:transparent}
+.btn.sm{padding:5px 11px;font-size:12.5px}.btn.ghost{border-color:rgba(255,255,255,.15);color:var(--mu)}
+.grow{flex:1}
+.list{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 0 30px rgba(120,100,255,.12)}
+.post{display:flex;gap:14px;padding:14px 16px;border-bottom:1px solid rgba(247,217,139,.12);align-items:center}.post:last-child{border:0}
+.post:hover{background:rgba(255,255,255,.04)}.post .t{font-weight:700;word-break:break-all}.post .m{font-size:13px;color:var(--mu);margin-top:5px;line-height:1.9}
+.at{color:#c3c9ff;background:#2d3170;padding:1px 7px;border-radius:5px;margin-right:4px;font-size:12px;white-space:nowrap}
+.dist{color:var(--gold);font-weight:700}.tag{font-size:12px;padding:2px 7px;border-radius:5px;margin-right:6px}
+.tag.done{background:#1f4a35;color:var(--ok)}.tag.open{background:#4a3a14;color:var(--gold)}
+.post.isdone .t{color:var(--mu)}
+.thumb{width:84px;height:84px;border-radius:8px;flex:none;background:linear-gradient(135deg,#3a2f6b,#1b3a5a) center/cover;border:1px solid var(--line);display:grid;place-items:center;font-size:22px;cursor:zoom-in}
+.acts{display:flex;flex-direction:column;gap:6px}
+.empty{padding:30px;text-align:center;color:var(--mu)}
+.ov{position:fixed;inset:0;background:#000a;display:none;align-items:flex-start;justify-content:center;padding:30px 10px;overflow:auto;z-index:20}.ov.show{display:flex}
+.modal{background:#1a1536;border:1px solid var(--gold);border-radius:16px;width:880px;max-width:100%;padding:26px}
+.modal h2{margin:0 0 10px;color:var(--gold);font-size:20px}.step{color:var(--gold);font-size:13px;font-weight:700;margin:16px 0 8px}
+.drop{border:2px dashed rgba(247,217,139,.3);border-radius:12px;padding:18px;text-align:center;color:var(--mu);font-size:14px;cursor:pointer}
+.drop.hover{border-color:var(--gold);background:rgba(247,217,139,.06)}
+.drop img{max-width:100%;max-height:min(60vh,560px);border-radius:8px;display:block;margin:0 auto}
+.status{margin-top:8px;font-size:13px;color:var(--mu)}.status.err{color:#ffb3bd}.status.ok{color:var(--ok)}
+.prog{height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:6px;overflow:hidden;display:none}.prog i{display:block;height:100%;width:0;background:var(--gold);transition:width .2s}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:6px 8px 6px 13px;cursor:pointer;font-size:14px;display:flex;gap:6px;align-items:center}
+.chip .x{color:var(--mu);font-size:12px;padding:0 4px}.chip.sel{background:var(--gold);color:#221a05;border-color:var(--gold);font-weight:700}.chip.sel .x{color:#221a05}
+.chip.off{opacity:.45;text-decoration:line-through}.chip.it.on{border-color:var(--gold);color:var(--gold)}.chip .ed{background:transparent;border:0;color:inherit;font:inherit;width:auto;padding:0;outline:none}
+input[type=text]{width:100%;background:#120e28;border:1px solid rgba(247,217,139,.25);color:var(--tx);border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit}
+input[type=text]:focus{outline:none;border-color:var(--gold)}
+.q{font-size:17px;font-weight:700;margin:18px 0 6px}.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;flex-wrap:wrap}
+.hint{font-size:12px;color:var(--mu);margin-top:6px}.mini{font-size:11px;color:var(--mu);border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:1px 6px;margin-left:6px;font-weight:400}
+.ex{margin-top:10px;font-size:13px;color:var(--mu)}.ex summary{cursor:pointer;color:#d9d3ff}.ex summary:hover{color:var(--gold)}.exIn{display:flex;gap:14px;margin-top:10px;align-items:flex-start;flex-wrap:wrap}.exIn img{width:260px;height:auto;border-radius:8px;border:1px solid var(--line)}.exIn ul{flex:1;min-width:200px;padding-left:18px;line-height:1.8}.zoom{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:30;padding:16px}.zoom.show{display:flex}.zbox{background:#1a1536;border:1px solid var(--gold);border-radius:14px;padding:16px;width:min(94vw,1400px);max-height:96vh;overflow:auto}.zoom img{display:block;max-width:100%;max-height:calc(92vh - 170px);min-height:min(50vh,420px);object-fit:contain;border-radius:8px;margin:0 auto}.zm{margin-top:6px;font-size:14px;color:var(--mu);line-height:1.9}.zt{margin-top:10px;font-weight:700;color:var(--gold);word-break:break-all}.drop img{cursor:zoom-in}
+.siteFoot{margin:28px auto 18px;padding:22px 16px 28px;max-width:1180px;text-align:center;font-size:12.5px;line-height:1.65;color:#8a90a0;position:relative;border-top:1px solid #232733}.siteFoot .gold{position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:80px;height:2px;background:linear-gradient(90deg,transparent,#f7d98b,transparent)}.siteFoot a{color:#c9b27a;text-decoration:none}.siteFoot a:hover{color:#f7d98b;text-decoration:underline}
+@media(max-width:600px){.head h1{font-size:26px}.thumb{width:60px;height:60px}}
+
+.mockTag{position:fixed;top:10px;right:10px;background:#e5485d;color:#fff;font-weight:800;font-size:12px;padding:4px 10px;border-radius:999px;z-index:99}
+.fee{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:14px;box-shadow:0 0 30px rgba(120,100,255,.12)}
+.fee summary{cursor:pointer;font-weight:800;color:var(--gold);font-size:16px;list-style:none;display:flex;align-items:center;gap:8px}.fee summary::-webkit-details-marker{display:none}
+.fee summary .hint{margin:0;font-weight:400}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;margin-top:14px}.fg label{display:block;font-size:13px;color:var(--mu);margin-bottom:6px;font-weight:700}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.res{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}.res div{background:#120e28;border:1px solid rgba(247,217,139,.18);border-radius:12px;padding:10px 12px}.res b{display:block;font-size:19px;margin-top:3px}.res span{font-size:12px;color:var(--mu)}.res .big b{color:var(--gold)}
+table.cp{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px}.cp th,.cp td{padding:7px 8px;border-bottom:1px solid rgba(247,217,139,.12);text-align:right}.cp th{color:var(--mu);font-weight:500}.cp td:first-child,.cp th:first-child{text-align:left}.cp input{width:110px;text-align:right;padding:5px 8px!important}.cp tr.best td{color:var(--gold);font-weight:700}.cp tbody tr{cursor:pointer}.cp tr.sel td{background:rgba(247,217,139,.1)}.cp tr.best td:first-child::after{content:" ★";font-size:11px}
+.note{font-size:12px;color:var(--mu);margin-top:10px;line-height:1.7}
+.callout{border:1px dashed #e5485d;border-radius:12px;padding:10px 12px;font-size:12.5px;color:#ffb3bd;margin:0 0 14px}
+.wrap{max-width:1240px}.cols{display:grid;grid-template-columns:minmax(440px,520px) 1fr;gap:18px;align-items:start}
+.cols .fee{position:sticky;top:16px;margin:0;max-height:calc(100vh - 32px);overflow:auto}.cols .fg{grid-template-columns:1fr 1fr}.cols .res{grid-template-columns:1fr 1fr}
+.cols .cp{font-size:12.5px}.cols .cp input{width:100px}.cols .cp td:first-child{white-space:nowrap}.colH{font-size:13px;color:var(--mu);font-weight:700;margin:0 0 8px}
+@media(max-width:900px){.cols{grid-template-columns:1fr}.cols .fee{position:static;max-height:none}}
+@media(max-width:700px){.cols .fg{grid-template-columns:1fr}.cols .cp th:nth-child(4),.cols .cp td:nth-child(4){display:none}.fg{grid-template-columns:1fr}.res{grid-template-columns:1fr 1fr}}
+</style></head><body><div class="mockTag">시안 · 미배포</div><div class="wrap">
+<nav class="siteNav"><a href="#">홈</a><a href="#">알바</a><a href="#">물교</a><a href="#">던전</a><span class="on">분배</span></nav>
+<div class="head"><h1>분배 도우미<span class="verBadge">v1.8 시안</span></h1><p>「보상 분배」 창 스크린샷 한 장으로 파티원·아이템을 정리하고 분배자를 기록해요.</p></div>
+<div class="cols"><section class="fee"><div style="font-weight:800;color:var(--gold);font-size:16px">💰 수수료 계산기</div>
+<div class="fg" style="grid-template-columns:1fr">
+<div><label>판매가격</label><input type="text" id="price" inputmode="numeric" value="100,000,000"><div class="seg" style="margin-top:6px"><button class="btn sm ghost" data-add="1000000">+100만</button><button class="btn sm ghost" data-add="10000000">+1000만</button><button class="btn sm ghost" data-add="100000000">+1억</button><button class="btn sm ghost" data-add="0">↺</button><span class="hint" id="kor" style="margin:6px 0 0 4px"></span></div></div>
+<div><label>인원수</label><div class="seg"><button class="btn sm" data-n="-">−</button><input type="text" id="n" value="4" style="width:60px;text-align:center"><button class="btn sm" data-n="+">＋</button></div></div>
+</div>
+<div class="res" style="grid-template-columns:1fr 1fr 1fr"><div><span>수수료</span><b id="rFee"></b></div><div><span>실수령</span><b id="rNet"></b></div><div class="big"><span>1인당</span><b id="rPer"></b></div></div>
+<div class="hint" id="pick" style="margin-top:8px;color:var(--gold);font-weight:700"></div>
+<table class="cp" style="margin-top:10px"><thead><tr><th>쿠폰</th><th>최저가</th><th>이득</th></tr></thead><tbody id="cpBody"></tbody></table>
+<div class="seg" style="margin-top:10px;align-items:center"><button class="btn sm on" data-rate="4">멤버십 4%</button><button class="btn sm" data-rate="5">일반 5%</button><span class="grow"></span><button class="btn sm ghost" id="refresh">⟳ 시세</button></div>
+<div class="hint" id="upd"></div>
+</section>
+<div><div class="bar"><button class="btn gold">＋ 새 분배</button><button class="btn on">전체</button><button class="btn">진행중</button><button class="btn">완료</button><span class="grow"></span><span class="hint">2건</span></div>
+
+<div class="list"><div class="post"><div class="thumb">🖼</div><div class="grow"><div class="t"><span class="tag open">진행중</span>글라스 기브넨 · 정령석 외 2</div><div class="m"><span class="at">참여 4</span> 분배자 <span class="dist">루에리</span> · 10/27</div></div><div class="acts"><button class="btn sm">💰 수수료</button><button class="btn sm ghost">보기</button></div></div>
+<div class="post isdone"><div class="thumb">🖼</div><div class="grow"><div class="t"><span class="tag done">완료</span>크롬 바스 · 무기 파츠</div><div class="m"><span class="at">참여 8</span> 분배자 <span class="dist">나오</span> · 10/25</div></div><div class="acts"><button class="btn sm">💰 수수료</button><button class="btn sm ghost">보기</button></div></div></div>
+<p class="hint" style="margin-top:10px">기록은 이 브라우저(localStorage)에만 저장돼요.</p></div></div></div>
+<script>
+const $=s=>document.querySelector(s),num=s=>+String(s).replace(/[^0-9]/g,'')||0,f=v=>Math.floor(v).toLocaleString('ko-KR');
+const kor=v=>{const e=Math.floor(v/1e8),m=Math.floor(v%1e8/1e4);return v?(e?e+'억 ':'')+(m?m+'만':''):''};
+const CP=[10,20,30,50,100],NAME=c=>`경매장 수수료 ${c}% 할인 쿠폰`;
+// 시안: 2026-10-27 20:35 KST Open API keyword-search 실제 최저가 스냅샷. 실페이지는 /prices.json(정기 수집)에서 읽음
+let cpPrice={10:254900,20:800000,30:1495000,50:11740000,100:7140000},cpT=new Date('2026-10-27T20:35:00+09:00');
+let rate=4,force=null;
+async function refresh(){$('#upd').textContent='시세 불러오는 중…';
+ try{const r=await fetch('/prices.json',{cache:'no-store'});const d=await r.json();let got=0;CP.forEach(c=>{const x=d.prices&&d.prices[NAME(c)];if(x){cpPrice[c]=x.min;got++;if(x.t)cpT=new Date(x.t)}});if(!got)throw 0}
+ catch(e){/* 시안(로컬 파일)에선 스냅샷 유지 */}
+ calc()}
+function calc(){const p=num($('#price').value),n=Math.max(1,num($('#n').value)),base=Math.floor(p*rate/100);
+ const rows=[{c:0,price:0,ben:0}].concat(CP.map(c=>({c,price:cpPrice[c],ben:Math.floor(base*c/100)-(cpPrice[c]??Infinity)})));
+ const best=rows.reduce((a,b)=>b.ben>a.ben?b:a),use=rows.find(o=>o.c===force)||best;
+ const fee=base-Math.floor(base*use.c/100)+use.price,net=p-fee;
+ $('#kor').textContent=kor(p);$('#rFee').textContent=f(fee);$('#rNet').textContent=f(net);$('#rPer').textContent=f(net/n);
+ $('#pick').textContent=(use===best?'★ 추천: ':'선택: ')+(use.c?use.c+'% 쿠폰':'쿠폰 없음')+(use!==best?` (추천은 ${best.c?best.c+'%':'없음'})`:'');
+ $('#cpBody').innerHTML=rows.map(o=>`<tr data-c="${o.c}" class="${o===best?'best':''} ${o===use?'sel':''}"><td>${o.c?o.c+'%':'없음'}</td><td>${o.c?f(o.price):'—'}</td><td style="color:${o.ben>0?'var(--ok)':o.ben<0?'#ffb3bd':'inherit'}">${o.ben>0?'+':''}${f(o.ben)}</td></tr>`).join('');
+ document.querySelectorAll('#cpBody tr').forEach(t=>t.onclick=()=>{const c=+t.dataset.c;force=(force===c||c===best.c)?null:c;calc()});
+ $('#upd').textContent='시세 '+cpT.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+' 기준 · Open API 최저가';}
+document.querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-rate]').forEach(x=>x.classList.remove('on'));b.classList.add('on');rate=+b.dataset.rate;calc()});
+document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const a=+b.dataset.add;$('#price').value=f(a?num($('#price').value)+a:0);force=null;calc()});
+document.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{$('#n').value=Math.max(1,num($('#n').value)+(b.dataset.n=='+'?1:-1));calc()});
+$('#price').oninput=()=>{force=null;calc()};$('#n').oninput=calc;$('#refresh').onclick=refresh;
+$('#price').onblur=()=>$('#price').value=f(num($('#price').value));calc();setInterval(refresh,5*60*1000);
+</script></body></html>

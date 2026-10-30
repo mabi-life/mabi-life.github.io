@@ -1,0 +1,36 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>아이템 수량 계산기 – mock A</title><style>
+*{box-sizing:border-box}body{margin:0;background:#14161b;color:#d8dbe2;font:14px/1.5 "Pretendard","Noto Sans KR",sans-serif}
+.siteNav{display:flex;align-items:center;gap:22px;padding:14px 32px;background:#101217;border-bottom:1px solid #262a33}
+.logo{color:#e3b95a;font-weight:800;margin-right:18px}.siteNav a{color:#9aa1ae;text-decoration:none}.siteNav a.on{color:#e3b95a;border-bottom:2px solid #e3b95a;padding-bottom:4px}
+main{max-width:1240px;margin:0 auto;padding:24px 32px}h1{font-size:20px;margin:0 0 4px;color:#f0f1f4}.sub{color:#7d8492;margin-bottom:16px}
+.totals{display:flex;gap:28px;align-items:center;padding:10px 16px;background:#191c23;border:1px solid #2a2e38;border-radius:6px;font-size:13px;margin-bottom:22px}
+.totals b{color:#e3b95a}.bar{width:160px;height:6px;background:#2a2e38;border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;width:42%;background:#e3b95a}
+.map{display:flex;align-items:center}.col{display:flex;flex-direction:column;gap:14px}.branch{display:flex;align-items:center}
+.node{background:#1a1d24;border:1px solid #2c303b;border-radius:6px;padding:10px 12px;min-width:200px;position:relative}
+.node.goal{border-color:#e3b95a;box-shadow:0 0 0 1px #e3b95a33,0 6px 20px #0006;min-width:240px}
+.name{font-weight:700;color:#f0f1f4;display:flex;justify-content:space-between;gap:8px}.chev{color:#e3b95a;cursor:pointer;font-size:12px;}
+.qty{display:flex;gap:6px;align-items:center;margin:6px 0;font-size:12px;color:#9aa1ae}.qty input{width:54px;background:#0f1115;border:1px solid #333845;color:#fff;border-radius:4px;padding:2px 6px}
+.gold{color:#e3b95a;font-size:12px}.split{margin-top:6px;font-size:11px;background:transparent;color:#e3b95a;border:1px solid #e3b95a66;border-radius:4px;padding:3px 9px;cursor:pointer}
+.tag{font-size:10px;color:#7d8492}.link{width:28px;height:0;border-top:1px solid #e3b95a88}.fan{position:relative;padding-left:28px}
+.fan:before{content:"";position:absolute;left:0;top:34px;bottom:34px;border-left:1px solid #e3b95a88;}.fan>.branch:before{content:"";width:28px;border-top:1px solid #e3b95a88;margin-left:-28px}
+.leaf{opacity:.85}.done{color:#6fcf97}
+footer{border-top:1px solid #262a33;margin-top:48px;padding:18px 32px;color:#5f6673;font-size:12px;text-align:center}
+</style></head><body>
+<nav class="siteNav"><span class="logo">mabi-life</span><a href="#">홈</a><a href="#">알바</a><a href="#">물교</a><a href="#">던전</a><a href="#">분배</a><a class="on" href="#">제작</a></nav>
+<main><h1>아이템 수량 계산기</h1><div class="sub">목표 아이템을 왼쪽에 두고, 제작 재료로 나누어 오른쪽으로 펼쳐 보세요. (mock A)</div>
+<div class="totals"><span>필요 금액 <b>1,284,500 G</b></span><span>목표 1개 · 재료 6종</span><span style="display:flex;gap:8px;align-items:center">진행률 <span class="bar"><i></i></span> 42%</span><span style="margin-left:auto" class="tag">+ 목표 아이템 추가</span></div>
+<div class="map">
+ <div class="node goal"><div class="name">스펙테이터 앙상블 <span class="chev">◀ 접기</span></div><div class="tag">목표 아이템</div>
+  <div class="qty">현재 <input value="0"> / 목표 <input value="1"></div><div class="gold">≈ 1,284,500 G</div><button class="split">제작 재료로 나누기 ✓</button></div>
+ <div class="link"></div>
+ <div class="col fan">
+  <div class="branch"><div class="node"><div class="name">고급 실크 <span class="chev">◀</span></div><div class="qty">현재 <input value="4"> / <input value="10"></div><div class="gold">개당 18,000 · 108,000 G</div><button class="split">제작 재료로 나누기 ✓</button></div>
+   <div class="link"></div><div class="col fan">
+    <div class="branch"><div class="node leaf"><div class="name">실크 <span class="chev">▶</span></div><div class="qty">현재 <input value="12"> / <input value="30"></div><div class="gold">개당 2,400 · 43,200 G</div><button class="split">제작 재료로 나누기</button></div></div>
+    <div class="branch"><div class="node leaf"><div class="name">거미줄 <span class="tag">채집</span></div><div class="qty">현재 <input value="40"> / <input value="40"></div><div class="gold done">✓ 충분</div></div></div>
+   </div></div>
+  <div class="branch"><div class="node"><div class="name">고급 가죽 <span class="chev">▶ 펼치기</span></div><div class="qty">현재 <input value="2"> / <input value="6"></div><div class="gold">개당 31,000 · 124,000 G</div><button class="split">제작 재료로 나누기</button></div></div>
+  <div class="branch"><div class="node"><div class="name">마나 허브 <span class="tag">구매</span></div><div class="qty">현재 <input value="0"> / <input value="5"></div><div class="gold">개당 2,060 · 10,300 G</div></div></div>
+ </div>
+</div></main>
+<footer>© mabi-life.com · 비공식 팬 도구 · 가격은 참고용입니다</footer></body></html>
