@@ -58,13 +58,28 @@ html{background:#0b0918}.xs{margin-bottom:10px;border-radius:14px;background:rgb
 .xb .dt th{color:#a9a2d6;font-size:12px}.xb .dt td.r,.xb .dt th.r{text-align:right}.xb .dt tr.done td{opacity:.5}.xb .mats div{white-space:nowrap}.xb input.p{width:84px;text-align:right}
 .xb h4{margin:8px 0 4px;color:#fff3cf}.xb .tot{font-weight:800}.short{color:#ff6b6b;font-weight:700}.xgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .siteNav{display:flex;align-items:center;gap:2px;margin:0 0 10px;font-size:12.5px}.siteNav a,.siteNav span{color:#a9a2d6;text-decoration:none;padding:3px 10px;border-radius:999px;white-space:nowrap;line-height:1.3}.siteNav a:hover{color:#f7d98b;background:rgba(255,255,255,.06)}.siteNav .on{color:#f7d98b;background:rgba(247,217,139,.14);font-weight:700}.siteFoot{margin:28px auto 18px;padding:22px 16px 28px;max-width:1180px;text-align:center;font-size:12.5px;line-height:1.65;color:#8a90a0;position:relative;border-top:1px solid #232733}.siteFoot .gold{position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:80px;height:2px;background:linear-gradient(90deg,transparent,#f7d98b,transparent)}.siteFoot a{color:#c9b27a;text-decoration:none}.siteFoot a:hover{color:#f7d98b;text-decoration:underline}.siteFoot a{color:inherit;text-decoration:none}.siteFoot a:hover{text-decoration:underline}</style>  <script type="text/javascript" src="https://openapi.nexon.com/js/analytics.js?app_id=355270" async></script>
+<style>.ecards{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin:6px 0 34px}
+.flip{position:relative;margin:0 16px 30px 0;cursor:pointer;user-select:none}
+.flip::before{content:"";position:absolute;inset:0;transform:translate(14px,14px) rotate(1.2deg);background:#1c1830;border:1px solid #4a3b6b;border-radius:16px;box-shadow:0 8px 20px #0008;z-index:0}
+.flip.on::before{background:#141c28;border-color:#2f4f6e}
+.flip .peek{position:absolute;right:-14px;bottom:-26px;font-size:12px;color:#d3bfff;background:#3b2d5a;padding:2px 10px;border-radius:0 0 10px 10px;z-index:2}
+.flip.on .peek{color:#9fd2ff;background:#24405a}
+.flip .face{position:relative;z-index:1;min-height:300px;background:#1b1734;box-shadow:0 6px 18px #000a;animation:fl .35s ease}
+.flip.on .face{border-color:#4a3b6b}@keyframes fl{from{transform:rotateY(70deg);opacity:.3}to{transform:none;opacity:1}}
+.flip .hint{position:absolute;right:14px;top:12px;font-size:11px;color:#8f88bb}
+.flip h2 .rtag{font-size:11px;padding:2px 8px;border-radius:10px;background:#24405a;color:#9fd2ff;margin-left:6px;font-weight:700}.flip.on h2 .rtag{background:#3b2d5a;color:#d3bfff}
+.esum{display:flex;gap:16px;margin-top:10px;color:#a9a2d6;font-size:13px;flex-wrap:wrap}.esum b{color:#fff}
+.emat{margin-bottom:14px}.emat h3{font-size:16px;color:#fff3cf;margin-bottom:2px}.emat .cap{margin-bottom:8px}
+.egrid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+.er{display:grid;grid-template-columns:minmax(0,1fr) 64px 170px 70px;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.07)}
+.er.h{color:#8f88bb;font-size:12px}.er .r{text-align:right}.emat details{margin-top:10px;color:#a9a2d6}.emat textarea{width:100%;max-width:560px}
+</style>
 <link rel="stylesheet" href="/css/site-chrome.css?v=1">
 <link rel="stylesheet" href="/css/kit.css?v=9"><script src="/js/kit.js?v=9" defer></script></head><body>
 <nav class="siteNav" aria-label="도우미 이동"><a id="homeLink" href="/">홈</a><a href="/alba/">알바</a><span class="on" aria-current="page">물교</span><a href="/dungeon/">던전</a><a href="/bunbae/">분배</a><a href="/craft/">제작</a><a href="/relics/">유물</a></nav>
 <div class="top"><h1>⚖️ 물물교환</h1><span id="chars" style="display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto"></span><button class="ghost" data-a="addChar" title="캐릭터 추가">＋</button>
 <span style="flex:1"></span><span class="mut" id="reset"></span><button id="undoBtn" class="ghost" title="되돌리기 (Ctrl+Z)">↶</button><button class="ghost" data-a="settings" title="설정" style="font-size:18px">⚙</button></div>
 <div id="week" class="week"></div>
-<div class="rtabs" id="rtabs"></div>
 <div class="dash" id="dash"></div>
 <div id="xtra"></div>
 <div id="layer"></div><div id="toast"></div><input type="file" id="impFile" accept=".json" hidden>
@@ -146,7 +161,7 @@ const UIK='mabiBarter.ui';let UI={};try{UI=JSON.parse(localStorage.getItem(UIK))
 const route=()=>D.routes.find(r=>r.id===S.route)||D.routes[0];
 const selRoutes=()=>{let ids=(Array.isArray(S.routes)?S.routes:[S.route]).filter(id=>id==='pk'||id==='ko');if(!ids.length)ids=['pk','ko'];return D.routes.filter(r=>ids.includes(r.id))};
 const selGoods=()=>selRoutes().flatMap(routeGoods),selName=()=>selRoutes().length>1?'두 루트 합산':selRoutes()[0].name;
-const SECS=[['map','🗺 이리아 교역 약도','펼치면 지도'],['goods','📦 교역품 상세표','판매가·손익·6티어 시즌'],['sk','스카하','']];
+const SECS=[['goods','📦 교역품 상세표','판매가·손익·6티어 시즌'],['sk','스카하','']];
 function xMap(){return '<img src="../img/iria-barter-map.svg" alt="이리아 교역 경로 약도" style="width:100%;max-width:640px;display:block;margin:8px auto 0">'}
 function xSk(){return D.routes.find(r=>r.id==='sk').posts.flatMap(activeGoods).map(rowHtml).join('')}
 const skProg=()=>{const g=routeGoods(D.routes.find(r=>r.id==='sk'));return g.reduce((a,x)=>a+Math.min(doneOf(x),qtyOf(x)),0)+'/'+g.reduce((a,x)=>a+qtyOf(x),0)};
@@ -165,38 +180,32 @@ function xGoods(){const c=C(),r=route();let h=`<div style="display:flex;gap:12px
   h+=`<tr><td></td><td colspan="5" class="tot">${ps} 합계</td><td class="r neg tot">${gk(P.cost)}${P.unk?'<span class="warn">+?</span>':''}</td><td class="r pos tot">${P.rev?gk(P.rev):'-'}</td><td class="r tot ${P.rev-P.cost>=0?'pos':'neg'}">${P.rev?gk(P.rev-P.cost):'-'}</td><td></td></tr></table>`;RT.cost+=P.cost;RT.rev+=P.rev;RT.unk+=P.unk}
  h+=`<div class="tot" style="margin-top:8px">🧾 ${r.name} 총계: 재료비 <span class="neg">${gk(RT.cost)} G</span> · 매출 <span class="pos">${gk(RT.rev)} G</span> · 순이익 <span class="${RT.rev-RT.cost>=0?'pos':'neg'}">${gk(RT.rev-RT.cost)} G</span> · ${esc(c.name)} 진행 ${RT.doneCnt}/${RT.cnt}${RT.unk?' <span class="warn">(가격 모르는 재료 있음)</span>':''} <span class="mut" style="font-weight:400;font-size:12px">· 판매가의 두카트는 ⚙ 두카트→골드 환산값 사용</span></div>`;
  h+=`<div class="mut" style="margin-top:4px;font-size:12px">진행 요약 (전체 경로): ${S.chars.map(ch=>{let a=0,b=0;for(const g of D.routes.flatMap(x=>x.posts).flatMap(activeGoods)){b+=qtyOf(g);a+=Math.min(ch.done[g.id]||0,qtyOf(g))}return esc(ch.name)+' '+a+'/'+b}).join(' · ')}</div>`;return h}
-function xMats(){const c=C(),RS=selRoutes(),nd=need(selGoods(),true),seen=new Set();let tc=0,unk=0;
- let h=`<div class="card mchk full" id="x-mats"><h2><span>🎒 재료 · 보유</span><span class="sub">${esc(c.name)} · ${esc(selName())} · 남은 교환</span></h2>
- <div style="display:flex;gap:6px;margin:6px 0;align-items:stretch;max-width:560px"><textarea id="paste2" rows="2" style="flex:1;min-width:0" placeholder="일괄 입력: 한 줄에 '재료명 수량' (예: 금판 50)"></textarea><div style="display:flex;flex-direction:column;gap:4px"><button class="sm" data-a="pasteSet" data-src="paste2">덮어쓰기</button><button class="sm" data-a="pasteAdd" data-src="paste2">더하기</button></div></div>
- <div class="cap">교역품별 재료 · 필요=선택 경로 합계 · ✓ 필요량만큼 채우기 · ± Shift=10, Ctrl=100</div>`;
- const posts=[...new Set(RS.flatMap(r=>r.posts))];let any=false;
- for(const ps of posts){const gs=activeGoods(ps).filter(g=>remOf(g)>0).sort((x,y)=>(y.tier||0)-(x.tier||0));if(!gs.length)continue;any=true;
-  h+=`<div class="msec">● ${ps}</div>`;
-  for(const g of gs){const rm=remOf(g);h+=`<div class="g mg">T${g.tier||'—'} ${g.name} <span class="mut">(${rm}) · ${g.mats.map(([m,k])=>`${m} ${fmt(k*rm)}`).join(' · ')}</span></div>`;
-   const rows=[];for(const[m]of g.mats){if(seen.has(m))continue;seen.add(m);const n=nd[m]||0,o=c.owned[m]||0,sh=Math.max(0,n-o),p=price(m),pr=S.prices[m],ok=o>=n;if(sh){if(p==null)unk++;else tc+=sh*p}
-    rows.push(`<div class="mr"><span class="mn">${m}${hotMat(m)}</span><span class="r">필요 <b>${fmt(n)}</b></span><span style="white-space:nowrap"><button class="sm" data-a="om" data-m="${m}">−</button> <input class="n" data-a="own" data-m="${m}" value="${o}"> <button class="sm" data-a="op" data-m="${m}">＋</button> <span class="chk ${ok?'on':''}" data-a="mchk" data-m="${esc(m)}" data-n="${n}" title="필요량만큼 보유로"></span></span><span class="r ${sh?'short':'pos'}">${sh?'부족 '+fmt(sh):'✓'}</span><span class="r"><input class="p" data-a="price" data-m="${m}" value="${p??''}" title="최저가 ${pr?{snap:'API 스냅샷',api:'API 실시간',pril:'Prilus 스냅샷',feed:'공유 시세',manual:'수동'}[pr.src]||'':''}"></span><span class="r neg">${sh?(p==null?'?':gk(sh*p)):''}</span></div>`)}
-   if(rows.length)h+=`<div class="m2">${rows.join('')}</div>`}}
- if(!any)h+=`<div class="pos">남은 교환 없음 🎉</div>`;
- return h+`<div class="tot" style="margin-top:6px">부족분 구매비: <span class="neg">${gk(tc)} G</span>${unk?` <span class="warn">+가격 모름 ${unk}종</span>`:''}</div></div>`}
-function runHtml(ru,pl,title,sub){if(!ru)return `<div class="card"><h2>${title} <span class="sub">${sub}</span></h2><div class="pos">남은 교환 없음 🎉</div></div>`;
- const rows=byPost(ru.L).map(x=>`<tr><td><span class="t t${x.g.tier||0}">T${x.g.tier||'—'}</span></td><td>${x.g.post}</td><td>${x.g.name}</td><td class="r">${x.q}</td><td class="r mut">${x.g.weight}</td><td class="r">${x.q*x.g.weight}</td><td class="r">${Math.ceil(x.q/x.g.perSlot)}</td></tr>`).join('');
- const n=ru.L.reduce((a,x)=>a+x.q,0);
- return `<div class="card"><h2>${title} <span class="sub">${sub}</span></h2>
- <div class="cap">무게/슬롯 vs ${fmt(pl.W)}/${pl.SL} · 자동 적재(1회차 3티어↑ 우선)</div>
- <table class="rt"><tr><th>티어</th><th>교역소</th><th>교역품</th><th class="r">수량</th><th class="r">개당</th><th class="r">무게</th><th class="r">슬롯</th></tr>${rows}
- <tr class="tot"><td colspan="3">합계 · ${n}개</td><td class="r"></td><td></td><td class="r ${ru.w>pl.W?'neg':'pos'}">${fmt(ru.w)}/${fmt(pl.W)}</td><td class="r ${ru.s>pl.SL?'neg':'pos'}">${ru.s}/${pl.SL}</td></tr></table>
- <div class="footnote">${ru.s>=pl.SL?'슬롯 가득':'슬롯 여유 '+(pl.SL-ru.s)} · ${ru.w<=pl.W?'무게 여유 '+(pl.W-ru.w):'무게 초과'}</div></div>`}
-function renderDash(){const pv=$('#paste2')?$('#paste2').value:'';const c=C(),RS=selRoutes(),both=RS.length>1,pl=plan(RS[0]);
+function faceHtml(r,ru,n,pl){const port=r.name.split('→').pop().trim().replace(/\s*항구$/,''),rt=esc(r.posts.join(' → ')+' → '+port);
+ let h=`<span class="hint">클릭 ⇄ ${n===1?2:1}회차</span><h2>${rt}<span class="rtag">${n}회차</span></h2>`;
+ if(!ru)return h+`<div class="pos" style="margin-top:20px">${n}회차 남은 교환 없음 🎉</div>`;
+ let cost=0,rv=0,unk=0,sale=false;for(const x of ru.L){const u=unitCost(x.g);cost+=u.s*x.q;unk+=u.u;rv+=rev(x.g,x.q);if(hasSale(x.g))sale=true}
+ const rows=byPost(ru.L).map(x=>`<tr><td><span class="t t${x.g.tier||0}">T${x.g.tier||'—'}</span></td><td>${x.g.post}</td><td>${x.g.name}${x.g.mats.some(([m,k])=>(C().owned[m]||0)<k*x.q)?' <span class="neg" title="재료 부족">❗</span>':''}</td><td class="r">${x.q}</td><td class="r mut">${x.q*x.g.weight}</td><td class="r mut">${Math.ceil(x.q/x.g.perSlot)}</td></tr>`).join('');
+ return h+`<table class="rt" style="margin-top:10px"><tr><th>티어</th><th>교역소</th><th>품목</th><th class="r">수량</th><th class="r">무게</th><th class="r">슬롯</th></tr>${rows}</table>
+ <div class="esum"><span>무게 <b class="${ru.w>pl.W?'neg':''}">${fmt(ru.w)} / ${fmt(pl.W)}</b></span><span>슬롯 <b class="${ru.s>pl.SL?'neg':''}">${ru.s} / ${pl.SL}</b></span><span>재료비 <b class="neg">${gk(cost)}</b>${unk?'<span class="warn">+?</span>':''}</span><span>예상 ${sale?`<b class="${rv-cost>=0?'pos':'neg'}">${rv-cost>=0?'+':''}${gk(rv-cost)}G</b>`:'<span class="mut">판매가 미입력</span>'}</span></div>
+ ${pl.runs.length>2&&n===2?'<div class="footnote warn">⚠ 2회차 안에 다 못 실음 (추가 '+(pl.runs.length-2)+'회차)</div>':''}`}
+function cardHtml(r){const pl=plan(r),on=!!UI['flip_'+r.id],n=on?2:1;
+ return `<div class="flip ${on?'on':''}" data-a="flip" data-r="${r.id}"><div class="card face">${faceHtml(r,pl.runs[n-1],n,pl)}</div><span class="peek">${on?1:2}회차 ▸</span></div>`}
+function xMats(){const c=C(),nd=need([...routeGoods(D.routes[0]),...routeGoods(D.routes[1])],true),ms=Object.keys(nd).filter(m=>nd[m]>0).sort((x,y)=>Math.max(0,nd[y]-(c.owned[y]||0))-Math.max(0,nd[x]-(c.owned[x]||0))||x.localeCompare(y,'ko'));let tc=0,unk=0;
+ const rows=ms.map(m=>{const n=nd[m],o=c.owned[m]||0,sh=Math.max(0,n-o),p=price(m);if(sh){if(p==null)unk++;else tc+=sh*p}
+  return `<div class="er"><span class="nm" title="${esc(m)}">${m}${hotMat(m)}</span><span class="r">${fmt(n)}</span><span style="white-space:nowrap"><button class="sm" data-a="om" data-m="${m}">−</button> <input class="n" style="width:64px" data-a="own" data-m="${m}" value="${o}"> <button class="sm" data-a="op" data-m="${m}">＋</button> <span class="chk ${o>=n?'on':''}" data-a="mchk" data-m="${esc(m)}" data-n="${n}" title="필요량만큼 보유로"></span></span><span class="r ${sh?'short':'pos'}" title="${sh&&p!=null?'구매 '+gk(sh*p)+' G':''}">${sh?fmt(sh):'✓'}</span></div>`});
+ const hd='<div class="er h"><span>재료</span><span class="r">필요</span><span>보유 ±</span><span class="r">부족</span></div>',half=Math.ceil(rows.length/2);
+ return `<div class="emat" id="x-mats"><h3>🎒 재료 체크</h3><div class="cap">${esc(c.name)} · 두 루트 남은 교환 기준 · 보유 수량만 입력하면 부족분 자동 계산 (자동 저장) · ± Shift=10, Ctrl=100</div>
+ ${ms.length?`<div class="egrid"><div>${hd}${rows.slice(0,half).join('')}</div><div>${hd}${rows.slice(half).join('')}</div></div>`:'<div class="pos">남은 교환 없음 🎉</div>'}
+ <div class="tot" style="margin-top:8px">부족분 구매비: <span class="neg">${gk(tc)} G</span>${unk?` <span class="warn">+가격 모름 ${unk}종</span>`:''}</div>
+ <details ${UI.paste?'open':''}><summary data-a="pasteT">일괄 붙여넣기 (선택)</summary><div style="display:flex;gap:6px;margin-top:6px;align-items:stretch;max-width:620px"><textarea id="paste2" rows="3" style="flex:1;min-width:0" placeholder="한 줄에 '재료명 수량'&#10;금판 50&#10;동판 30"></textarea><div style="display:flex;flex-direction:column;gap:4px"><button class="sm" data-a="pasteSet" data-src="paste2">덮어쓰기</button><button class="sm" data-a="pasteAdd" data-src="paste2">더하기</button></div></div></details></div>`}
+function renderDash(){const pv=$('#paste2')?$('#paste2').value:'';const c=C(),pl=plan(D.routes[0]);
  const all=[...routeGoods(D.routes[0]),...routeGoods(D.routes[1])];
  let dn=0,tot=0,buy=0,unk=0,rv=0,cost=0,anySale=false;
  for(const g of all){tot+=qtyOf(g);dn+=Math.min(doneOf(g),qtyOf(g));cost+=unitCost(g).s*qtyOf(g);rv+=rev(g,qtyOf(g));if(hasSale(g))anySale=true}
  const nd=need(all,true);for(const[m,n]of Object.entries(nd)){const sh=Math.max(0,n-(c.owned[m]||0));if(sh){const p=price(m);if(p==null)unk++;else buy+=sh*p}}
- const sk=D.routes.find(x=>x.id==='sk'),skG=routeGoods(sk),skd=skG.reduce((a,g)=>a+Math.min(doneOf(g),qtyOf(g)),0),skt=skG.reduce((a,g)=>a+qtyOf(g),0);
  $('#week').innerHTML=`<span class="mut">주간</span><span>진행 <b>${dn}/${tot}</b></span><span>부족 구매비 <b class="neg">${gk(buy)}</b>${unk?'<span class="warn">+?</span>':''}</span><span>예상 수익 ${anySale?`<b class="${rv-cost>=0?'pos':'neg'}">${rv-cost>=0?'+':''}${gk(rv-cost)}</b>`:'<span class="mut">판매가 미입력</span>'}</span><span>운송 <b>${fmt(pl.W)} / ${pl.SL}</b> <span class="mut">${esc(CARRIERS[S.carrier]?.n||'')}</span></span>`;
- $('#rtabs').innerHTML=D.routes.filter(x=>x.id!=='sk').map(x=>`<button class="${RS.includes(x)?'on':''}" data-a="rtab" title="토글 · 둘 다 켜면 합산" data-r="${x.id}">${tabLabel(x)}</button>`).join('');
- $('#dash').innerHTML=RS.map(r=>{const pl=plan(r),r1=pl.runs[0],r2=pl.runs[1],L=both?`[${esc(r.posts.join('→'))}] `:'';
-  return (both?`<div class="full rhd" style="font-weight:700;margin-top:4px">🧭 ${esc(r.name)}</div>`:'')+runHtml(r1,pl,L+'🚚 1회차','고티어 우선')+runHtml(r2||null,pl,L+'🚚 2회차',pl.runs.length>2?'잔여(+추가 회차 있음)':'잔여 저티어')+pl.runs.slice(2).map((ru,i)=>runHtml(ru,pl,`${L}🚚 ${i+3}회차`,'추가')).join('')+(pl.runs.length>2?`<div class="footnote warn full">⚠ 2회차 안에 다 못 실음 (무게/슬롯 부족)</div>`:'')}).join('')+xMats();if($('#paste2'))$('#paste2').value=pv}
-function renderX(){const f={map:xMap,goods:xGoods,sk:xSk};
+ $('#dash').className='';$('#dash').innerHTML=`<div class="ecards">${D.routes.filter(x=>x.id!=='sk').map(cardHtml).join('')}</div>`+xMats();if($('#paste2'))$('#paste2').value=pv}
+function renderX(){const f={goods:xGoods,sk:xSk};
  $('#xtra').innerHTML=SECS.map(([k,n,d])=>`<div class="xs" id="x-${k}"><h3 data-a="sec" data-s="${k}">${UI[k]?'▾':'▸'} ${n} <span class="mut">${k==='sk'?skProg():d}</span></h3>${UI[k]?`<div class="xb">${f[k]()}</div>`:''}</div>`).join('')}
 function render(){checkReset();const c=C();
  $('#chars').innerHTML=S.chars.map((x,i)=>`<button class="${i===S.cur?'on':''}" data-a="char" data-i="${i}" title="우클릭/더블클릭: 이름 변경">${esc(x.name)}${S.chars.length>1?`<i class="cx" data-a="delChar" data-i="${i}" title="삭제">✕</i>`:''}</button>`).join('');
@@ -230,6 +239,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
  if(a==='pick6'){const r=b.getBoundingClientRect();setLayer({t:'pick6',p:b.dataset.p,x:r.left,y:r.bottom+4})}
  if(a==='set6'){const g=G[b.dataset.g];layer=null;mut(()=>S.active6[g.post]=g.id,`${g.post} 6티어: ${g.name}`)}
 
+ if(a==='flip'){if(e.target.closest('button,input'))return;const k='flip_'+b.dataset.r;UI[k]=!UI[k];try{localStorage.setItem(UIK,JSON.stringify(UI))}catch(x){}renderDash();return}
+ if(a==='pasteT'){UI.paste=!UI.paste;try{localStorage.setItem(UIK,JSON.stringify(UI))}catch(x){}return}
  if(a==='sec'){const k=b.dataset.s;UI[k]=!UI[k];try{localStorage.setItem(UIK,JSON.stringify(UI))}catch(x){}renderX();return}
  if(a==='rtab'){const id=b.dataset.r,cur=selRoutes().map(x=>x.id);if(cur.includes(id)&&cur.length<2)return toast('최소 한 루트는 켜져 있어야 합니다');mut(()=>{S.routes=cur.includes(id)?cur.filter(x=>x!==id):[...cur,id];S.route=S.routes[0]});return}
  if(a==='mchk'){const m=b.dataset.m,n=+b.dataset.n||0;mut(()=>c.owned[m]=Math.max(c.owned[m]||0,n),`${m} ${fmt(n)}`);return}
