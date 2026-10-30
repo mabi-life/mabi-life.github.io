@@ -4,7 +4,7 @@ P={"/":["홈","00",""],"/alba/":["알바","01"],"/barter/":["물교","02"],"/dun
 function go(){var path=location.pathname.replace(/index\.html$/,"");var pg=P[path]||P["/"];var b=document.body;
 b.style.setProperty("--kit",C[pg[0]]);
 document.querySelectorAll("nav.siteNav a,nav.siteNav span").forEach(function(e){var t=e.textContent.trim();if(!C[t])return;e.style.setProperty("--c",C[t]);e.innerHTML=I[t]+" "+t});
-var nav=document.querySelector("nav.siteNav");if(!nav)return;var wrap=nav.parentElement;if(wrap&&wrap.clientWidth&&wrap.clientWidth<760)b.classList.add("kit-narrow");var mk=document.createElement("i");mk.style.display="none";nav.before(mk);var bar=document.createElement("div");bar.className="kitBar";b.insertBefore(bar,b.firstChild);bar.appendChild(nav);b.classList.add("kit-bar");
+var nav=document.querySelector("nav.siteNav");if(!nav)return;var wrap=nav.parentElement;if(wrap&&wrap.clientWidth&&wrap.clientWidth<760)b.classList.add("kit-narrow");var mk=document.createElement("i");mk.style.display="none";nav.before(mk);var bar=document.createElement("div");bar.className="kitBar";b.insertBefore(bar,b.firstChild);bar.appendChild(nav);b.classList.add("kit-bar");var fit=function(){bar.style.marginLeft="0px";var l=bar.getBoundingClientRect().left+scrollX;bar.style.marginLeft=(-l)+"px";bar.style.width=document.documentElement.clientWidth+"px"};fit();addEventListener("resize",fit);
 if(path=="/alba/"||path=="/barter/")return;
 var hd=document.querySelector(".head:not(.coinHead)")||document.querySelector(".wrap>.hd");if(!hd)return;
 var h1=hd.querySelector("h1"),p=hd.querySelector("p");var d=document.createElement("div");d.className="kitHd";
