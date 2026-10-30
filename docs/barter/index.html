@@ -16,7 +16,7 @@ h1{font-size:20px;font-weight:800;color:#f7d98b;margin-right:12px}
 .card h2{font-size:17px;font-weight:800;margin-bottom:10px;color:#fff3cf}
 .week{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.035);border:1px solid rgba(247,217,139,.14);margin-bottom:10px;font-size:12.5px}
 .week b{font-size:14px}.rtabs{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
-.msec{background:rgba(247,217,139,.08);font-weight:800;color:#fff3cf;padding:5px;margin-top:8px}.mg{margin:6px 0 2px}.mr{display:grid;grid-template-columns:minmax(0,1fr) auto auto 64px 90px 70px;gap:6px;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.06)}.mr .r{text-align:right}.mr input.p{width:84px;text-align:right}.m2{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;align-items:start}.m2 table.dt{width:100%;border-collapse:collapse}.m2 .dt input.p{width:84px;text-align:right}.mwrap{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start}.mleft{min-width:0}.mright{position:sticky;top:8px}.ship td,.ship th{padding:3px 4px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left}@media(max-width:1100px){.mwrap{grid-template-columns:1fr}.mright{position:static}}@media(max-width:980px){.m2{grid-template-columns:1fr}}
+.msec{background:rgba(247,217,139,.08);font-weight:800;color:#fff3cf;padding:5px;margin-top:8px}.mg{margin:6px 0 2px}.mr{display:grid;grid-template-columns:minmax(0,1fr) auto auto 64px 90px 70px;gap:6px;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.06)}.mr .r{text-align:right}.mr input.p{width:84px;text-align:right}.m2{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;align-items:start}.m2 table.dt{width:100%;border-collapse:collapse}.m2 .dt input.p{width:84px;text-align:right}.mwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(520px,48%);gap:20px;align-items:start}.mleft{min-width:0}.mright{position:sticky;top:8px}.ship td,.ship th{padding:3px 4px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left}@media(max-width:1200px){.mwrap{grid-template-columns:1fr}.mright{position:static}}@media(max-width:980px){.m2{grid-template-columns:1fr}}
 .dash{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;margin-bottom:12px}.dash .full{grid-column:1/-1}.rtabs button small{font-size:11px;opacity:.7;margin-left:4px;font-weight:400}
 .dash .card{padding:12px 14px}.dash h2{font-size:14px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:baseline;gap:6px}
 .dash h2 .sub{font-size:11px;font-weight:400;color:#8f88bb}.cap{font-size:11px;color:#a9a2d6;margin-bottom:6px}
@@ -72,8 +72,8 @@ html{background:#0b0918}.xs{margin-bottom:10px;border-radius:14px;background:rgb
 .flip h2 .rtag{font-size:11px;padding:2px 8px;border-radius:10px;background:#24405a;color:#9fd2ff;margin-left:6px;font-weight:700}.flip.on h2 .rtag{background:#3b2d5a;color:#d3bfff}
 .esum{display:flex;gap:16px;margin-top:10px;color:#a9a2d6;font-size:13px;flex-wrap:wrap}.esum b{color:#fff}
 .emat{margin-bottom:14px}.emat h3{font-size:16px;color:#fff3cf;margin-bottom:2px}.emat .cap{margin-bottom:8px}
-.egrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 28px;max-width:100%}@media(max-width:900px){.egrid{grid-template-columns:minmax(0,1fr)}}
-.er{display:grid;grid-template-columns:minmax(0,1fr) 56px 140px 56px;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.07)}
+.egrid{display:grid;grid-template-columns:repeat(2,max-content);gap:0 28px;max-width:100%}@media(max-width:900px){.egrid{grid-template-columns:minmax(0,1fr)}}
+.er{display:grid;grid-template-columns:minmax(120px,max-content) 48px 120px 48px;justify-content:start;column-gap:10px;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.07)}
 .er.h{color:#8f88bb;font-size:12px}.er .r{text-align:right}.emat details{margin-top:10px;color:#a9a2d6}.emat textarea{width:100%;max-width:560px}
 </style>
 <link rel="stylesheet" href="/css/site-chrome.css?v=1">
@@ -164,7 +164,7 @@ const route=()=>D.routes.find(r=>r.id===S.route)||D.routes[0];
 const selRoutes=()=>{let ids=(Array.isArray(S.routes)?S.routes:[S.route]).filter(id=>id==='pk'||id==='ko');if(!ids.length)ids=['pk','ko'];return D.routes.filter(r=>ids.includes(r.id))};
 const selGoods=()=>selRoutes().flatMap(routeGoods),selName=()=>selRoutes().length>1?'두 루트 합산':selRoutes()[0].name;
 const SECS=[['sk','스카하','']];
-function xMap(){return '<img src="../img/iria-barter-map.svg" alt="이리아 교역 경로 약도" style="width:100%;max-width:640px;display:block;margin:8px auto 0">'}
+function xMap(){return '<img src="../img/iria-barter-map.png" alt="이리아 물교 지도" style="width:100%;max-width:900px;display:block;margin:8px auto 0">'}
 function xSk(){return D.routes.find(r=>r.id==='sk').posts.flatMap(activeGoods).map(rowHtml).join('')}
 const skProg=()=>{const g=routeGoods(D.routes.find(r=>r.id==='sk'));return g.reduce((a,x)=>a+Math.min(doneOf(x),qtyOf(x)),0)+'/'+g.reduce((a,x)=>a+qtyOf(x),0)};
 const tabLabel=r=>{const port=r.name.split('→').pop().trim();return esc(r.posts.join('→')+'→'+port.replace(/\s*항구$/,''))+` <small>⛵ ${esc(port)}</small>`};
