@@ -1,69 +1,105 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 655 562" font-family="'Noto Sans KR','Malgun Gothic',sans-serif">
-<rect width="655" height="562" fill="#f6f1e4"/>
-<g fill="none" stroke="#c9bfa6" stroke-width=".6" opacity=".7"><path d="M0 100H655M0 200H655M0 300H655M0 400H655M0 500H655M100 0V562M200 0V562M300 0V562M400 0V562M500 0V562M600 0V562"/></g>
-<!-- island outline -->
-<path d="M178 52 C200 30 250 40 280 62 C300 90 330 110 350 130 C365 160 380 210 400 230 C430 210 470 225 500 240 C540 245 580 255 600 268 C610 300 590 330 572 350 C545 365 520 380 500 420 C470 450 420 470 380 480 C350 505 330 520 310 520 C280 520 270 505 250 495 C220 500 200 510 180 505 C150 495 120 480 115 450 C112 420 110 400 118 380 C112 340 125 300 140 270 C130 240 135 210 145 195 C140 170 155 150 175 135 C170 110 165 80 178 52 Z" fill="#fffaf0" stroke="#5b4a32" stroke-width="2.5" stroke-linejoin="round"/>
-<!-- terrain hints -->
-<g fill="none" stroke="#b9a882" stroke-width="1" stroke-dasharray="4 3">
-<path d="M190 70 C215 60 240 70 250 95 C230 110 200 105 190 90Z"/>
-<path d="M300 60 C320 55 345 65 340 85 C320 92 300 85 300 60Z"/>
-<path d="M330 380 C380 360 430 400 400 440 C370 455 330 430 330 380Z"/>
-<path d="M150 380 C190 370 230 390 220 420 C190 430 150 415 150 380Z"/>
-<path d="M240 300 C280 290 330 300 320 330 C290 340 245 330 240 300Z"/>
+<title>이리아 교역 지도 (상세 라인맵)</title>
+<defs>
+<pattern id="sea" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M0 6q3-3 6 0t6 0" fill="none" stroke="#24405a" stroke-width=".6"/></pattern>
+<marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#4ade80"/></marker>
+<marker id="arb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#38bdf8"/></marker>
+</defs>
+<rect width="655" height="562" fill="#0f1a24"/>
+<rect width="655" height="562" fill="url(#sea)" opacity=".7"/>
+<!-- coastline (traced from in-game Iria map) -->
+<g fill="#16232e" stroke="#c8b98a" stroke-width="2.2" stroke-linejoin="round">
+<path d="M182 56 L172 72 168 92 176 108 170 124 158 138 150 160 136 172 126 186 132 198 120 214 128 226 146 232 156 246 150 262 140 280 128 300 124 322 116 342 112 368 118 386 112 404 120 424 128 440 140 456 150 470 140 486 146 498 164 506 186 512 204 508 222 498 240 500 262 494 284 498 304 510 326 516 346 512 362 500 382 494 404 490 428 482 452 476 474 470 498 462 520 446 532 428 528 412 540 398 556 380 570 364 584 348 596 330 608 312 612 290 606 270 592 254 572 244 548 238 524 236 500 232 478 226 456 228 432 238 410 244 392 236 378 222 366 206 350 196 342 176 344 158 336 138 328 114 316 90 314 70 298 54 276 42 252 36 228 38 206 44 Z"/>
+<path d="M300 40 L318 36 336 44 340 60 328 72 310 70 300 58 Z"/>
 </g>
-<!-- routes 일반교역 (green, curved) -->
-<g fill="none" stroke="#2e9e3e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-<path d="M140 202 C170 190 200 175 225 170 C245 160 260 152 268 158 C285 175 275 190 268 212 C262 240 280 265 295 275 C320 285 350 275 380 270 C400 280 420 290 440 280 C455 275 465 278 475 285 C500 300 530 320 555 318 C568 315 570 312 568 312"/>
-<path d="M380 270 C375 300 360 340 330 365 C300 372 270 375 245 385 C215 400 195 430 178 455"/>
-<path d="M178 455 C200 440 225 430 260 432 C300 434 330 440 365 437 C400 432 440 405 465 385 C500 360 540 335 565 315"/>
-<path d="M465 385 C470 410 480 440 490 460"/>
+<!-- coastal shelf -->
+<path d="M182 56 L172 72 168 92 176 108 170 124 158 138 150 160 136 172 126 186" fill="none" stroke="#c8b98a" stroke-width=".8" opacity=".35" transform="translate(-6 0)"/>
+<!-- region borders (dotted) -->
+<g fill="none" stroke="#8a7a58" stroke-width="1" stroke-dasharray="3 3" opacity=".9">
+<path d="M150 230 C200 225 240 222 268 214 C290 212 320 222 345 236"/>
+<path d="M140 340 C190 335 240 345 300 350 C340 352 380 350 420 340 C460 332 500 330 540 340"/>
+<path d="M300 350 C310 380 320 405 340 420 C360 430 380 440 360 470"/>
+<path d="M400 244 C405 270 420 300 430 330"/>
+<path d="M200 470 C240 460 280 465 320 480"/>
 </g>
-<!-- port exits -->
-<g fill="none" stroke="#2e9e3e" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#a)">
-<path d="M140 202 C110 215 85 220 65 238"/>
-<path d="M175 490 C150 500 125 505 105 505"/>
-<path d="M490 460 C505 470 515 475 525 482"/>
+<!-- mountain ridges / volcanoes / cliffs -->
+<g fill="none" stroke="#a58a5a" stroke-width="1.2" stroke-linejoin="round">
+<path d="M186 62 l8-12 8 12 M192 54 l2-4"/>
+<path d="M196 96 l9-14 9 14 M218 98 l7-10 7 10"/>
+<path d="M212 120 C240 112 270 118 300 130 C320 140 330 150 325 165"/>
+<path d="M150 410 l7-11 7 11 l7-11 7 11 l7-11 7 11"/>
+<path d="M146 430 l6-9 6 9 l6-9 6 9"/>
+<path d="M232 258 l7-10 7 10 l7-10 7 10 l7-10 7 10 l7-10 7 10"/>
+<path d="M486 296 C500 286 520 286 534 296 M494 304 C510 296 524 298 536 306"/>
+<path d="M210 420 C230 412 250 416 262 428 M214 436 C232 428 252 432 266 442"/>
+<path d="M380 410 C400 404 424 410 436 424 M384 450 C404 446 424 452 436 462"/>
+<path d="M440 360 C460 350 490 352 510 362"/>
 </g>
-<defs><marker id="a" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2e9e3e"/></marker></defs>
+<!-- forests -->
+<g fill="none" stroke="#4d7c4f" stroke-width="1">
+<path d="M236 214 a5 5 0 1 1 9 0 M248 220 a5 5 0 1 1 9 0 M240 226 a5 5 0 1 1 9 0"/>
+<path d="M322 470 a5 5 0 1 1 9 0 M334 476 a5 5 0 1 1 9 0 M344 468 a5 5 0 1 1 9 0"/>
+</g>
+<!-- rivers / lakes / falls -->
+<g fill="none" stroke="#38bdf8" stroke-width="1.4" stroke-linecap="round" opacity=".85">
+<path d="M290 140 C285 165 275 190 270 214 C266 240 262 260 252 300 C246 320 238 330 232 345"/>
+<path d="M330 350 C340 375 352 400 365 437 C372 460 380 480 392 494"/>
+<path d="M470 240 C468 255 470 268 470 281 C474 300 480 320 476 340"/>
+<ellipse cx="320" cy="56" rx="12" ry="8" fill="#1e3a52"/>
+<path d="M242 302 v8 M246 302 v8" stroke-width="1"/>
+</g>
+<!-- 일반교역 routes -->
+<g fill="none" stroke="#4ade80" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+<path d="M140 203 C170 190 200 180 222 175 C240 172 255 165 262 157 C275 165 280 180 270 213 C266 240 280 268 300 278 C330 284 360 278 383 265"/>
+<path d="M383 265 C400 280 425 285 445 275 C458 270 465 275 470 281 C485 300 505 318 530 322 C548 322 560 316 567 312"/>
+<path d="M383 265 C370 300 350 340 318 371 C290 380 250 395 225 415 C205 432 185 445 167 452"/>
+<path d="M167 452 C200 440 230 430 260 432 C300 436 335 440 365 437 C400 432 435 420 463 382"/>
+<path d="M567 312 C540 345 500 370 463 382"/>
+<path d="M140 203 L64 238" marker-end="url(#ar)" stroke-dasharray="6 4"/>
+<path d="M167 452 C160 470 150 480 148 488 L72 502" marker-end="url(#ar)" stroke-dasharray="6 4"/>
+<path d="M463 382 C480 410 500 440 515 455 L548 482" marker-end="url(#ar)" stroke-dasharray="6 4"/>
+</g>
+<!-- 물물교역 links -->
+<g fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="2 4" stroke-linecap="round">
+<path d="M262 157 C255 110 250 70 248 44"/>
+<path d="M365 437 C350 460 335 480 322 492"/>
+</g>
 <!-- bridges -->
-<g stroke="#d4282c" stroke-width="7" stroke-linecap="round">
-<path d="M268 205 l2 12"/><path d="M465 278 l10 8"/><path d="M310 371 l14 -2"/><path d="M358 437 l14 2"/>
+<g stroke="#ef4444" stroke-width="5" stroke-linecap="round">
+<path d="M268 207 l4 12"/><path d="M312 371 h12"/><path d="M465 276 l9 9"/><path d="M358 436 h14"/>
 </g>
 <!-- trade posts -->
 <g font-size="11" font-weight="700" text-anchor="middle">
-<g fill="#2e9e3e" stroke="#1d5e27"><rect x="255" y="148" width="16" height="16" rx="2"/><rect x="376" y="258" width="16" height="16" rx="2"/><rect x="560" y="304" width="16" height="16" rx="2"/><rect x="160" y="444" width="16" height="16" rx="2"/></g>
-<g fill="#fff"><text x="263" y="160">교</text><text x="384" y="270">교</text><text x="568" y="316">교</text><text x="168" y="456">교</text></g>
-<g fill="#36b6c4" stroke="#1d6b75"><rect x="236" y="28" width="16" height="16" rx="2"/><rect x="456" y="374" width="16" height="16" rx="2"/><rect x="316" y="488" width="16" height="16" rx="2"/></g>
-<g fill="#fff"><text x="244" y="40">물</text><text x="464" y="386">물</text><text x="324" y="500">물</text></g>
+<g fill="#16a34a" stroke="#0f1a24"><rect x="254" y="149" width="16" height="16" rx="2"/><rect x="375" y="257" width="16" height="16" rx="2"/><rect x="559" y="304" width="16" height="16" rx="2"/><rect x="159" y="444" width="16" height="16" rx="2"/></g>
+<g fill="#fff"><text x="262" y="161">교</text><text x="383" y="269">교</text><text x="567" y="316">교</text><text x="167" y="456">교</text></g>
+<g fill="#0891b2" stroke="#0f1a24"><rect x="232" y="28" width="16" height="16" rx="2"/><rect x="455" y="374" width="16" height="16" rx="2"/><rect x="314" y="489" width="16" height="16" rx="2"/></g>
+<g fill="#fff"><text x="240" y="40">물</text><text x="463" y="386">물</text><text x="322" y="501">물</text></g>
 </g>
-<g font-size="11" fill="#3b2f20" text-anchor="middle">
-<text x="258" y="40" text-anchor="start" font-weight="700">NPC: 로우리</text>
-<text x="478" y="386" text-anchor="start" font-weight="700">NPC: 니알</text>
-<text x="324" y="520" font-weight="700">NPC: 고른</text>
-<text x="200" y="58">페라 화산</text><text x="320" y="60">칼리다 호수</text>
-<text x="230" y="150" font-weight="700" fill="#8a5a00">발레스</text>
-<text x="165" y="186">셀라 해변</text><text x="112" y="200" font-weight="700" fill="#8a5a00">셀라 항구</text>
-<text x="300" y="195">루펜 이 계곡</text><text x="245" y="208">실바 숲</text>
-<text x="270" y="245">라테르 고산지</text><text x="190" y="270">솔레아</text>
-<text x="335" y="285">헤르바 밀림</text><text x="370" y="287" font-weight="700" fill="#8a5a00">코르 마을</text>
-<text x="430" y="268">케나이 사바나</text><text x="505" y="292">에탈스 협곡</text><text x="545" y="300" font-weight="700" fill="#8a5a00">필리아</text>
-<text x="285" y="330">판타이 늪지대</text><text x="240" y="385">메이즈 평원</text>
-<text x="415" y="375">루페스 사막</text><text x="155" y="405">누베스 산맥</text>
-<text x="245" y="432">카이바 협곡</text><text x="265" y="455">무유 사막</text><text x="405" y="432">나레스 고원</text>
-<text x="210" y="465" font-weight="700" fill="#8a5a00">라노 베이스 캠프</text><text x="160" y="490" font-weight="700" fill="#8a5a00">켈라 항구</text>
-<text x="510" y="455" font-weight="700" fill="#8a5a00">콘누스 항구</text><text x="335" y="480">카루 숲</text>
+<!-- labels -->
+<g font-size="9" fill="#cbbf9a" text-anchor="middle" paint-order="stroke" stroke="#0f1a24" stroke-width="2.5">
+<text x="196" y="50">페라 화산</text><text x="208" y="112">라스파 화산</text><text x="320" y="82">칼리다 호수</text><text x="322" y="142">바르바</text>
+<text x="168" y="186">셀라 헤븐</text><text x="305" y="194">쿠루이 계곡</text><text x="245" y="242">실바 숲</text><text x="282" y="256">라테로 고산지</text>
+<text x="190" y="272">솔레아</text><text x="322" y="296">아르바 밀림</text><text x="430" y="262">케나이 사바나</text><text x="508" y="285">에랑스 협곡</text>
+<text x="245" y="292">랍파</text><text x="244" y="322">에르케 폭포</text><text x="300" y="332">판타이 늪지대</text><text x="245" y="384">메이즈 평원</text>
+<text x="160" y="400">누베스 산맥</text><text x="420" y="370">루페스 사막</text><text x="400" y="394">메투스</text><text x="490" y="358">론가 사막</text>
+<text x="228" y="426">카이바 협곡</text><text x="292" y="458">무유 사막</text><text x="408" y="430">나레스 고원</text><text x="340" y="486">카루 숲</text>
 </g>
-<g font-size="12" font-weight="700" fill="#1f1a12" text-anchor="middle">
-<text x="55" y="255">케안항구</text><text x="55" y="270">(반호르)</text>
-<text x="60" y="520">카브항구</text><text x="60" y="535">(던바튼/벨바스트)</text>
-<text x="560" y="495">케안항구</text><text x="560" y="510">(반호르)</text>
+<g font-size="10" font-weight="700" fill="#fbbf24" text-anchor="middle" paint-order="stroke" stroke="#0f1a24" stroke-width="3">
+<text x="236" y="152">발레스</text><text x="134" y="198">셀라 항구</text><text x="372" y="285">코르 마을</text><text x="570" y="298">필리아</text>
+<text x="200" y="470">라 베스 캠프</text><text x="130" y="478">켈라 항구</text><text x="510" y="448">론누스 항구</text>
 </g>
-<text x="40" y="70" font-size="26" letter-spacing="6" fill="#5b4a32" font-family="serif">IRIA</text>
-<g font-size="12" fill="#1f1a12">
-<rect x="500" y="18" width="140" height="92" rx="6" fill="#fffaf0" stroke="#5b4a32"/>
-<rect x="510" y="28" width="14" height="14" fill="#2e9e3e"/><text x="530" y="40">일반 교역소</text>
-<rect x="510" y="48" width="14" height="14" fill="#36b6c4"/><text x="530" y="60">물물 교역소</text>
-<path d="M510 74h14" stroke="#d4282c" stroke-width="6"/><text x="530" y="79">다리</text>
-<path d="M510 94h14" stroke="#2e9e3e" stroke-width="3"/><text x="530" y="99">이동 경로</text>
+<g font-size="10" fill="#e5e7eb" text-anchor="middle" paint-order="stroke" stroke="#0f1a24" stroke-width="3">
+<text x="290" y="40">NPC: 로우리</text><text x="505" y="386">NPC: 니알</text><text x="322" y="520">NPC: 고른</text>
+<text x="52" y="252">케안항구</text><text x="52" y="264">(반호르)</text><text x="570" y="500">케안항구</text><text x="570" y="512">(반호르)</text>
+<text x="62" y="518">카브항구</text><text x="62" y="530">(던바튼/벨바스트)</text>
 </g>
+<text x="60" y="68" font-size="22" letter-spacing="6" fill="#c8b98a" font-family="serif">IRIA</text>
+<!-- legend -->
+<g font-size="10" fill="#e5e7eb"><rect x="470" y="16" width="174" height="104" rx="6" fill="#0b141c" stroke="#3b4a58" opacity=".92"/>
+<rect x="480" y="25" width="12" height="12" fill="#16a34a"/><text x="498" y="35">일반 교역소</text>
+<rect x="480" y="42" width="12" height="12" fill="#0891b2"/><text x="498" y="52">물물 교역소 (NPC)</text>
+<path d="M480 65h14" stroke="#4ade80" stroke-width="3"/><text x="498" y="68">이동 경로 / 항로(점선)</text>
+<path d="M480 80h14" stroke="#38bdf8" stroke-width="2" stroke-dasharray="2 3"/><text x="498" y="83">물교 접근로 · 강</text>
+<path d="M480 95h14" stroke="#ef4444" stroke-width="5"/><text x="498" y="98">다리</text>
+<path d="M480 110h14" stroke="#8a7a58" stroke-dasharray="3 3"/><text x="498" y="113">지역 경계 · ⛰ 산맥</text></g>
 </svg>
