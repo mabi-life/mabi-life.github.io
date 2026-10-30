@@ -60,7 +60,7 @@ input[type=text]:focus{outline:none;border-color:var(--gold)}
 table.cp{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px}.cp th,.cp td{padding:7px 8px;border-bottom:1px solid rgba(247,217,139,.12);text-align:right}.cp th{color:var(--mu);font-weight:500}.cp td:first-child,.cp th:first-child{text-align:left}.cp input{width:110px;text-align:right;padding:5px 8px!important}.cp tr.best td{color:var(--gold);font-weight:700}.cp tbody tr{cursor:pointer}.cp tr.sel td{background:rgba(247,217,139,.1)}.cp tr.best td:first-child::after{content:" ★";font-size:11px}
 .note{font-size:12px;color:var(--mu);margin-top:10px;line-height:1.7}
 .wrap{max-width:1240px}.cols{display:grid;grid-template-columns:minmax(440px,520px) 1fr;gap:18px;align-items:start}
-.cols .fee{position:sticky;top:16px;margin:0;max-height:calc(100vh - 32px);overflow:auto}.cols .fg{grid-template-columns:1fr 1fr}.cols .res{grid-template-columns:1fr 1fr}
+.cols .fee{margin:0}.cols>div>.bar:first-child{margin-top:0}.cols .fg{grid-template-columns:1fr 1fr}.cols .res{grid-template-columns:1fr 1fr}
 .cols .cp{font-size:12.5px}.cols .cp input{width:100px}.cols .cp td:first-child{white-space:nowrap}.colH{font-size:13px;color:var(--mu);font-weight:700;margin:0 0 8px}
 @media(max-width:900px){.cols{grid-template-columns:1fr}.cols .fee{position:static;max-height:none}}
 @media(max-width:700px){.cols .fg{grid-template-columns:1fr}.cols .cp th:nth-child(4),.cols .cp td:nth-child(4){display:none}.fg{grid-template-columns:1fr}.res{grid-template-columns:1fr 1fr}}
@@ -108,5 +108,5 @@ table.cp{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px}.c
 <div class="zoom" id="zoom"><div class="zbox"><img alt="" id="zimg"><div class="zt" id="zt"></div><div class="zm" id="zm"></div><div class="foot" style="margin-top:12px"><button class="btn ghost" id="zDel" style="margin-right:auto;border-color:rgba(229,72,93,.6);color:#ffb3bd">삭제</button><button class="btn" id="zShare">🔗 공유</button><button class="btn ghost" id="zShareImg" title="작은 이미지를 넣어서 링크가 길어져요">🖼 이미지 포함 공유</button><button class="btn" id="zEdit">수정</button><button class="btn gold" id="zClose">닫기</button></div></div></div>
 <footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br>시세는 10분 단위로 갱신되고 있습니다.<br>마비노기 공식 서비스와 관련 없는 비공식 팬 도구입니다.<br><a href="/privacy/">개인정보처리방침</a></footer>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="names.js?v=1.8.3"></script><script src="ocr.js?v=1.8.3"></script><script src="app.js?v=1.8.3"></script><script src="fee.js?v=1.8.4"></script>
+<script src="names.js?v=1.8.3"></script><script src="ocr.js?v=1.8.3"></script><script src="app.js?v=1.8.3"></script><script src="fee.js?v=1.8.5"></script>
 </body></html>

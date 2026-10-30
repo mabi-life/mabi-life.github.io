@@ -94,10 +94,11 @@ function toggle(id,el){if(busy)return;const root=$('root');const dep=+el.dataset
   const sv=root.querySelector('svg.lines');sv&&sv.animate([{opacity:1},{opacity:0}],{duration:180,fill:'forwards'});
   setTimeout(()=>{busy=0;Object.keys(st.open).forEach(k=>{if(k===id||k.startsWith(id+'/'))delete st.open[k]});window._act={id,open:0,dep};save();render()},180)}
  else{el.classList.add('press');busy=1;setTimeout(()=>{busy=0;st.open[id]=1;window._act={id,open:1,dep};save();render()},110)}}
-function fillGoals(){if(st.goal>=RECIPES.length)st.goal=0;const G=[['소울 시리즈',/^소울/],['더스크 시리즈',/^더스크/]],used={};
- let h=G.map(([t,re])=>{const o=RECIPES.map((r,i)=>re.test(r.n)?(used[i]=1,`<option value="${i}">${r.n}</option>`):'').join('');return o?`<optgroup label="「${t}」">${o}</optgroup>`:''}).join('');
- const rest=RECIPES.map((r,i)=>used[i]?'':`<option value="${i}">${r.n}</option>`).join('');if(rest)h+=`<optgroup label="기타">${rest}</optgroup>`;
- $('goalSel').innerHTML=h;$('goalSel').value=st.goal}
+function fillGoals(){if(st.goal>=RECIPES.length)st.goal=0;const opt=re=>RECIPES.map((r,i)=>re.test(r.n)?`<option value="${i}">${r.n}</option>`:'').join('');
+ const so=opt(/^소울/),du=opt(/^더스크/),et=opt(/^(?!소울|더스크)/);
+ $('goalSoul').innerHTML='<option value="">— 선택 —</option>'+so+et;$('goalDusk').innerHTML='<option value="">— 선택 —</option>'+du;
+ const n=(RECIPES[st.goal]||{}).n||'',isD=/^더스크/.test(n);$('goalSoul').value=isD?'':st.goal;$('goalDusk').value=isD?st.goal:'';$('goalSel').innerHTML=so+du+et;$('goalSel').value=st.goal}
+['goalSoul','goalDusk'].forEach(k=>$(k).addEventListener('change',e=>{if(e.target.value==='')return;st.goal=+e.target.value;fillGoals();save();render();syncCoin()}));
 // 제작 목표 ↔ 코인 탭 연동: 목표 재료 중 구슬 상점 재료의 (부족 수량 × 교환 코인) 합계
 window.craftCoinNeed=function(){const R=RECIPES[st.goal];if(!R)return null;const o={};
  matsOf(R).forEach(c=>{const cn=MC.COST[c[0]];if(!cn)return;const z=nodeCost(c,st.qty);const t=o[cn.tab]=o[cn.tab]||{total:0,list:[]};t.total+=z.need*cn.cost;t.list.push({n:c[0],qty:z.need,cost:cn.cost})});
