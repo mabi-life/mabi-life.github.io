@@ -1,27 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" font-family="Gothic A1,Malgun Gothic,sans-serif">
 <title>이리아 교역 약도 (자체 제작 · 개략)</title>
 <rect width="640" height="420" fill="#0f1a33"/>
-<path d="M70 210 C60 140 120 70 210 55 C300 35 420 40 500 70 C580 100 610 170 590 240 C575 300 520 360 430 375 C330 392 220 385 150 350 C95 322 78 270 70 210Z" fill="#241f45" stroke="#6b62b0" stroke-width="2"/>
+<path d="M200 30 L260 20 L300 40 L330 70 L345 110 L320 140 L310 165 L400 175 L470 165 L560 180 L600 210 L590 260 L560 300 L490 315 L420 330 L380 360 L360 395 L290 400 L210 395 L170 380 L130 345 L120 295 L150 260 L170 220 L160 185 L130 150 L140 110 L175 90 Z" fill="#241f45" stroke="#6b62b0" stroke-width="2"/>
 <g fill-opacity=".55" stroke="none">
-<path d="M210 55 C300 35 420 40 500 70 L470 140 L240 140 Z" fill="#3a4f7a"/>
-<path d="M500 70 C580 100 610 170 590 240 L490 220 L470 140Z" fill="#4a3c6e"/>
-<path d="M70 210 C60 140 120 70 210 55 L240 140 L230 300 L150 350 C95 322 78 270 70 210Z" fill="#6e3a3a"/>
-<path d="M240 140 L470 140 L490 220 L430 300 L230 300Z" fill="#7a6a3a"/>
-<path d="M230 300 L430 300 L490 220 L590 240 C575 300 520 360 430 375 C330 392 220 385 150 350Z" fill="#2f5a3e"/>
+<path d="M200 30 L260 20 L300 40 L330 70 L345 110 L320 140 L250 120 L175 90 Z" fill="#4a3c6e"/>
+<path d="M175 90 L250 120 L320 140 L310 165 L240 170 L170 180 L160 185 L130 150 L140 110 Z" fill="#3a4f7a"/>
+<path d="M170 180 L240 170 L310 165 L400 175 L410 230 L330 260 L190 265 L150 260 L170 220 Z" fill="#7a6a3a"/>
+<path d="M400 175 L470 165 L560 180 L600 210 L590 260 L560 300 L490 315 L410 300 L360 270 L410 230 Z" fill="#6e3a3a"/>
+<path d="M150 260 L190 265 L330 260 L360 270 L410 300 L420 330 L380 360 L360 395 L290 400 L210 395 L170 380 L130 345 L120 295 Z" fill="#2f5a3e"/>
 </g>
 <g fill="#cfc8f5" font-size="15" font-weight="700" text-anchor="middle" opacity=".8">
-<text x="350" y="100">피시스</text><text x="540" y="160">자르딘</text><text x="150" y="190">라노</text><text x="360" y="200">콘누스</text><text x="400" y="345">쿠르클레</text></g>
+<text x="265" y="70">자르딘</text><text x="235" y="150">피시스</text><text x="300" y="215">쿠르클레</text><text x="520" y="215">콘누스</text><text x="260" y="330">라노</text></g>
 <g fill="none" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 7">
-<path d="M165 255 L120 300 L95 230" stroke="#ff9a5c"/>
-<path d="M440 260 L360 230 L280 160" stroke="#5cd6ff"/></g>
+<path d="M216 42 L312 50 L170 140" stroke="#ff9a5c"/>
+<path d="M332 360 L480 267 L578 236" stroke="#5cd6ff"/></g>
 <g font-size="12" fill="#ece8ff">
-<circle cx="165" cy="255" r="7" fill="#ff9a5c"/><text x="175" y="259">① 페라</text>
-<circle cx="120" cy="300" r="7" fill="#ff9a5c"/><text x="130" y="318">② 칼리다</text>
-<circle cx="440" cy="260" r="7" fill="#5cd6ff"/><text x="450" y="264">① 카루숲</text>
-<circle cx="360" cy="230" r="7" fill="#5cd6ff"/><text x="330" y="252">② 오아시스</text>
-<circle cx="200" cy="370" r="7" fill="#f7d98b"/><text x="212" y="380">스카하</text>
-<path d="M88 222 l7 -14 l7 14z" fill="#f7d98b"/><text x="40" y="215">⚓ 셀라 항구</text>
-<path d="M273 152 l7 -14 l7 14z" fill="#f7d98b"/><text x="292" y="150">⚓ 콘누스 항구</text></g>
+<circle cx="216" cy="42" r="7" fill="#ff9a5c"/><text x="150" y="46">① 페라</text>
+<circle cx="312" cy="50" r="7" fill="#ff9a5c"/><text x="322" y="54">② 칼리다</text>
+<circle cx="332" cy="360" r="7" fill="#5cd6ff"/><text x="342" y="378">① 카루숲</text>
+<circle cx="480" cy="267" r="7" fill="#5cd6ff"/><text x="450" y="290">② 오아시스</text>
+<circle cx="150" cy="365" r="7" fill="#f7d98b"/><text x="96" y="390">스카하</text>
+<path d="M163 147 l7 -14 l7 14z" fill="#f7d98b"/><text x="60" y="146">⚓ 셀라 항구</text>
+<path d="M578 243 l7 -14 l7 14z" fill="#f7d98b"/><text x="540" y="262">⚓ 콘누스 항구</text></g>
 <g font-size="11" fill="#a9a2d6"><rect x="440" y="14" width="190" height="52" rx="8" fill="#141029" opacity=".85"/>
 <line x1="452" y1="30" x2="480" y2="30" stroke="#ff9a5c" stroke-width="4" stroke-dasharray="8 5"/><text x="486" y="34">페라→칼리다→셀라</text>
 <line x1="452" y1="50" x2="480" y2="50" stroke="#5cd6ff" stroke-width="4" stroke-dasharray="8 5"/><text x="486" y="54">카루숲→오아시스→콘누스</text>
