@@ -83,10 +83,10 @@ function render(){const R=RECIPES[st.goal],q=st.qty,M=matsOf(R),S=stepsOf(R);con
      :[{transform:`translate(${dx}px,${dy}px)`,easing:'cubic-bezier(.5,0,.2,1)'},{transform:'translate(0,-5px) scale(1.04,.96)',offset:.65,easing:'cubic-bezier(.3,1.6,.5,1)'},{transform:'translate(0,1px)',offset:.85},{transform:'none'}])
      :[{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:me?(A.open?560:480):480,easing:me?undefined:'cubic-bezier(.34,1.3,.64,1)'})}
    else{const d=e.dataset.id.startsWith(A.id+'/')?(+e.dataset.dep-A.dep-1):0;e.animate([{opacity:0,transform:'translateY(-18px) scale(.94)'},{opacity:1,transform:'none'}],{duration:420,delay:280+d*90+(moved++%12)*18,fill:'backwards',easing:'cubic-bezier(.34,1.56,.64,1)'})}})}
- root.querySelectorAll('input[data-n]').forEach(i=>{i.onclick=e=>e.stopPropagation();i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render()}});
+ root.querySelectorAll('input[data-n]').forEach(i=>{i.onclick=e=>e.stopPropagation();i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render();syncCoin()}});
  $('tot').innerHTML=`<span>목표 <b>${R.n}</b> ×${q}</span><span>1단계 재료 ${R.c.length}종${R.fin?` + 마감재 ${(R.fin[0]||[]).length}종`:''}</span>${R.pct?`<span>공정 횟수 <input id="stepsIn" type="number" min="1" value="${S}" style="width:4em" title="기본값 = ${AVG(R)}회 (공정 1회 성공 시 최대 ${R.pct}% 기준 이론 최소 횟수 · 실패 많으면 직접 늘려 입력)">회 <small>(1단계 재료 수량 = 1회분 × ${S}회 기준)</small></span>`:''}<span>최저 재료비 <b>${f(tot)}</b>${miss?` · 시세 없는 재료 ${miss}종 제외`:''}</span><span>경매장 완제품 <b>${gp?f(gp):'—'}</b></span>`;
  $('cond').innerHTML=`제작 조건 · 스킬 <b>${R.skill}</b> · 도구 <b>${R.tool}</b> · 시설 <b>${R.fac}</b>${R.pct?` · 공정 1회당 최대 <b>${R.pct}%</b> (공정 성공 시 ${R.pct/2}~${R.pct}% · 대성공 시 최대 ${R.pct*1.5}% · 실패 시 0~${R.pct/2}% 랜덤) → 기본 <b>${AVG(R)}회</b> 기준 (공정 성공 시 최대 ${R.pct}% 기준 이론 최소 · 실패·대실패가 섞이면 더 늘어나므로 위 입력칸에서 조정), 대성공만 나면 최소 ${Math.ceil(100/(R.pct*1.5))}회 · 매 공정 재료 1세트 소모, 재료비 ×${S} 반영<br><small>공정률 증가: 해당 스킬 파티(풀파티일수록↑), 레인캐스팅(천옷)만 적용 · 월요일·풍년가·세공은 성공률/품질만</small>`:''}${R.fin?`<br>마감 재료 · ${R.fin.map((t,i)=>`[타입${i+1}] `+t.map(x=>`${x[0]} <b>×${x[1]}</b>`).join(', ')).join(' / ')} <small>(100% 완성 후 마감 1회 · 재료비 포함)</small>`:''} · 시세 ${PT||'—'}<br>구슬 시세 · ${Object.keys(MC.SHOPS||{}).map(t=>`<a href="#coin-${t}">${MC.SHOPS[t].name}</a> <b>${BP[t]?f(Math.round(BP[t].p))+'G':'—'}</b>`).join(' · ')} <small>(아래 정가 코인 섹션의 직접 입력값 공유 · 재료비는 경매/코인/제작 중 최저)</small>`}
-$('tot').addEventListener('change',e=>{if(e.target.id!=='stepsIn')return;const R=RECIPES[st.goal];st.steps=st.steps||{};st.steps[R.n]=Math.max(1,+e.target.value||1);save();render()});
+$('tot').addEventListener('change',e=>{if(e.target.id!=='stepsIn')return;const R=RECIPES[st.goal];st.steps=st.steps||{};st.steps[R.n]=Math.max(1,+e.target.value||1);save();render();syncCoin()});
 let busy=0;
 function toggle(id,el){if(busy)return;const root=$('root');const dep=+el.dataset.dep;
  if(st.open[id]){busy=1;const sub=[...root.querySelectorAll('.nd')].filter(e=>e.dataset.id.startsWith(id+'/'));
@@ -94,13 +94,21 @@ function toggle(id,el){if(busy)return;const root=$('root');const dep=+el.dataset
   const sv=root.querySelector('svg.lines');sv&&sv.animate([{opacity:1},{opacity:0}],{duration:180,fill:'forwards'});
   setTimeout(()=>{busy=0;Object.keys(st.open).forEach(k=>{if(k===id||k.startsWith(id+'/'))delete st.open[k]});window._act={id,open:0,dep};save();render()},180)}
  else{el.classList.add('press');busy=1;setTimeout(()=>{busy=0;st.open[id]=1;window._act={id,open:1,dep};save();render()},110)}}
-function fillGoals(){if(st.goal>=RECIPES.length)st.goal=0;$('goalSel').innerHTML=RECIPES.map((r,i)=>`<option value="${i}">${r.n}</option>`).join('');$('goalSel').value=st.goal}fillGoals();$('goalQty').value=st.qty;
-$('goalSel').onchange=e=>{st.goal=+e.target.value;save();render()};$('goalQty').onchange=e=>{st.qty=Math.max(1,+e.target.value||1);e.target.value=st.qty;save();render()};
-$('resetBtn').onclick=()=>{st.own={};st.open={};save();render()};
+function fillGoals(){if(st.goal>=RECIPES.length)st.goal=0;const G=[['소울 시리즈',/^소울/],['더스크 시리즈',/^더스크/]],used={};
+ let h=G.map(([t,re])=>{const o=RECIPES.map((r,i)=>re.test(r.n)?(used[i]=1,`<option value="${i}">${r.n}</option>`):'').join('');return o?`<optgroup label="「${t}」">${o}</optgroup>`:''}).join('');
+ const rest=RECIPES.map((r,i)=>used[i]?'':`<option value="${i}">${r.n}</option>`).join('');if(rest)h+=`<optgroup label="기타">${rest}</optgroup>`;
+ $('goalSel').innerHTML=h;$('goalSel').value=st.goal}
+// 제작 목표 ↔ 코인 탭 연동: 목표 재료 중 구슬 상점 재료의 (부족 수량 × 교환 코인) 합계
+window.craftCoinNeed=function(){const R=RECIPES[st.goal];if(!R)return null;const o={};
+ matsOf(R).forEach(c=>{const cn=MC.COST[c[0]];if(!cn)return;const z=nodeCost(c,st.qty);const t=o[cn.tab]=o[cn.tab]||{total:0,list:[]};t.total+=z.need*cn.cost;t.list.push({n:c[0],qty:z.need,cost:cn.cost})});
+ return {goal:R.n,qty:st.qty,tabs:o,tab:/^소울/.test(R.n)?'bri':/^더스크/.test(R.n)?'tala':(Object.keys(o)[0]||null)}};
+function syncCoin(){const N=window.craftCoinNeed();if(N&&N.tab){const b=document.querySelector('#tabs button[data-k="'+N.tab+'"]');if(b&&!b.classList.contains('on'))b.click()}document.dispatchEvent(new Event('craftneed'))}fillGoals();$('goalQty').value=st.qty;
+$('goalSel').onchange=e=>{st.goal=+e.target.value;save();render();syncCoin()};$('goalQty').onchange=e=>{st.qty=Math.max(1,+e.target.value||1);e.target.value=st.qty;save();render();syncCoin()};
+$('resetBtn').onclick=()=>{st.own={};st.open={};save();render();syncCoin()};
 render();
 fetch('/prices.json?t='+Date.now()).then(r=>r.json()).then(j=>{P=j.prices||{};const t=Object.values(P).map(v=>v.t).filter(Boolean).sort().pop();PT=t?t.slice(0,16).replace('T',' '):'';render()}).catch(()=>{});
 
-fetch('/craft/recipes.json?t='+Date.now()).then(r=>r.json()).then(j=>{if(Array.isArray(j)&&j.length){RECIPES=j;fillGoals();render()}}).catch(()=>{});
+fetch('/craft/recipes.json?t='+Date.now()).then(r=>r.json()).then(j=>{if(Array.isArray(j)&&j.length){RECIPES=j;fillGoals();render();syncCoin()}}).catch(()=>{});
 let HRows=[];function reBeads(){if(!MC.beadTable)return;let cs={};try{cs=JSON.parse(localStorage.getItem('mabiCoin.v1')||'{}')}catch(e){}
  const B=MC.beadTable(HRows,cs.paste);BP={};Object.keys(MC.SHOPS).forEach(t=>{BP[t]=MC.beadPick(B,t,cs.beadOv)})}
 fetch('/horn_beads.json?t='+Date.now()).then(r=>r.json()).then(d=>{HRows=d.rows||[];reBeads();render()}).catch(()=>{});

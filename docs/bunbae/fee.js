@@ -25,3 +25,8 @@ $('#price').oninput=()=>{force=null;calc()};$('#n').oninput=calc;$('#refresh').o
 document.getElementById('list').addEventListener('click',e=>{const b=e.target.closest('[data-fee]');if(!b)return;e.stopPropagation();$('#n').value=Math.max(1,+b.dataset.fee||1);calc();$('#price').focus();$('#price').select();if(innerWidth<900)document.querySelector('.fee').scrollIntoView({behavior:'smooth'})},true);
 $('#price').onblur=()=>$('#price').value=f(num($('#price').value));calc();refresh();setInterval(refresh,5*60*1000);
 })();
+
+// 수수료 계산기(왼쪽) 높이 = 오른쪽 분배 목록 박스 높이에 맞춤 (넓은 화면 2단일 때만)
+(function(){var fee=document.querySelector('.cols>.fee'),rt=fee&&fee.nextElementSibling;if(!fee||!rt)return;
+function fit(){if(innerWidth<=900){fee.style.maxHeight='';fee.style.height='';return}var h=Math.max(360,rt.offsetHeight);fee.style.height=h+'px';fee.style.maxHeight=Math.min(h,innerHeight-32)+'px'}
+if(window.ResizeObserver)new ResizeObserver(fit).observe(rt);addEventListener('resize',fit);fit()})();

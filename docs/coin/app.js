@@ -54,25 +54,28 @@ function render(){
  rows.forEach(function(r){r.adv=!!(bp&&r.ppc!=null&&r.ppc>bp.p);r.gain=r.adv?r.p-r.cost*bp.p:0});
  var best=null;rows.forEach(function(r){if(!ign[r.name]&&r.adv&&(!best||r.ppc>best.ppc))best=r});
  var A=rows.filter(function(r){return r.adv&&!ign[r.name]}),need=A.reduce(function(a,r){return a+r.cost},0);
+ var need0=need,CN=window.craftCoinNeed&&window.craftCoinNeed(),CT=CN&&CN.tabs[st.tab];if(CT&&CT.total>0)need=CT.total;
  var max=need||1,pc=need?Math.min(100,Math.floor(own/max*100)):0;
  $('pct').textContent=need?'/'+need+' ('+pc+'%)':'';$('bar').style.width=pc+'%';
- $('sum').innerHTML=!bp?'구슬 시세가 없어 판정할 수 없습니다. (뿔피리 수집 대기 또는 아래 직접 입력)':!A.length?'<span class="bad">현재 구슬 시세('+fmt(bp.p)+'골드)로는 코인 교환이 경매장 구매보다 유리한 아이템이 없습니다.</span> 경매장에서 사는 편이 싸요.':
-  '<span class="ok">코인 교환이 유리한 아이템 <b>'+A.length+'</b>종</span> · 각 1개씩 교환에 필요한 코인 합계 <b>'+fmt(need)+'</b>개 (구슬값 ≈'+fmt(need*bp.p)+'골드 vs 경매가 합 '+fmt(A.reduce(function(a,r){return a+r.p},0))+'골드)'+
-  '<br>👑 가장 유리: <b>'+best.name+'</b> · 코인 '+best.cost+'개 · 경매가보다 <b>'+fmt(best.gain)+'</b>골드 이득'+(own?' · 보유 '+own+'개 → '+(own>=need?'<span class="ok">전부 교환 가능</span>':'<b>'+(need-own)+'</b>개 더 필요'):'');
+ $('sum').innerHTML=(CT&&CT.total>0?'⚒ 제작 목표 <b>'+esc(CN.goal)+'</b> ×'+CN.qty+' 필요 코인 <b>'+fmt(CT.total)+'</b>개 = '+CT.list.map(function(x){return esc(x.n)+' '+fmt(x.qty)+'개×'+x.cost}).join(' + ')+(own?' · 보유 '+fmt(own)+' → '+(own>=CT.total?'<span class="ok">충분</span>':'<b>'+fmt(CT.total-own)+'</b>개 더 필요'):'')+'<br>':'')+(!bp?'구슬 시세가 없어 판정할 수 없습니다. (뿔피리 수집 대기 또는 아래 직접 입력)':!A.length?'<span class="bad">현재 구슬 시세('+fmt(bp.p)+'골드)로는 코인 교환이 경매장 구매보다 유리한 아이템이 없습니다.</span> 경매장에서 사는 편이 싸요.':
+  '<span class="ok">코인 교환이 유리한 아이템 <b>'+A.length+'</b>종</span> · 각 1개씩 교환에 필요한 코인 합계 <b>'+fmt(need0)+'</b>개 (구슬값 ≈'+fmt(need0*bp.p)+'골드 vs 경매가 합 '+fmt(A.reduce(function(a,r){return a+r.p},0))+'골드)'+
+  '<br>👑 가장 유리: <b>'+best.name+'</b> · 코인 '+best.cost+'개 · 경매가보다 <b>'+fmt(best.gain)+'</b>골드 이득'+(own?' · 보유 '+own+'개 → '+(own>=need0?'<span class="ok">전부 교환 가능</span>':'<b>'+(need0-own)+'</b>개 더 필요'):''));
+var isPat=function(r){return /^(도면|옷본) - /.test(r.name)},pats=rows.filter(isPat);rows=rows.filter(function(r){return !isPat(r)});
 var showAll=!bp||!!(st.more||{})[st.tab],rest=bp?rows.filter(function(r){return !r.adv}):[],main=bp?rows.filter(function(r){return r.adv}):rows;
  var tog=rest.length?'<tr class="more"><td colspan="5"><button type="button" id="moreBtn" style="width:100%;padding:6px;cursor:pointer">'+(showAll?'▲ 나머지 접기':'▼ 나머지 '+rest.length+'종 보기')+' <small>(경매 구매가 유리·시세 없음)</small></button></td></tr>':'';
- $('tb').innerHTML=(main.length||!rest.length?'':'<tr><td colspan="5" class="mu">코인 교환이 유리한 아이템이 없습니다.</td></tr>')+(bp?main.concat(showAll?[]:[]):rows).map(ROW).join('')+(bp?tog+(showAll?rest.map(ROW).join(''):''):'');
+ $('tb').innerHTML=(main.length||!rest.length?'':'<tr><td colspan="5" class="mu">코인 교환이 유리한 아이템이 없습니다.</td></tr>')+(bp?main.concat(showAll?[]:[]):rows).map(ROW).join('')+(bp?tog+(showAll?rest.map(ROW).join(''):''):'')+(pats.length?'<tr class="more"><td colspan="5"><button type="button" id="patBtn" style="width:100%;padding:6px;cursor:pointer">'+((st.pat||{})[st.tab]?'▲ 도면·옷본 접기':'▼ 도면·옷본 '+pats.length+'종 보기')+'</button></td></tr>'+((st.pat||{})[st.tab]?pats.map(ROW).join(''):''):'');
  function ROW(r){var ig=!!ign[r.name];
   return '<tr class="'+(ig?'ign':'')+(r.adv||r.ppc==null?'':' nadv')+(r===best?' best':'')+'"><td>'+r.name+'</td><td>'+r.cost+'개<small>('+r.cost+' Coin × 1개)</small></td><td class="p">'+(r.ppc==null?'—':'<b>'+fmt(r.ppc)+'</b>골드<small>경매 '+fmt(r.p)+'</small>')+'</td><td class="v">'+(r.ppc==null||!bp?'—':r.adv?'<span class="ok">코인 유리</span><small>+'+fmt(r.gain)+'</small>':'<span class="mu">경매 구매</span>')+'</td><td><input type="checkbox" data-n="'+r.name.replace(/"/g,'&quot;')+'"'+(ig?' checked':'')+'></td></tr>'}
 }
 $('tabs').onclick=function(e){var k=e.target.closest('button');if(k){st.tab=k.dataset.k;save();render()}};
 $('own').oninput=function(){st.own[st.tab]=Math.max(0,parseInt(this.value)||0);save();render();this.focus()};
-$('tb').onclick=function(e){if(e.target.closest('#moreBtn')){st.more=st.more||{};st.more[st.tab]=!st.more[st.tab];save();render()}};
+$('tb').onclick=function(e){if(e.target.closest('#patBtn')){st.pat=st.pat||{};st.pat[st.tab]=!st.pat[st.tab];save();render();return}if(e.target.closest('#moreBtn')){st.more=st.more||{};st.more[st.tab]=!st.more[st.tab];save();render()}};
 $('tb').onchange=function(e){var n=e.target.dataset.n;if(!n)return;var g=st.ign[st.tab]=st.ign[st.tab]||{};if(e.target.checked)g[n]=1;else delete g[n];save();render()};
 document.querySelector('thead').onclick=function(e){var s=e.target.dataset.s;if(!s)return;if(st.sort===s)st.dir=-st.dir;else{st.sort=s;st.dir=s==='name'?1:-1}save();render()};
 $('paste').value=st.paste||'';
 $('paste').oninput=function(){st.paste=this.value;save();render()};
 $('beadOv').oninput=function(){var v=parseFloat(this.value)||0;if(v>0&&v<1000)v*=1e4;if(v>0)st.beadOv[st.tab]=v;else delete st.beadOv[st.tab];save();render();this.focus()};
+document.addEventListener('craftneed',function(){render()});
 render();
 fetch('/horn_beads.json?t='+Date.now()).then(function(r){return r.json()}).then(function(d){HR=d.rows||[];$('hupd').textContent='뿔피리 수집: '+(d.updated||'—').replace('T',' ').slice(0,16)+' (KST) · 최근 48시간 구슬 관련 '+HR.length+'건';render()}).catch(function(){$('hupd').textContent='뿔피리 데이터를 불러오지 못했습니다.'});
 fetch('/prices.json?t='+Date.now()).then(function(r){return r.json()}).then(function(d){P=d.prices||{};$('upd').textContent='시세 갱신: '+(d.updated||'').replace('T',' ').slice(0,16)+' (KST) · 시세 없는 항목은 — 로 표시';render()}).catch(function(){$('upd').textContent='시세를 불러오지 못했습니다.'});
