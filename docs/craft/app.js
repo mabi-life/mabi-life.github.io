@@ -40,13 +40,13 @@ function render(){const R=RECIPES[gi()],q=st.qty,M=matsOf(R),S=stepsOf(R);const 
  const card=(id,cls,html,title)=>{const e=document.createElement('div');e.className='bal nd '+cls;e.dataset.id=id;e.innerHTML=html;if(title)e.title=title;root.appendChild(e);return e};
  const BC=['#4fc3f7','#ff8a65','#81c784','#ba68c8','#ffd54f','#f06292','#4db6ac','#9575cd','#aed581','#e57373'];
  const mk=(c,mult,pid,dep,bi)=>{const [n,k,r,fz,ps,S]=c;const kind=r?'제작':(z0=>z0.p?'구매':(z0.cn?'코인':'채집'))(nodeCost(c,mult));const z=nodeCost(c,mult);const id=pid+'/'+n;const open=!!(r&&st.open[id]);
-  const el=card(id,(r?'craft':'')+(open?' open':''),bal(n,z.all,+st.own[n]||0,kind,(ps?`<small style="opacity:.65;margin-left:4px">${f(ps)}×${S}회</small>`:'')+(r?`<span class="chev">${open?'▾':'▸'}</span>`:'')+(fz?'<span class="tag" style="color:#ffb74d;border-color:#ffb74d55;margin-left:4px">마감재</span>':''),z),'');el.dataset.rc=tip(c,z,fz?'마감재':kind,mult);
+  const el=card(id,(r?'craft':'')+(open?' open':'')+((+st.own[n]||0)>=z.all&&z.all>0?' done':''),bal(n,z.all,+st.own[n]||0,kind,(ps?`<small style="opacity:.65;margin-left:4px">${f(ps)}×${S}회</small>`:'')+(r?`<span class="chev">${open?'▾':'▸'}</span>`:'')+(fz?'<span class="tag" style="color:#ffb74d;border-color:#ffb74d55;margin-left:4px">마감재</span>':''),z),'');el.dataset.rc=tip(c,z,fz?'마감재':kind,mult);
   el.dataset.dep=dep;const nd={id,el,open,dep,craft:!!r,col:BC[bi%BC.length],kids:open?r.c.map(x=>mk(x,z.sub.runs,id,dep+1,bi)):null};
   if(r)el.onclick=()=>toggle(id,el);return nd};
- const g=card('G','goal craft',bal(R.n,q,+st.own[R.n]||0,'제작',`<span class="chev">${st.closed?'▸':'▾'}</span>`),'');g.dataset.rc=`<b>${R.n}</b> ×${q}<br>현재 경매가 ${gp?`<b>${f(gp)}G</b>`:'—'} · 최저 재료비 <b>${f(tot)}G</b>${R.pct?`<br><b>${S}회 공정</b> 기준 (1단계 재료 = 1회분 × ${S})`:''}<hr style="border:0;border-top:1px solid #fff2;margin:4px 0">`+rcTip(R.n,{skill:R.skill,out:1,c:R.c})+(R.pct?`<br><small>↑ 공정 1회분 수량</small>`:'');
+ const g=card('G','goal craft'+((+st.own[R.n]||0)>=q&&q>0?' done':''),bal(R.n,q,+st.own[R.n]||0,'제작',`<span class="chev">${st.closed?'▸':'▾'}</span>`),'');g.dataset.rc=`<b>${R.n}</b> ×${q}<br>현재 경매가 ${gp?`<b>${f(gp)}G</b>`:'—'} · 최저 재료비 <b>${f(tot)}G</b>${R.pct?`<br><b>${S}회 공정</b> 기준 (1단계 재료 = 1회분 × ${S})`:''}<hr style="border:0;border-top:1px solid #fff2;margin:4px 0">`+rcTip(R.n,{skill:R.skill,out:1,c:R.c})+(R.pct?`<br><small>↑ 공정 1회분 수량</small>`:'');
  g.onclick=()=>{st.closed=!st.closed;save();render()};
  const kids=st.closed?[]:M.map((c,i)=>{const k=mk(c,q,'',1,i);return k});
- const paint=(n)=>{n.el.style.borderColor=n.col;n.el.style.boxShadow='inset 3px 0 0 '+n.col;(n.kids||[]).forEach(paint)};kids.forEach(paint);
+ const paint=(n)=>{n.el.style.borderColor=n.col;n.el.style.boxShadow='inset 3px 0 0 '+n.col;n.el.style.setProperty('--ac',n.col);(n.kids||[]).forEach(paint)};kids.forEach(paint);
  const all=[...root.querySelectorAll('.nd')];all.forEach(e=>{e._w=e.offsetWidth;e._h=e.offsetHeight});
  const GAP=6,VG=22,RH=Math.max(...all.map(e=>e._h)),RY=RH+VG;
  // relative layout: node card centered at x=0 on row 0; prof[row]=[x1,x2]
