@@ -36,15 +36,15 @@ function chart(P,med,mean){if(!P.length)return'';var W=640,H=150,L=48,R=8,T=10,B
  if(mean!=null)g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(mean)+'" y2="'+Y(mean)+'" stroke="#9fd0ff66" stroke-dasharray="2 4"/>';
  P.forEach(function(x){g+='<circle cx="'+X(x.t).toFixed(1)+'" cy="'+Y(x.p).toFixed(1)+'" r="3.6" fill="'+(x.side==='buy'?'#7fd99a':'#ffa86b')+'" fill-opacity="'+(x.any?.45:.9)+'"/>'});
  return '<svg viewBox="0 0 '+W+' '+H+'" class="bchart">'+g+'</svg>'}
-var BPN=null;
+var BPN=null,P0=null;
 function renderBead(){var P=pts(st.tab),h=$('bead'),ps=P.map(function(x){return x.p});var med=median(ps),mean=ps.length?ps.reduce(function(a,b){return a+b},0)/ps.length:null;
- var ov=+st.beadOv[st.tab]||0;BPN=ov>0?{p:ov,src:'직접 입력'}:(med!=null?{p:med,src:'뿔피리 '+ps.length+'건 중앙값'}:null);
+ var ov=+st.beadOv[st.tab]||0,IM=MabiCoin.IMPLIED[st.tab]?MabiCoin.impliedBead(P0,st.tab):null;BPN=ov>0?{p:ov,src:'직접 입력'}:(IM&&IM.p?IM:(med!=null?{p:med,src:'뿔피리 '+ps.length+'건 중앙값'}:null));
  var nb=P.filter(function(x){return x.side==='buy'}).length;
- h.innerHTML='🔮 구슬 시세(개당) <b>'+(BPN?fmt(BPN.p)+'골드':'—')+'</b> <small>'+(BPN?BPN.src:'최근 48시간 뿔피리에 '+SHOPS[st.tab].name+' 가격 글이 없습니다 (다른 구슬·미표기 시세는 쓰지 않음)')+(med!=null&&!ov?' · 평균 '+fmt(mean)+' · 구구 '+nb+'건 · ㅍㅍ '+(ps.length-nb)+'건':'')+'</small>'+
+ h.innerHTML='🔮 구슬 시세(개당) <b>'+(BPN?fmt(BPN.p)+'골드':'—')+'</b> <small>'+(BPN?BPN.src:'최근 48시간 뿔피리에 '+SHOPS[st.tab].name+' 가격 글이 없습니다 (다른 구슬·미표기 시세는 쓰지 않음)')+(IM&&IM.p&&!ov?'<br>재료별 개당 환산: '+IM.list.map(function(x){return esc(x.n)+' '+fmt(x.p)+'÷'+x.cost+'='+fmt(x.u)}).join(' · ')+(IM.out?' (이상치 '+IM.out+'종 제외)':'')+' · 가격 없는 도면·옷본 제외<br>참고 뿔피리':'')+(med!=null&&!ov?' · 평균 '+fmt(mean)+' · 구구 '+nb+'건 · ㅍㅍ '+(ps.length-nb)+'건':'')+'</small>'+
   chart(P,med!=null?med:0,mean)+(P.length?'<div class="leg"><i style="background:#7fd99a"></i>구구(삽니다) <i style="background:#ffa86b"></i>ㅍㅍ(팝니다) <span>해당 상점 구슬로 명시된 글만 · 종류 미표기/거뿔 글 제외 · 점선 = 중앙값(이상치에 강해 기준으로 사용)</span></div>':'');
  $('beadOv').value=st.beadOv[st.tab]||''}
 function render(){
- beadStats();renderBead();
+ beadStats();P0=P;renderBead();
  var sh=SHOPS[st.tab],ign=st.ign[st.tab]||{},own=+st.own[st.tab]||0;
  [].forEach.call($('tabs').children,function(b){b.className=b.dataset.k===st.tab?'on':''});
  $('cname').textContent='⦿ '+sh.name;$('own').value=own||'';st.basis='min';var bp=BPN;

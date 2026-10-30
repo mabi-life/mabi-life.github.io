@@ -35,8 +35,14 @@ function median(a){if(!a.length)return null;a=a.slice().sort(function(x,y){retur
 function beadTable(rows,paste){var acc={};function add(r,src){parseHorn(r.m).forEach(function(q){var a=acc[q.k]=acc[q.k]||{buy:[],sell:[],all:[]};a[q.side].push(q.p);a.all.push(q.p)})}
  var dd={};(rows||[]).forEach(function(r){var key=(r.s||'')+(r.w||'')+r.m.replace(/\[\d+\/\d+명\]/,'');if(dd[key])return;dd[key]=1;add(r)});String(paste||'').split(/\n+/).forEach(function(l){if(l.trim())add({m:l})});
  var B={};Object.keys(acc).forEach(function(k){var a=acc[k];B[k]={buy:median(a.buy),sell:median(a.sell),med:median(a.all),n:a.all.length,_a:a.all}});return B}
-function beadPick(B,tab,ov){var o=+(ov||{})[tab];if(o>0)return{p:o,src:'직접 입력'};var b=B[tab];if(!b)return null;var v=b.med;return v==null?null:{p:v,src:'뿔피리 '+b.n+'건 중앙값'}}
+// 역산 구슬 시세: 구슬 상점 재료의 경매 최저가 ÷ 교환 구슬 수 → 중앙값 (가격 없는 도면·옷본 제외, 중앙값의 0.5~2배 밖 이상치 제외)
+// 탈라 가흐 구슬은 뿔피리 글이 드물어 이 값을 기준으로 사용 (IMPLIED 탭)
+var IMPLIED={tala:1};
+function impliedBead(P,tab){var sh=SHOPS[tab];if(!sh||!P)return null;var L=[];sh.items.forEach(function(x){var e=P[x[0]],v=e&&e.min>0?e.min:null;if(v)L.push({n:x[0],cost:x[1],p:v,u:v/x[1]})});
+ if(!L.length)return null;var m0=median(L.map(function(x){return x.u}));var K=L.filter(function(x){return x.u>=m0*.5&&x.u<=m0*2});var m=median(K.map(function(x){return x.u}));
+ return{p:m,n:K.length,out:L.length-K.length,list:L,src:'경매 재료 '+K.length+'종 역산 중앙값(경매가÷교환 구슬 수)'}}
+function beadPick(B,tab,ov,P){var o=+(ov||{})[tab];if(o>0)return{p:o,src:'직접 입력'};if(IMPLIED[tab]&&P){var I=impliedBead(P,tab);if(I&&I.p)return I}var b=B[tab];if(!b)return null;var v=b.med;return v==null?null:{p:v,src:'뿔피리 '+b.n+'건 중앙값'}}
 // 이름 → {tab, shop, cost}
 var COST={};Object.keys(SHOPS).forEach(function(t){SHOPS[t].items.forEach(function(x){COST[x[0]]={tab:t,shop:SHOPS[t].name,cost:x[1]}})});
-W.MabiCoin={COST:COST,beadTable:beadTable,beadPick:beadPick,SHOPS:SHOPS,parseHorn:parseHorn,median:median};
+W.MabiCoin={impliedBead:impliedBead,IMPLIED:IMPLIED,COST:COST,beadTable:beadTable,beadPick:beadPick,SHOPS:SHOPS,parseHorn:parseHorn,median:median};
 })(window);
