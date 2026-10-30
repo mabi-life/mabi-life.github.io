@@ -1,0 +1,248 @@
+{
+"source": "labanyu.com (tacask-cdn) arcana/skill icons, game client assets ©NEXON",
+"upscale": "2x Lanczos, premultiplied alpha",
+"arcana": {
+"엘레멘탈 나이트": {
+"key": "a1",
+"w": 43,
+"h": 47,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974455716.webp"
+},
+"세인트 바드": {
+"key": "a2",
+"w": 43,
+"h": 47,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974506104.webp"
+},
+"다크 메이지": {
+"key": "a3",
+"w": 43,
+"h": 47,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974539533.webp"
+},
+"알케믹 스팅어": {
+"key": "a4",
+"w": 43,
+"h": 47,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974562311.webp"
+},
+"세이크리드 가드": {
+"key": "a5",
+"w": 43,
+"h": 47,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974584004.webp"
+},
+"블래스트 랜서": {
+"key": "a6",
+"w": 43,
+"h": 47,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974606466.webp"
+},
+"배리어블 거너": {
+"key": "a7",
+"w": 43,
+"h": 47,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974664397.webp"
+},
+"포비든 알케미스트": {
+"key": "a8",
+"w": 43,
+"h": 47,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974686850.webp"
+},
+"멜로딕 퍼피티어": {
+"key": "a9",
+"w": 43,
+"h": 47,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1770440624569.webp"
+},
+"퓨리 파이터": {
+"key": "a10",
+"w": 43,
+"h": 47,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1770440758409.webp"
+}
+},
+"skills": {
+"파이어 리프 어택": {
+"key": "s319",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278421478.webp"
+},
+"아이스 윈드밀": {
+"key": "s320",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278422382.webp"
+},
+"라이트닝 스매시": {
+"key": "s321",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278423237.webp"
+},
+"구원의 메아리": {
+"key": "s311",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278413895.webp"
+},
+"정화의 고동": {
+"key": "s313",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278415715.webp"
+},
+"붕괴의 파동": {
+"key": "s314",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278416682.webp"
+},
+"익스플로전 런지": {
+"key": "s324",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278426208.webp"
+},
+"라이트닝 체인": {
+"key": "s325",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278427071.webp"
+},
+"스노우 스톰": {
+"key": "s326",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278428014.webp"
+},
+"플레임 버스트": {
+"key": "s331",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278432654.webp"
+},
+"하이드로 피어스": {
+"key": "s332",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278433695.webp"
+},
+"트라이 어설트 피니시": {
+"key": "s335",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278436490.webp"
+},
+"희생의 응징": {
+"key": "s342",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278443056.webp"
+},
+"심판의 일격": {
+"key": "s341",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278442077.webp"
+},
+"고결한": {
+"key": "s386",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1778731742819.webp"
+},
+"임팩트 크러시": {
+"key": "s346",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278446822.webp"
+},
+"오버 드라이브": {
+"key": "s349",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278449645.webp"
+},
+"어나이얼레이션": {
+"key": "s350",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278450531.webp"
+},
+"헤비 아틸러리": {
+"key": "s352",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278649869.webp"
+},
+"데바스테이션 캐논": {
+"key": "s353",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278701243.webp"
+},
+"페이탈 스코프": {
+"key": "s354",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278723055.webp"
+},
+"케미컬 카니발": {
+"key": "s362",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278947694.webp"
+},
+"스파이럴 이럽션": {
+"key": "s363",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278967471.webp"
+},
+"서먼 나이트메어": {
+"key": "s361",
+"w": 42,
+"h": 42,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1762278930240.webp"
+},
+"인터루드 슬래시": {
+"key": "s370",
+"w": 40,
+"h": 40,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1770441962685.webp"
+},
+"다운비트 악센트": {
+"key": "s365",
+"w": 40,
+"h": 40,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1770441613507.webp"
+},
+"그랜드 피날레": {
+"key": "s367",
+"w": 40,
+"h": 40,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1770441797050.webp"
+},
+"익시드 : 체인 블로우": {
+"key": "s373",
+"w": 40,
+"h": 40,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1770442704738.webp"
+},
+"익시드 : 임팩트 다이브": {
+"key": "s374",
+"w": 40,
+"h": 40,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1770442792340.webp"
+},
+"익시드 : 포스 슬램": {
+"key": "s376",
+"w": 40,
+"h": 40,
+"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1770442862350.webp"
+}
+}
+}
