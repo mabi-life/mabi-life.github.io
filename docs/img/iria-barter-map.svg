@@ -1,29 +1,69 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" font-family="Gothic A1,Malgun Gothic,sans-serif">
-<title>이리아 교역 약도 (자체 제작 · 개략)</title>
-<rect width="640" height="420" fill="#0f1a33"/>
-<path d="M200 30 L260 20 L300 40 L330 70 L345 110 L320 140 L310 165 L400 175 L470 165 L560 180 L600 210 L590 260 L560 300 L490 315 L420 330 L380 360 L360 395 L290 400 L210 395 L170 380 L130 345 L120 295 L150 260 L170 220 L160 185 L130 150 L140 110 L175 90 Z" fill="#241f45" stroke="#6b62b0" stroke-width="2"/>
-<g fill-opacity=".55" stroke="none">
-<path d="M200 30 L260 20 L300 40 L330 70 L345 110 L320 140 L250 120 L175 90 Z" fill="#4a3c6e"/>
-<path d="M175 90 L250 120 L320 140 L310 165 L240 170 L170 180 L160 185 L130 150 L140 110 Z" fill="#3a4f7a"/>
-<path d="M170 180 L240 170 L310 165 L400 175 L410 230 L330 260 L190 265 L150 260 L170 220 Z" fill="#7a6a3a"/>
-<path d="M400 175 L470 165 L560 180 L600 210 L590 260 L560 300 L490 315 L410 300 L360 270 L410 230 Z" fill="#6e3a3a"/>
-<path d="M150 260 L190 265 L330 260 L360 270 L410 300 L420 330 L380 360 L360 395 L290 400 L210 395 L170 380 L130 345 L120 295 Z" fill="#2f5a3e"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 655 562" font-family="'Noto Sans KR','Malgun Gothic',sans-serif">
+<rect width="655" height="562" fill="#f6f1e4"/>
+<g fill="none" stroke="#c9bfa6" stroke-width=".6" opacity=".7"><path d="M0 100H655M0 200H655M0 300H655M0 400H655M0 500H655M100 0V562M200 0V562M300 0V562M400 0V562M500 0V562M600 0V562"/></g>
+<!-- island outline -->
+<path d="M178 52 C200 30 250 40 280 62 C300 90 330 110 350 130 C365 160 380 210 400 230 C430 210 470 225 500 240 C540 245 580 255 600 268 C610 300 590 330 572 350 C545 365 520 380 500 420 C470 450 420 470 380 480 C350 505 330 520 310 520 C280 520 270 505 250 495 C220 500 200 510 180 505 C150 495 120 480 115 450 C112 420 110 400 118 380 C112 340 125 300 140 270 C130 240 135 210 145 195 C140 170 155 150 175 135 C170 110 165 80 178 52 Z" fill="#fffaf0" stroke="#5b4a32" stroke-width="2.5" stroke-linejoin="round"/>
+<!-- terrain hints -->
+<g fill="none" stroke="#b9a882" stroke-width="1" stroke-dasharray="4 3">
+<path d="M190 70 C215 60 240 70 250 95 C230 110 200 105 190 90Z"/>
+<path d="M300 60 C320 55 345 65 340 85 C320 92 300 85 300 60Z"/>
+<path d="M330 380 C380 360 430 400 400 440 C370 455 330 430 330 380Z"/>
+<path d="M150 380 C190 370 230 390 220 420 C190 430 150 415 150 380Z"/>
+<path d="M240 300 C280 290 330 300 320 330 C290 340 245 330 240 300Z"/>
 </g>
-<g fill="#cfc8f5" font-size="15" font-weight="700" text-anchor="middle" opacity=".8">
-<text x="265" y="70">자르딘</text><text x="235" y="150">피시스</text><text x="300" y="215">쿠르클레</text><text x="520" y="215">콘누스</text><text x="260" y="330">라노</text></g>
-<g fill="none" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 7">
-<path d="M216 42 L312 50 L170 140" stroke="#ff9a5c"/>
-<path d="M332 360 L480 267 L578 236" stroke="#5cd6ff"/></g>
-<g font-size="12" fill="#ece8ff">
-<circle cx="216" cy="42" r="7" fill="#ff9a5c"/><text x="150" y="46">① 페라</text>
-<circle cx="312" cy="50" r="7" fill="#ff9a5c"/><text x="322" y="54">② 칼리다</text>
-<circle cx="332" cy="360" r="7" fill="#5cd6ff"/><text x="342" y="378">① 카루숲</text>
-<circle cx="480" cy="267" r="7" fill="#5cd6ff"/><text x="450" y="290">② 오아시스</text>
-<circle cx="150" cy="365" r="7" fill="#f7d98b"/><text x="96" y="390">스카하</text>
-<path d="M163 147 l7 -14 l7 14z" fill="#f7d98b"/><text x="60" y="146">⚓ 셀라 항구</text>
-<path d="M578 243 l7 -14 l7 14z" fill="#f7d98b"/><text x="540" y="262">⚓ 콘누스 항구</text></g>
-<g font-size="11" fill="#a9a2d6"><rect x="440" y="14" width="190" height="52" rx="8" fill="#141029" opacity=".85"/>
-<line x1="452" y1="30" x2="480" y2="30" stroke="#ff9a5c" stroke-width="4" stroke-dasharray="8 5"/><text x="486" y="34">페라→칼리다→셀라</text>
-<line x1="452" y1="50" x2="480" y2="50" stroke="#5cd6ff" stroke-width="4" stroke-dasharray="8 5"/><text x="486" y="54">카루숲→오아시스→콘누스</text>
-<text x="10" y="410">자체 제작 개략도 · 위치는 대략적 · 지명/지리 © NEXON (마비노기)</text></g>
+<!-- routes 일반교역 (green, curved) -->
+<g fill="none" stroke="#2e9e3e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+<path d="M140 202 C170 190 200 175 225 170 C245 160 260 152 268 158 C285 175 275 190 268 212 C262 240 280 265 295 275 C320 285 350 275 380 270 C400 280 420 290 440 280 C455 275 465 278 475 285 C500 300 530 320 555 318 C568 315 570 312 568 312"/>
+<path d="M380 270 C375 300 360 340 330 365 C300 372 270 375 245 385 C215 400 195 430 178 455"/>
+<path d="M178 455 C200 440 225 430 260 432 C300 434 330 440 365 437 C400 432 440 405 465 385 C500 360 540 335 565 315"/>
+<path d="M465 385 C470 410 480 440 490 460"/>
+</g>
+<!-- port exits -->
+<g fill="none" stroke="#2e9e3e" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#a)">
+<path d="M140 202 C110 215 85 220 65 238"/>
+<path d="M175 490 C150 500 125 505 105 505"/>
+<path d="M490 460 C505 470 515 475 525 482"/>
+</g>
+<defs><marker id="a" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2e9e3e"/></marker></defs>
+<!-- bridges -->
+<g stroke="#d4282c" stroke-width="7" stroke-linecap="round">
+<path d="M268 205 l2 12"/><path d="M465 278 l10 8"/><path d="M310 371 l14 -2"/><path d="M358 437 l14 2"/>
+</g>
+<!-- trade posts -->
+<g font-size="11" font-weight="700" text-anchor="middle">
+<g fill="#2e9e3e" stroke="#1d5e27"><rect x="255" y="148" width="16" height="16" rx="2"/><rect x="376" y="258" width="16" height="16" rx="2"/><rect x="560" y="304" width="16" height="16" rx="2"/><rect x="160" y="444" width="16" height="16" rx="2"/></g>
+<g fill="#fff"><text x="263" y="160">교</text><text x="384" y="270">교</text><text x="568" y="316">교</text><text x="168" y="456">교</text></g>
+<g fill="#36b6c4" stroke="#1d6b75"><rect x="236" y="28" width="16" height="16" rx="2"/><rect x="456" y="374" width="16" height="16" rx="2"/><rect x="316" y="488" width="16" height="16" rx="2"/></g>
+<g fill="#fff"><text x="244" y="40">물</text><text x="464" y="386">물</text><text x="324" y="500">물</text></g>
+</g>
+<g font-size="11" fill="#3b2f20" text-anchor="middle">
+<text x="258" y="40" text-anchor="start" font-weight="700">NPC: 로우리</text>
+<text x="478" y="386" text-anchor="start" font-weight="700">NPC: 니알</text>
+<text x="324" y="520" font-weight="700">NPC: 고른</text>
+<text x="200" y="58">페라 화산</text><text x="320" y="60">칼리다 호수</text>
+<text x="230" y="150" font-weight="700" fill="#8a5a00">발레스</text>
+<text x="165" y="186">셀라 해변</text><text x="112" y="200" font-weight="700" fill="#8a5a00">셀라 항구</text>
+<text x="300" y="195">루펜 이 계곡</text><text x="245" y="208">실바 숲</text>
+<text x="270" y="245">라테르 고산지</text><text x="190" y="270">솔레아</text>
+<text x="335" y="285">헤르바 밀림</text><text x="370" y="287" font-weight="700" fill="#8a5a00">코르 마을</text>
+<text x="430" y="268">케나이 사바나</text><text x="505" y="292">에탈스 협곡</text><text x="545" y="300" font-weight="700" fill="#8a5a00">필리아</text>
+<text x="285" y="330">판타이 늪지대</text><text x="240" y="385">메이즈 평원</text>
+<text x="415" y="375">루페스 사막</text><text x="155" y="405">누베스 산맥</text>
+<text x="245" y="432">카이바 협곡</text><text x="265" y="455">무유 사막</text><text x="405" y="432">나레스 고원</text>
+<text x="210" y="465" font-weight="700" fill="#8a5a00">라노 베이스 캠프</text><text x="160" y="490" font-weight="700" fill="#8a5a00">켈라 항구</text>
+<text x="510" y="455" font-weight="700" fill="#8a5a00">콘누스 항구</text><text x="335" y="480">카루 숲</text>
+</g>
+<g font-size="12" font-weight="700" fill="#1f1a12" text-anchor="middle">
+<text x="55" y="255">케안항구</text><text x="55" y="270">(반호르)</text>
+<text x="60" y="520">카브항구</text><text x="60" y="535">(던바튼/벨바스트)</text>
+<text x="560" y="495">케안항구</text><text x="560" y="510">(반호르)</text>
+</g>
+<text x="40" y="70" font-size="26" letter-spacing="6" fill="#5b4a32" font-family="serif">IRIA</text>
+<g font-size="12" fill="#1f1a12">
+<rect x="500" y="18" width="140" height="92" rx="6" fill="#fffaf0" stroke="#5b4a32"/>
+<rect x="510" y="28" width="14" height="14" fill="#2e9e3e"/><text x="530" y="40">일반 교역소</text>
+<rect x="510" y="48" width="14" height="14" fill="#36b6c4"/><text x="530" y="60">물물 교역소</text>
+<path d="M510 74h14" stroke="#d4282c" stroke-width="6"/><text x="530" y="79">다리</text>
+<path d="M510 94h14" stroke="#2e9e3e" stroke-width="3"/><text x="530" y="99">이동 경로</text>
+</g>
 </svg>

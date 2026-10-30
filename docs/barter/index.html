@@ -72,8 +72,8 @@ html{background:#0b0918}.xs{margin-bottom:10px;border-radius:14px;background:rgb
 .flip h2 .rtag{font-size:11px;padding:2px 8px;border-radius:10px;background:#24405a;color:#9fd2ff;margin-left:6px;font-weight:700}.flip.on h2 .rtag{background:#3b2d5a;color:#d3bfff}
 .esum{display:flex;gap:16px;margin-top:10px;color:#a9a2d6;font-size:13px;flex-wrap:wrap}.esum b{color:#fff}
 .emat{margin-bottom:14px}.emat h3{font-size:16px;color:#fff3cf;margin-bottom:2px}.emat .cap{margin-bottom:8px}
-.egrid{display:grid;grid-template-columns:repeat(2,minmax(0,max-content));gap:0 28px;max-width:100%}@media(max-width:900px){.egrid{grid-template-columns:minmax(0,1fr)}}
-.er{display:grid;grid-template-columns:minmax(150px,240px) 64px 150px 64px;justify-content:start;white-space:nowrap;align-items:center;gap:6px 12px;padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.07)}
+.egrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(500px,1fr));gap:0 28px;max-width:100%}@media(max-width:900px){.egrid{grid-template-columns:minmax(0,1fr)}}
+.er{display:grid;grid-template-columns:minmax(170px,1fr) 64px 150px 64px;justify-content:start;white-space:nowrap;align-items:center;gap:6px 12px;padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.07)}
 .er>span:first-child{overflow:hidden;text-overflow:ellipsis}.er.h{color:#8f88bb;font-size:12px}.er .r{text-align:right}.emat details{margin-top:10px;color:#a9a2d6}.emat textarea{width:100%;max-width:560px}
 </style>
 <link rel="stylesheet" href="/css/site-chrome.css?v=1">
@@ -164,7 +164,7 @@ const route=()=>D.routes.find(r=>r.id===S.route)||D.routes[0];
 const selRoutes=()=>{let ids=(Array.isArray(S.routes)?S.routes:[S.route]).filter(id=>id==='pk'||id==='ko');if(!ids.length)ids=['pk','ko'];return D.routes.filter(r=>ids.includes(r.id))};
 const selGoods=()=>selRoutes().flatMap(routeGoods),selName=()=>selRoutes().length>1?'두 루트 합산':selRoutes()[0].name;
 const SECS=[['sk','스카하','']];
-function xMap(){return '<img src="../img/iria-barter-map.png" alt="이리아 물교 지도" style="width:100%;max-width:900px;display:block;margin:8px auto 0">'}
+function xMap(){return '<img src="../img/iria-barter-map.svg" alt="이리아 물교 지도" style="width:100%;max-width:900px;display:block;margin:8px auto 0">'}
 function xSk(){return D.routes.find(r=>r.id==='sk').posts.flatMap(activeGoods).map(rowHtml).join('')}
 const skProg=()=>{const g=routeGoods(D.routes.find(r=>r.id==='sk'));return g.reduce((a,x)=>a+Math.min(doneOf(x),qtyOf(x)),0)+'/'+g.reduce((a,x)=>a+qtyOf(x),0)};
 const tabLabel=r=>{const port=r.name.split('→').pop().trim();return esc(r.posts.join('→')+'→'+port.replace(/\s*항구$/,''))+` <small>⛵ ${esc(port)}</small>`};
@@ -218,8 +218,11 @@ function xMats(){const c=C(),nd=matNeed(),ms=Object.keys(nd).filter(m=>nd[m]>0).
  ${ms.length?`<div class="egrid"><div>${hd}${rows.slice(0,half).join('')}</div><div>${hd}${rows.slice(half).join('')}</div></div>`:'<div class="pos">남은 교환 없음 🎉</div>'}
  <div class="tot" style="margin-top:8px">부족분 구매비 <span class="neg">${gk(tc)} G</span>${unk?` <span class="warn">+가격 모름 ${unk}종</span>`:''}</div>
  </div><div class="mright"><h4 style="margin:0 0 4px">🗺️ 교역 경로</h4>${xMap()}${shipHtml()}</div></div>`}
+function shipBar(){const R=[['케안↔셀라/콘누스',[0,4.5,9,13.5,18]],['카브↔켈라',[1,5.5,10,14.5,19]]];const P=h=>(h/24*100).toFixed(2)+'%';
+ const row=([n,b])=>`<div style="display:flex;align-items:center;gap:6px;margin-top:4px"><span style="width:96px;font-size:11px;white-space:nowrap">${n}</span><div style="position:relative;flex:1;height:14px;background:#262a36;border-radius:3px">${b.map(t=>`<span title="탑승 ${Math.floor(t)}:${t%1?'30':'00'} → 출항 ${Math.floor(t+2)}:${t%1?'30':'00'}" style="position:absolute;left:${P(t)};width:${P(2)};top:2px;bottom:2px;background:rgba(247,217,139,.35);border-left:2px solid #7fd18b;border-right:2px solid #f7d98b"></span>`).join('')}</div></div>`;
+ return `<div style="margin-top:6px">${R.map(row).join('')}<div style="display:flex;gap:6px"><span style="width:96px"></span><div style="position:relative;flex:1;height:14px;font-size:10px;color:#8a90a0">${[0,3,6,9,12,15,18,21,24].map(h=>`<span style="position:absolute;left:${P(h)};transform:translateX(-50%)">${h}</span>`).join('')}</div></div><div class="mut" style="font-size:10.5px"><span style="color:#7fd18b">▌</span>탑승 시작 · <span style="color:#f7d98b">▌</span>출항 (에린 시간 0–24, 고정 표시)</div></div>`}
 function shipHtml(){const T=(n,b,d)=>`<tr><td>${n}</td><td class="mut">${b.join(' · ')}</td><td><b>${d.join(' · ')}</b></td></tr>`;
- return `<h4 style="margin:12px 0 4px">⛵ 배 시간 <span class="mut" style="font-size:11px;font-weight:400">(에린 시간)</span></h4><table class="dt ship" style="width:100%;font-size:12px"><tr><th>항로</th><th>탑승</th><th>출항</th></tr>${T('케안 ↔ 셀라 / 콘누스',['0:00','4:30','9:00','13:30','18:00'],['2:00','6:30','11:00','15:30','20:00'])}${T('카브 ↔ 켈라',['1:00','5:30','10:00','14:30','19:00'],['3:00','7:30','12:00','16:30','21:00'])}</table><div class="mut" style="font-size:11px;margin-top:4px">양방향 동일 시간 · 출항 후 약 3분45초(실시간) 뒤 도착, 총 약 6분45초. 밀항 티켓: 셀라/콘누스에서 20:00~05:00 즉시 케안 이동(전 교역소 신용도 −20,000).<br>출처: <a href="https://wiki.mabinogiworld.com/view/Sailing" target="_blank" rel="noopener">Mabinogi World Wiki – Sailing</a>, 출항시간 교차확인 <a href="https://mabinogi.begchi.com/%EA%B5%90%EC%97%AD-%EB%B0%B0-%EC%8B%9C%EA%B0%84%ED%91%9C" target="_blank" rel="noopener">비공식센터</a> (2026-10-31 확인)</div>`}
+ return `<h4 style="margin:12px 0 4px">⛵ 배 시간 <span class="mut" style="font-size:11px;font-weight:400">(에린 시간)</span></h4><table class="dt ship" style="width:100%;font-size:12px"><tr><th>항로</th><th>탑승</th><th>출항</th></tr>${T('케안 ↔ 셀라 / 콘누스',['0:00','4:30','9:00','13:30','18:00'],['2:00','6:30','11:00','15:30','20:00'])}${T('카브 ↔ 켈라',['1:00','5:30','10:00','14:30','19:00'],['3:00','7:30','12:00','16:30','21:00'])}</table>${shipBar()}<div class="mut" style="font-size:11px;margin-top:4px">양방향 동일 시간 · 출항 후 약 3분45초(실시간) 뒤 도착, 총 약 6분45초. 밀항 티켓: 셀라/콘누스에서 20:00~05:00 즉시 케안 이동(전 교역소 신용도 −20,000).<br>출처: <a href="https://wiki.mabinogiworld.com/view/Sailing" target="_blank" rel="noopener">Mabinogi World Wiki – Sailing</a>, 출항시간 교차확인 <a href="https://mabinogi.begchi.com/%EA%B5%90%EC%97%AD-%EB%B0%B0-%EC%8B%9C%EA%B0%84%ED%91%9C" target="_blank" rel="noopener">비공식센터</a> (2026-10-31 확인)</div>`}
 function renderDash(){const pv=$('#paste2')?$('#paste2').value:'';const c=C(),pl=plan(D.routes[0]);
  const all=[...routeGoods(D.routes[0]),...routeGoods(D.routes[1])];
  let dn=0,tot=0,buy=0,unk=0,rv=0,cost=0,anySale=false;
