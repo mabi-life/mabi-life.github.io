@@ -1,5 +1,5 @@
 {
-"source": "MabiBase item icons + labanyu thumbnails (lb* ids; game client assets, ©NEXON)",
+"source": "MabiBase item icons + labanyu thumbnails (lb* ids + spkuma(마비쿠마) icons (sk* ids); game client assets, ©NEXON)",
 "upscale": "2x Lanczos, premultiplied alpha",
 "icons": {
 "소울 리버레이트 힐링 원드": {
@@ -1066,6 +1066,312 @@
 "id": 60030,
 "w": 24,
 "h": 24
+},
+"건초 더미": {
+"id": "skcc13c191ac59c3fa",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"끈끈이 풀": {
+"id": "sk46250f383d58ae49",
+"w": 24,
+"h": 24,
+"src": "spkuma"
+},
+"남동판": {
+"id": "sk875a903ac3231357",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"루멘 시럽": {
+"id": "sk17066f49aae152fc",
+"w": 24,
+"h": 24,
+"src": "spkuma"
+},
+"마나 500 포션": {
+"id": "sk9163ae72a50fe235",
+"w": 24,
+"h": 24,
+"src": "spkuma"
+},
+"마력이 깃든 나무장작": {
+"id": "ska1890591b3b2e14f",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"마리오네트 500 포션": {
+"id": "sk79099010349b21db",
+"w": 24,
+"h": 24,
+"src": "spkuma"
+},
+"마법의 깃털펜": {
+"id": "sk1bf78b21b876ded2",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"마법의 양피지": {
+"id": "ska9bf344050432b36",
+"w": 24,
+"h": 24,
+"src": "spkuma"
+},
+"매듭끈": {
+"id": "sk441f051cdf034f76",
+"w": 24,
+"h": 24,
+"src": "spkuma"
+},
+"뮤턴트": {
+"id": "sk7141cd23b52cc78f",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"발리스타용 독 묻은 와이번 볼트": {
+"id": "skfee59607a02fc78e",
+"w": 96,
+"h": 96,
+"src": "spkuma"
+},
+"백연판": {
+"id": "sk185007177eff8454",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"산딸기 크림 소스 박스": {
+"id": "sk492c8890815afed2",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"새우 조련 미끼": {
+"id": "sk2866773bb063e5fc",
+"w": 24,
+"h": 24,
+"src": "spkuma"
+},
+"생명력 500 포션": {
+"id": "sk75cf6d8dd5642616",
+"w": 24,
+"h": 24,
+"src": "spkuma"
+},
+"스태미나 500 포션": {
+"id": "skbda6bb9c511b88fa",
+"w": 24,
+"h": 24,
+"src": "spkuma"
+},
+"에너지 증폭 장치": {
+"id": "ska86d342aa1fe98cf",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"에너지 컨버터": {
+"id": "sk70a3d299e9ef4f80",
+"w": 24,
+"h": 24,
+"src": "spkuma"
+},
+"에메랄드 퓨즈": {
+"id": "skf7aeab605b44cc21",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"월광 기어": {
+"id": "skd53498576f7b8a6b",
+"w": 24,
+"h": 24,
+"src": "spkuma"
+},
+"월광 여울 이삭빵 박스": {
+"id": "skb3622a56c165cc25",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"인조 잔디": {
+"id": "ska5f1fd410a304c38",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"적철판": {
+"id": "sk3da11d3e596f4277",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"정령의 리큐르": {
+"id": "skdd68ba23ee37eb85",
+"w": 24,
+"h": 24,
+"src": "spkuma"
+},
+"정화된 토끼의 발": {
+"id": "sk11f6913bfdb73310",
+"w": 24,
+"h": 24,
+"src": "spkuma"
+},
+"조화의 코스모스 퍼퓸": {
+"id": "sk2bb46aada9f75995",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"최고급 바닐라 향초": {
+"id": "sk32cfdebae0419342",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"쿠션용 솜": {
+"id": "sk60d0f6c1a8e3d68a",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 강력 접착제": {
+"id": "sk6c7b3afce5dd11a8",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 강화 섬유": {
+"id": "skf87ff2f70230e5f7",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 꽃무늬 원피스": {
+"id": "sk7ca65d3d48e1cc52",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 누름꽃 공예 함": {
+"id": "sk9a19b75f0e5f570c",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 달콤 케이크": {
+"id": "sk62d921cc277ae9fc",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 레드문 귀걸이": {
+"id": "sk930cf3969c69f96c",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 미드나잇 펄 페인트": {
+"id": "sk4001242ac35010ff",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 방수 원단": {
+"id": "sk7ed696ad12f51ac5",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 별무늬 샐러드": {
+"id": "sk74681e9b609356e0",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 붉은 배 잼": {
+"id": "ske7e5de1bf5ad134f",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 블랙베리 주스": {
+"id": "sk4566840de3af7422",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 새벽의 활": {
+"id": "sk7c164ad73a4735c6",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 이브닝 드레스": {
+"id": "sk5b560f680c222026",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 자색 원단": {
+"id": "sk1c4b57d5b71dabcb",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 장식용 크리스탈 검": {
+"id": "skdd77dde49760e8c1",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 재스민 향수": {
+"id": "sked01d2c1c2e7a28a",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 천연 고무": {
+"id": "skfb2071d472d1e93b",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 퓨어 블러썸 머리핀": {
+"id": "sk255d3414d2c5707e",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"탈틴 농장 황혼의 류트": {
+"id": "sk2be19094e92e3933",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"튼튼한 고리": {
+"id": "sk7314fc1653e19dea",
+"w": 24,
+"h": 24,
+"src": "spkuma"
+},
+"펫 놀이세트": {
+"id": "sk886231bc1c0fc4aa",
+"w": 48,
+"h": 48,
+"src": "spkuma"
+},
+"희귀 버섯 볶음 박스": {
+"id": "skf019d48f536f0f8a",
+"w": 48,
+"h": 48,
+"src": "spkuma"
 }
 }
 }
