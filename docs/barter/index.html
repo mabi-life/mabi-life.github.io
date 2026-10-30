@@ -16,7 +16,7 @@ h1{font-size:20px;font-weight:800;color:#f7d98b;margin-right:12px}
 .card h2{font-size:17px;font-weight:800;margin-bottom:10px;color:#fff3cf}
 .week{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.035);border:1px solid rgba(247,217,139,.14);margin-bottom:10px;font-size:12.5px}
 .week b{font-size:14px}.rtabs{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
-.m2{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;align-items:start}.m2 table.dt{width:100%;border-collapse:collapse}.m2 .dt input.p{width:84px;text-align:right}@media(max-width:980px){.m2{grid-template-columns:1fr}}
+.msec{background:rgba(247,217,139,.08);font-weight:800;color:#fff3cf;padding:5px;margin-top:8px}.mg{margin:6px 0 2px}.mr{display:grid;grid-template-columns:minmax(0,1fr) auto auto 64px 90px 70px;gap:6px;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.06)}.mr .r{text-align:right}.mr input.p{width:84px;text-align:right}.m2{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;align-items:start}.m2 table.dt{width:100%;border-collapse:collapse}.m2 .dt input.p{width:84px;text-align:right}@media(max-width:980px){.m2{grid-template-columns:1fr}}
 .dash{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;margin-bottom:12px}.dash .full{grid-column:1/-1}.rtabs button small{font-size:11px;opacity:.7;margin-left:4px;font-weight:400}
 .dash .card{padding:12px 14px}.dash h2{font-size:14px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:baseline;gap:6px}
 .dash h2 .sub{font-size:11px;font-weight:400;color:#8f88bb}.cap{font-size:11px;color:#a9a2d6;margin-bottom:6px}
@@ -165,14 +165,19 @@ function xGoods(){const c=C(),r=route();let h=`<div style="display:flex;gap:12px
   h+=`<tr><td></td><td colspan="5" class="tot">${ps} 합계</td><td class="r neg tot">${gk(P.cost)}${P.unk?'<span class="warn">+?</span>':''}</td><td class="r pos tot">${P.rev?gk(P.rev):'-'}</td><td class="r tot ${P.rev-P.cost>=0?'pos':'neg'}">${P.rev?gk(P.rev-P.cost):'-'}</td><td></td></tr></table>`;RT.cost+=P.cost;RT.rev+=P.rev;RT.unk+=P.unk}
  h+=`<div class="tot" style="margin-top:8px">🧾 ${r.name} 총계: 재료비 <span class="neg">${gk(RT.cost)} G</span> · 매출 <span class="pos">${gk(RT.rev)} G</span> · 순이익 <span class="${RT.rev-RT.cost>=0?'pos':'neg'}">${gk(RT.rev-RT.cost)} G</span> · ${esc(c.name)} 진행 ${RT.doneCnt}/${RT.cnt}${RT.unk?' <span class="warn">(가격 모르는 재료 있음)</span>':''} <span class="mut" style="font-weight:400;font-size:12px">· 판매가의 두카트는 ⚙ 두카트→골드 환산값 사용</span></div>`;
  h+=`<div class="mut" style="margin-top:4px;font-size:12px">진행 요약 (전체 경로): ${S.chars.map(ch=>{let a=0,b=0;for(const g of D.routes.flatMap(x=>x.posts).flatMap(activeGoods)){b+=qtyOf(g);a+=Math.min(ch.done[g.id]||0,qtyOf(g))}return esc(ch.name)+' '+a+'/'+b}).join(' · ')}</div>`;return h}
-function xMats(){const c=C(),nd=need(selGoods(),true);let tc=0,unk=0;const rows=[];
- let h=`<div style="display:flex;gap:6px;margin:6px 0;align-items:stretch;max-width:560px"><textarea id="paste2" rows="2" style="flex:1;min-width:0" placeholder="일괄 입력: 한 줄에 '재료명 수량' (예: 금판 50)"></textarea><div style="display:flex;flex-direction:column;gap:4px"><button class="sm" data-a="pasteSet" data-src="paste2">덮어쓰기</button><button class="sm" data-a="pasteAdd" data-src="paste2">더하기</button></div></div>
- `;const th=`<table class="dt"><tr><th>재료</th><th class="r">필요</th><th class="r">보유</th><th class="r">부족</th><th class="r">최저가</th><th class="r">부족분 비용</th></tr>`;
- for(const m of Object.keys(nd).sort()){const o=c.owned[m]||0,sh=Math.max(0,nd[m]-o),p=price(m),pr=S.prices[m];if(p==null&&sh)unk++;else tc+=sh*p;
-  rows.push(`<tr><td>${m}${hotMat(m)}</td><td class="r">${fmt(nd[m])}</td><td class="r" style="white-space:nowrap"><button class="sm" data-a="om" data-m="${m}">−</button> <input class="n" data-a="own" data-m="${m}" value="${o}"> <button class="sm" data-a="op" data-m="${m}">＋</button> <button class="sm" data-a="ofill" data-m="${m}" data-r="1" title="필요량만큼">＝</button></td>
-  <td class="r ${sh?'short':'pos'}">${sh?fmt(sh):'✓'}</td><td class="r"><input class="p" data-a="price" data-m="${m}" value="${p??''}" title="${pr?{snap:'API 스냅샷',api:'API 실시간',pril:'Prilus 스냅샷',feed:'공유 시세',manual:'수동'}[pr.src]||'':''}"></td><td class="r neg">${sh?(p==null?'?':gk(sh*p)):''}</td></tr>`)}
- const half=Math.ceil(rows.length/2);h+=`<div class="m2">${th}${rows.slice(0,half).join('')}</table>${rows.length>1?th+rows.slice(half).join('')+'</table>':''}</div>`;
- return h+`<div class="tot" style="margin-top:6px">부족분 구매비: <span class="neg">${gk(tc)} G</span>${unk?` <span class="warn">+가격 모름 ${unk}종</span>`:''} <span class="mut" style="font-weight:400;font-size:12px">(${esc(selName())} 기준 · ± 는 Shift=10, Ctrl=100)</span></div>`}
+function xMats(){const c=C(),RS=selRoutes(),nd=need(selGoods(),true),seen=new Set();let tc=0,unk=0;
+ let h=`<div class="card mchk full" id="x-mats"><h2><span>🎒 재료 · 보유</span><span class="sub">${esc(c.name)} · ${esc(selName())} · 남은 교환</span></h2>
+ <div style="display:flex;gap:6px;margin:6px 0;align-items:stretch;max-width:560px"><textarea id="paste2" rows="2" style="flex:1;min-width:0" placeholder="일괄 입력: 한 줄에 '재료명 수량' (예: 금판 50)"></textarea><div style="display:flex;flex-direction:column;gap:4px"><button class="sm" data-a="pasteSet" data-src="paste2">덮어쓰기</button><button class="sm" data-a="pasteAdd" data-src="paste2">더하기</button></div></div>
+ <div class="cap">교역품별 재료 · 필요=선택 경로 합계 · ✓ 필요량만큼 채우기 · ± Shift=10, Ctrl=100</div>`;
+ const posts=[...new Set(RS.flatMap(r=>r.posts))];let any=false;
+ for(const ps of posts){const gs=activeGoods(ps).filter(g=>remOf(g)>0).sort((x,y)=>(y.tier||0)-(x.tier||0));if(!gs.length)continue;any=true;
+  h+=`<div class="msec">● ${ps}</div>`;
+  for(const g of gs){const rm=remOf(g);h+=`<div class="g mg">T${g.tier||'—'} ${g.name} <span class="mut">(${rm}) · ${g.mats.map(([m,k])=>`${m} ${fmt(k*rm)}`).join(' · ')}</span></div>`;
+   const rows=[];for(const[m]of g.mats){if(seen.has(m))continue;seen.add(m);const n=nd[m]||0,o=c.owned[m]||0,sh=Math.max(0,n-o),p=price(m),pr=S.prices[m],ok=o>=n;if(sh){if(p==null)unk++;else tc+=sh*p}
+    rows.push(`<div class="mr"><span class="mn">${m}${hotMat(m)}</span><span class="r">필요 <b>${fmt(n)}</b></span><span style="white-space:nowrap"><button class="sm" data-a="om" data-m="${m}">−</button> <input class="n" data-a="own" data-m="${m}" value="${o}"> <button class="sm" data-a="op" data-m="${m}">＋</button> <span class="chk ${ok?'on':''}" data-a="mchk" data-m="${esc(m)}" data-n="${n}" title="필요량만큼 보유로"></span></span><span class="r ${sh?'short':'pos'}">${sh?'부족 '+fmt(sh):'✓'}</span><span class="r"><input class="p" data-a="price" data-m="${m}" value="${p??''}" title="최저가 ${pr?{snap:'API 스냅샷',api:'API 실시간',pril:'Prilus 스냅샷',feed:'공유 시세',manual:'수동'}[pr.src]||'':''}"></span><span class="r neg">${sh?(p==null?'?':gk(sh*p)):''}</span></div>`)}
+   if(rows.length)h+=`<div class="m2">${rows.join('')}</div>`}}
+ if(!any)h+=`<div class="pos">남은 교환 없음 🎉</div>`;
+ return h+`<div class="tot" style="margin-top:6px">부족분 구매비: <span class="neg">${gk(tc)} G</span>${unk?` <span class="warn">+가격 모름 ${unk}종</span>`:''}</div></div>`}
 function runHtml(ru,pl,title,sub){if(!ru)return `<div class="card"><h2>${title} <span class="sub">${sub}</span></h2><div class="pos">남은 교환 없음 🎉</div></div>`;
  const rows=byPost(ru.L).map(x=>`<tr><td><span class="t t${x.g.tier||0}">T${x.g.tier||'—'}</span></td><td>${x.g.post}</td><td>${x.g.name}</td><td class="r">${x.q}</td><td class="r mut">${x.g.weight}</td><td class="r">${x.q*x.g.weight}</td><td class="r">${Math.ceil(x.q/x.g.perSlot)}</td></tr>`).join('');
  const n=ru.L.reduce((a,x)=>a+x.q,0);
@@ -181,17 +186,7 @@ function runHtml(ru,pl,title,sub){if(!ru)return `<div class="card"><h2>${title} 
  <table class="rt"><tr><th>티어</th><th>교역소</th><th>교역품</th><th class="r">수량</th><th class="r">개당</th><th class="r">무게</th><th class="r">슬롯</th></tr>${rows}
  <tr class="tot"><td colspan="3">합계 · ${n}개</td><td class="r"></td><td></td><td class="r ${ru.w>pl.W?'neg':'pos'}">${fmt(ru.w)}/${fmt(pl.W)}</td><td class="r ${ru.s>pl.SL?'neg':'pos'}">${ru.s}/${pl.SL}</td></tr></table>
  <div class="footnote">${ru.s>=pl.SL?'슬롯 가득':'슬롯 여유 '+(pl.SL-ru.s)} · ${ru.w<=pl.W?'무게 여유 '+(pl.W-ru.w):'무게 초과'}</div></div>`}
-function matCheckHtml(r){const c=C(),goods=routeGoods(r);let tc=0,unk=0,h=`<div class="card mchk full"><h2><span>🎒 재료 체크</span><span class="sub">${esc(r.name)} · 남은 교환 <button class="sm" data-a="inv">보유 입력 ↓</button></span></h2>
- <div class="cap">교역품별 재료 · ✓ 누르면 필요량만큼 보유로</div>
- <table class="rt"><tr><th>교역품 / 재료</th><th class="r">필요</th><th class="r">보유</th><th class="r">시세</th><th style="text-align:center">✓</th></tr>`;
- for(const[pi,ps]of r.posts.entries()){const gs=goods.filter(g=>g.post===ps&&remOf(g)>0).sort((a,b)=>(b.tier||0)-(a.tier||0));if(!gs.length)continue;
-  h+=`<tr class="sec"><td colspan="5">● ${ps} <span class="mut" style="font-weight:400">${pi?'경유':'출발'}</span></td></tr>`;
-  for(const g of gs){const rm=remOf(g);h+=`<tr><td class="g">T${g.tier||'—'} ${g.name} <span class="mut">(${rm})</span></td><td></td><td></td><td></td><td></td></tr>`;
-   for(const[m,k]of g.mats){const needN=k*rm,o=c.owned[m]||0,sh=Math.max(0,needN-o),p=price(m),ok=o>=needN;if(sh){if(p==null)unk++;else tc+=sh*p}
-    h+=`<tr><td>${m}${hotMat(m)}${sh?` <span class="neg">부족</span>`:''}</td><td class="r">${fmt(needN)}</td><td class="r ${ok?'pos':'neg'}">${fmt(o)}</td><td class="r mut">${p==null?'?':gk(p)}</td><td style="text-align:center"><span class="chk ${ok?'on':''}" data-a="mchk" data-m="${esc(m)}" data-n="${needN}" title="필요량만큼 보유로"></span></td></tr>`}}}
- if(!goods.some(g=>remOf(g)>0))h+=`<tr><td colspan="5" class="pos">남은 교환 없음 🎉</td></tr>`;
- return h+`</table><div class="footnote">부족분 ≈ <b class="neg">${gk(tc)} G</b>${unk?` <span class="warn">+가격모름 ${unk}</span>`:''} · 체크=필요량 채우기</div></div>`}
-function renderDash(){const c=C(),RS=selRoutes(),both=RS.length>1,pl=plan(RS[0]);
+function renderDash(){const pv=$('#paste2')?$('#paste2').value:'';const c=C(),RS=selRoutes(),both=RS.length>1,pl=plan(RS[0]);
  const all=[...routeGoods(D.routes[0]),...routeGoods(D.routes[1])];
  let dn=0,tot=0,buy=0,unk=0,rv=0,cost=0,anySale=false;
  for(const g of all){tot+=qtyOf(g);dn+=Math.min(doneOf(g),qtyOf(g));cost+=unitCost(g).s*qtyOf(g);rv+=rev(g,qtyOf(g));if(hasSale(g))anySale=true}
@@ -200,9 +195,9 @@ function renderDash(){const c=C(),RS=selRoutes(),both=RS.length>1,pl=plan(RS[0])
  $('#week').innerHTML=`<span class="mut">주간</span><span>진행 <b>${dn}/${tot}</b></span><span>부족 구매비 <b class="neg">${gk(buy)}</b>${unk?'<span class="warn">+?</span>':''}</span><span>예상 수익 ${anySale?`<b class="${rv-cost>=0?'pos':'neg'}">${rv-cost>=0?'+':''}${gk(rv-cost)}</b>`:'<span class="mut">판매가 미입력</span>'}</span><span>운송 <b>${fmt(pl.W)} / ${pl.SL}</b> <span class="mut">${esc(CARRIERS[S.carrier]?.n||'')}</span></span>`;
  $('#rtabs').innerHTML=D.routes.filter(x=>x.id!=='sk').map(x=>`<button class="${RS.includes(x)?'on':''}" data-a="rtab" title="토글 · 둘 다 켜면 합산" data-r="${x.id}">${tabLabel(x)}</button>`).join('');
  $('#dash').innerHTML=RS.map(r=>{const pl=plan(r),r1=pl.runs[0],r2=pl.runs[1],L=both?`[${esc(r.posts.join('→'))}] `:'';
-  return (both?`<div class="full rhd" style="font-weight:700;margin-top:4px">🧭 ${esc(r.name)}</div>`:'')+runHtml(r1,pl,L+'🚚 1회차','고티어 우선')+runHtml(r2||null,pl,L+'🚚 2회차',pl.runs.length>2?'잔여(+추가 회차 있음)':'잔여 저티어')+pl.runs.slice(2).map((ru,i)=>runHtml(ru,pl,`${L}🚚 ${i+3}회차`,'추가')).join('')+(pl.runs.length>2?`<div class="footnote warn full">⚠ 2회차 안에 다 못 실음 (무게/슬롯 부족)</div>`:'')+matCheckHtml(r)}).join('')}
-function renderX(){const f={map:xMap,goods:xGoods,sk:xSk};const pv=$('#paste2')?$('#paste2').value:'';
- $('#xtra').innerHTML=`<div class="card" id="x-mats" style="margin-bottom:12px"><h2>🎒 보유 재료 · 부족분 <span class="sub">${esc(C().name)} · ${esc(selName())}</span></h2>${xMats()}</div>`+SECS.map(([k,n,d])=>`<div class="xs" id="x-${k}"><h3 data-a="sec" data-s="${k}">${UI[k]?'▾':'▸'} ${n} <span class="mut">${k==='sk'?skProg():d}</span></h3>${UI[k]?`<div class="xb">${f[k]()}</div>`:''}</div>`).join('');if($('#paste2'))$('#paste2').value=pv}
+  return (both?`<div class="full rhd" style="font-weight:700;margin-top:4px">🧭 ${esc(r.name)}</div>`:'')+runHtml(r1,pl,L+'🚚 1회차','고티어 우선')+runHtml(r2||null,pl,L+'🚚 2회차',pl.runs.length>2?'잔여(+추가 회차 있음)':'잔여 저티어')+pl.runs.slice(2).map((ru,i)=>runHtml(ru,pl,`${L}🚚 ${i+3}회차`,'추가')).join('')+(pl.runs.length>2?`<div class="footnote warn full">⚠ 2회차 안에 다 못 실음 (무게/슬롯 부족)</div>`:'')}).join('')+xMats();if($('#paste2'))$('#paste2').value=pv}
+function renderX(){const f={map:xMap,goods:xGoods,sk:xSk};
+ $('#xtra').innerHTML=SECS.map(([k,n,d])=>`<div class="xs" id="x-${k}"><h3 data-a="sec" data-s="${k}">${UI[k]?'▾':'▸'} ${n} <span class="mut">${k==='sk'?skProg():d}</span></h3>${UI[k]?`<div class="xb">${f[k]()}</div>`:''}</div>`).join('')}
 function render(){checkReset();const c=C();
  $('#chars').innerHTML=S.chars.map((x,i)=>`<button class="${i===S.cur?'on':''}" data-a="char" data-i="${i}" title="우클릭/더블클릭: 이름 변경">${esc(x.name)}${S.chars.length>1?`<i class="cx" data-a="delChar" data-i="${i}" title="삭제">✕</i>`:''}</button>`).join('');
  $('#reset').textContent='초기화 '+new Date(Date.parse(S.week)+7*864e5).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit'})+' KST';
@@ -234,7 +229,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
  if(a==='ex'){const g=G[b.dataset.g];exchange(g,qtyOf(g))}
  if(a==='pick6'){const r=b.getBoundingClientRect();setLayer({t:'pick6',p:b.dataset.p,x:r.left,y:r.bottom+4})}
  if(a==='set6'){const g=G[b.dataset.g];layer=null;mut(()=>S.active6[g.post]=g.id,`${g.post} 6티어: ${g.name}`)}
- if(a==='inv'){const x=$('#x-mats');if(x)x.scrollIntoView({behavior:'smooth',block:'start'});const t=$('#paste2');if(t)setTimeout(()=>t.focus({preventScroll:true}),300)}
+
  if(a==='sec'){const k=b.dataset.s;UI[k]=!UI[k];try{localStorage.setItem(UIK,JSON.stringify(UI))}catch(x){}renderX();return}
  if(a==='rtab'){const id=b.dataset.r,cur=selRoutes().map(x=>x.id);if(cur.includes(id)&&cur.length<2)return toast('최소 한 루트는 켜져 있어야 합니다');mut(()=>{S.routes=cur.includes(id)?cur.filter(x=>x!==id):[...cur,id];S.route=S.routes[0]});return}
  if(a==='mchk'){const m=b.dataset.m,n=+b.dataset.n||0;mut(()=>c.owned[m]=Math.max(c.owned[m]||0,n),`${m} ${fmt(n)}`);return}
