@@ -212,10 +212,10 @@ function xMats(){const c=C(),nd=need([...routeGoods(D.routes[0]),...routeGoods(D
  const rows=ms.map(m=>{const n=nd[m],o=c.owned[m]||0,sh=Math.max(0,n-o),p=price(m);if(sh){if(p==null)unk++;else tc+=sh*p}
   return `<div class="er"><span class="nm" title="${esc(m)}">${iconHtml(m)}${m}</span><span class="r">${fmt(n)}</span><span style="white-space:nowrap"><button class="sm" data-a="om" data-m="${m}">−</button> <input class="n" style="width:64px" data-a="own" data-m="${m}" value="${o}"> <button class="sm" data-a="op" data-m="${m}">＋</button></span><span class="r ${sh?'short':'pos'}">${sh?fmt(sh):'✓'}</span></div>`});
  const hd='<div class="er h"><span>재료</span><span class="r">필요</span><span>보유</span><span class="r">부족</span></div>',half=Math.ceil(rows.length/2);
- return `<div class="emat" id="x-mats"><h3>🎒 재료 체크</h3><div class="cap">${esc(c.name)} · 두 루트 남은 교환</div>
+ return `<div class="emat" id="x-mats"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap"><div><h3>🎒 재료 체크</h3><div class="cap">${esc(c.name)} · 두 루트 남은 교환</div></div><div style="display:flex;gap:4px;align-items:stretch;width:300px;max-width:50%"><textarea id="paste2" rows="2" style="flex:1;min-width:0;font-size:12px" placeholder="일괄 붙여넣기: 금판 50 / 동판 30"></textarea><div style="display:flex;flex-direction:column;gap:3px"><button class="sm" data-a="pasteSet" data-src="paste2">덮어쓰기</button><button class="sm" data-a="pasteAdd" data-src="paste2">더하기</button></div></div></div>
  ${ms.length?`<div class="egrid"><div>${hd}${rows.slice(0,half).join('')}</div><div>${hd}${rows.slice(half).join('')}</div></div>`:'<div class="pos">남은 교환 없음 🎉</div>'}
  <div class="tot" style="margin-top:8px">부족분 구매비 <span class="neg">${gk(tc)} G</span>${unk?` <span class="warn">+가격 모름 ${unk}종</span>`:''}</div>
- </div><div class="emat epaste"><details ${UI.paste?'open':''}><summary data-a="pasteT">일괄 붙여넣기 (선택)</summary><div style="display:flex;gap:6px;margin-top:6px;align-items:stretch;max-width:620px"><textarea id="paste2" rows="3" style="flex:1;min-width:0" placeholder="금판 50&#10;동판 30"></textarea><div style="display:flex;flex-direction:column;gap:4px"><button class="sm" data-a="pasteSet" data-src="paste2">덮어쓰기</button><button class="sm" data-a="pasteAdd" data-src="paste2">더하기</button></div></div></details></div>`}
+ </div>`}
 function renderDash(){const pv=$('#paste2')?$('#paste2').value:'';const c=C(),pl=plan(D.routes[0]);
  const all=[...routeGoods(D.routes[0]),...routeGoods(D.routes[1])];
  let dn=0,tot=0,buy=0,unk=0,rv=0,cost=0,anySale=false;
