@@ -1,6 +1,7 @@
 /* 도우미 키트 package v1 — visual layer only */
 html body{background:#14161b!important}
 nav.siteNav{flex-wrap:wrap!important;border:1px dashed #4a4f5e!important;border-radius:10px!important;padding:7px 10px!important;background:#1a1d23!important;gap:6px!important;margin-bottom:14px!important}
+nav.siteNav{position:sticky!important;top:0!important;z-index:1000!important;background:#1a1d23!important;box-shadow:0 2px 8px rgba(0,0,0,.45)}
 nav.siteNav:before{content:"🧰 마비노기 생활도우미";font-weight:700;color:#e6e8ee;margin-right:10px;font-size:13px;white-space:nowrap}
 body.kit-narrow nav.siteNav:before{content:"🧰 생활도우미"}
 nav.siteNav a,nav.siteNav span{border:1px solid #333846!important;border-top:3px solid var(--c,#555)!important;border-radius:6px!important;font-size:12.5px!important;padding:4px 9px!important;white-space:nowrap;background:transparent!important}
