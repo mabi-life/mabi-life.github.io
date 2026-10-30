@@ -2,7 +2,9 @@
 // 노드: [이름, 개수, (제작 가능하면) {skill, out(1회 산출량), c:[하위]}]
 let RECIPES=[{n:"소울 리버레이트 힐링 원드",skill:"매직 크래프트",tool:"벼락맞은 떡갈나무 지팡이 (소모 X)",fac:"마법의 가마솥",c:[["브리 레흐의 코어",5],["브리 레흐의 정수",10],["강렬한 기억의 결정",10,{"skill":"힐웬 공학","out":1,"c":[["초록빛 기억의 조각",3],["바리사이트",10],["마력이 깃든 융합제",5],["퓨어 젬스톤",2,{"skill":"매직 크래프트","out":1,"c":[["마력이 깃든 융합제",3],["젬스톤 파우더",30],["티어드롭 젬스톤",30],["순도 높은 강화제",10]]}]]}],["마력이 충만한 마력석",2,{"skill":"매직 크래프트","out":1,"c":[["브리 레흐의 기운이 깃든 문장",3],["오묘한 마력석",10],["마력이 깃든 융합제",3],["강화된 실리엔",3,{"skill":"매직 크래프트","out":1,"c":[["온전한 실리엔",70,{"skill":"매직 크래프트","out":1,"c":[["실리엔",1,{"skill":"매직 크래프트","out":1,"c":[["실리엔 결정",5]]}],["신비한 허브 가루",3,{"skill":"매직 크래프트","out":1,"c":[["블러디 허브",1],["마나 허브",1],["포이즌 허브",1]]}]],"alt":2}],["순도 높은 강화제",30],["각성된 힘의 가루",10]]}]]}],["순도 높은 융합의 실리엔",2,{"skill":"매직 크래프트","out":1,"c":[["순도 높은 마력의 결정",10],["순도 높은 힘의 결정",5,{"skill":"매직 크래프트","out":1,"c":[["마력이 깃든 융합제",3],["각성된 힘의 조각",10],["각성된 힘의 결정",10],["깨어난 힘의 정수",20],["각성된 힘의 가루",10]]}],["마력이 깃든 융합제",1],["온전한 실리엔",100,{"skill":"매직 크래프트","out":1,"c":[["실리엔",1,{"skill":"매직 크래프트","out":1,"c":[["실리엔 결정",5]]}],["신비한 허브 가루",3,{"skill":"매직 크래프트","out":1,"c":[["블러디 허브",1],["마나 허브",1],["포이즌 허브",1]]}]],"alt":2}]]}],["마력이 담긴 마력석",10,{"skill":"매직 크래프트","out":1,"c":[["텅 빈 마력석",5],["마력이 깃든 융합제",1],["퓨어 젬스톤",1,{"skill":"매직 크래프트","out":1,"c":[["마력이 깃든 융합제",3],["젬스톤 파우더",30],["티어드롭 젬스톤",30],["순도 높은 강화제",10]]}],["침식된 광물 조각",6]]}],["마력이 깃든 마법사의 보석",24,{"skill":"매직 크래프트","out":1,"c":[["녹음이 깃든 마법사의 보석",7],["마력석",20],["젬스톤 파우더",20],["각성된 힘의 가루",10]]}],["재생의 가루",100]]}];
 const LS='mabiCraft.v0';const st=Object.assign({goal:0,qty:1,own:{}},JSON.parse(localStorage.getItem(LS)||'{}'));
-const save=()=>localStorage.setItem(LS,JSON.stringify(st));
+const save=()=>{try{localStorage.setItem(LS,JSON.stringify(st))}catch(e){}};
+// 저장된 goal 인덱스는 recipes.json(44개) 로드 전 내장 1개 레시피 기준으로 0으로 덮어쓰지 않음
+const gi=()=>(st.goal>=0&&st.goal<RECIPES.length)?st.goal:0;
 let P={},PT='',IC={},BP={};const MC=window.MabiCoin||{COST:{}};
 // 구슬(코인) 상점 연동: /coin/ 과 같은 core.js 데이터 + 같은 localStorage(mabiCoin.v1) 구슬가 직접입력 공유
 const coin=n=>{const c=MC.COST[n];if(!c)return null;const b=BP[c.tab];return Object.assign({bp:b?b.p:null,g:b?b.p*c.cost:null},c)};const f=x=>x.toLocaleString('ko-KR');const pr=n=>P[n]&&P[n].min;
@@ -31,7 +33,7 @@ function tip(c,z,kind,q){const [n,,r,fz,ps,S]=c;const own=+st.own[n]||0;const L=
  document.addEventListener('mousemove',e=>{if(t.style.display==='none')return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.min(e.clientX+14,innerWidth-w-6)+'px';t.style.top=(e.clientY+h+20>innerHeight?e.clientY-h-10:e.clientY+16)+'px'})})();
 const AVG=R=>Math.ceil(100/R.pct);const stepsOf=R=>R.pct?Math.max(1,+(st.steps||{})[R.n]||AVG(R)):1;
 const matsOf=R=>{const s=stepsOf(R);return R.c.map(c=>[c[0],c[1]*s,c[2],0,R.pct?c[1]:0,s]).concat(((R.fin||[])[0]||[]).map(x=>[x[0],x[1],null,1]))};
-function render(){const R=RECIPES[st.goal],q=st.qty,M=matsOf(R),S=stepsOf(R);const root=$('root');
+function render(){const R=RECIPES[gi()],q=st.qty,M=matsOf(R),S=stepsOf(R);const root=$('root');
  const old={};root.querySelectorAll('.nd').forEach(e=>old[e.dataset.id]={x:parseFloat(e.style.left),y:parseFloat(e.style.top)});
  root.innerHTML='';st.open=st.open||{};
  let tot=0,miss=0;M.forEach(c=>{const z=nodeCost(c,q);tot+=z.best;miss+=z.miss});const gp=pr(R.n);
@@ -86,7 +88,7 @@ function render(){const R=RECIPES[st.goal],q=st.qty,M=matsOf(R),S=stepsOf(R);con
  root.querySelectorAll('input[data-n]').forEach(i=>{i.onclick=e=>e.stopPropagation();i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render();syncCoin()}});
  $('tot').innerHTML=`<span>목표 <b>${R.n}</b> ×${q}</span><span>1단계 재료 ${R.c.length}종${R.fin?` + 마감재 ${(R.fin[0]||[]).length}종`:''}</span>${R.pct?`<span>공정 횟수 <input id="stepsIn" type="number" min="1" value="${S}" style="width:4em" title="기본값 = ${AVG(R)}회 (공정 1회 성공 시 최대 ${R.pct}% 기준 이론 최소 횟수 · 실패 많으면 직접 늘려 입력)">회 <small>(1단계 재료 수량 = 1회분 × ${S}회 기준)</small></span>`:''}<span>최저 재료비 <b>${f(tot)}</b>${miss?` · 시세 없는 재료 ${miss}종 제외`:''}</span><span>경매장 완제품 <b>${gp?f(gp):'—'}</b></span>`;
  $('cond').innerHTML=`제작 조건 · 스킬 <b>${R.skill}</b> · 도구 <b>${R.tool}</b> · 시설 <b>${R.fac}</b>${R.pct?` · 공정 1회당 최대 <b>${R.pct}%</b> (공정 성공 시 ${R.pct/2}~${R.pct}% · 대성공 시 최대 ${R.pct*1.5}% · 실패 시 0~${R.pct/2}% 랜덤) → 기본 <b>${AVG(R)}회</b> 기준 (공정 성공 시 최대 ${R.pct}% 기준 이론 최소 · 실패·대실패가 섞이면 더 늘어나므로 위 입력칸에서 조정), 대성공만 나면 최소 ${Math.ceil(100/(R.pct*1.5))}회 · 매 공정 재료 1세트 소모, 재료비 ×${S} 반영<br><small>공정률 증가: 해당 스킬 파티(풀파티일수록↑), 레인캐스팅(천옷)만 적용 · 월요일·풍년가·세공은 성공률/품질만</small>`:''}${R.fin?`<br>마감 재료 · ${R.fin.map((t,i)=>`[타입${i+1}] `+t.map(x=>`${x[0]} <b>×${x[1]}</b>`).join(', ')).join(' / ')} <small>(100% 완성 후 마감 1회 · 재료비 포함)</small>`:''} · 시세 ${PT||'—'}<br>구슬 시세 · ${Object.keys(MC.SHOPS||{}).map(t=>`<a href="#coin-${t}">${MC.SHOPS[t].name}</a> <b>${BP[t]?f(Math.round(BP[t].p))+'G':'—'}</b>`).join(' · ')} <small>(아래 정가 코인 섹션의 직접 입력값 공유 · 탈라 가흐는 교환 재료 경매가÷구슬 수 역산 중앙값 · 재료비는 경매/코인/제작 중 최저)</small>`}
-$('tot').addEventListener('change',e=>{if(e.target.id!=='stepsIn')return;const R=RECIPES[st.goal];st.steps=st.steps||{};st.steps[R.n]=Math.max(1,+e.target.value||1);save();render();syncCoin()});
+$('tot').addEventListener('change',e=>{if(e.target.id!=='stepsIn')return;const R=RECIPES[gi()];st.steps=st.steps||{};st.steps[R.n]=Math.max(1,+e.target.value||1);save();render();syncCoin()});
 let busy=0;
 function toggle(id,el){if(busy)return;const root=$('root');const dep=+el.dataset.dep;
  if(st.open[id]){busy=1;const sub=[...root.querySelectorAll('.nd')].filter(e=>e.dataset.id.startsWith(id+'/'));
@@ -94,13 +96,13 @@ function toggle(id,el){if(busy)return;const root=$('root');const dep=+el.dataset
   const sv=root.querySelector('svg.lines');sv&&sv.animate([{opacity:1},{opacity:0}],{duration:180,fill:'forwards'});
   setTimeout(()=>{busy=0;Object.keys(st.open).forEach(k=>{if(k===id||k.startsWith(id+'/'))delete st.open[k]});window._act={id,open:0,dep};save();render()},180)}
  else{el.classList.add('press');busy=1;setTimeout(()=>{busy=0;st.open[id]=1;window._act={id,open:1,dep};save();render()},110)}}
-function fillGoals(){if(st.goal>=RECIPES.length)st.goal=0;const opt=re=>RECIPES.map((r,i)=>re.test(r.n)?`<option value="${i}">${r.n}</option>`:'').join('');
+function fillGoals(){const G=gi();const opt=re=>RECIPES.map((r,i)=>re.test(r.n)?`<option value="${i}">${r.n}</option>`:'').join('');
  const so=opt(/^소울/),du=opt(/^더스크/),et=opt(/^(?!소울|더스크)/);
  $('goalSoul').innerHTML='<option value="">— 선택 —</option>'+so+et;$('goalDusk').innerHTML='<option value="">— 선택 —</option>'+du;
- const n=(RECIPES[st.goal]||{}).n||'',isD=/^더스크/.test(n);$('goalSoul').value=isD?'':st.goal;$('goalDusk').value=isD?st.goal:'';$('goalSel').innerHTML=so+du+et;$('goalSel').value=st.goal}
+ const n=(RECIPES[gi()]||{}).n||'',isD=/^더스크/.test(n);$('goalSoul').value=isD?'':G;$('goalDusk').value=isD?G:'';$('goalSel').innerHTML=so+du+et;$('goalSel').value=G}
 ['goalSoul','goalDusk'].forEach(k=>$(k).addEventListener('change',e=>{if(e.target.value==='')return;st.goal=+e.target.value;fillGoals();save();render();syncCoin()}));
 // 제작 목표 ↔ 코인 탭 연동: 목표 재료 중 구슬 상점 재료의 (부족 수량 × 교환 코인) 합계
-window.craftCoinNeed=function(){const R=RECIPES[st.goal];if(!R)return null;const o={};
+window.craftCoinNeed=function(){const R=RECIPES[gi()];if(!R)return null;const o={};
  matsOf(R).forEach(c=>{const cn=MC.COST[c[0]];if(!cn)return;const z=nodeCost(c,st.qty);const t=o[cn.tab]=o[cn.tab]||{total:0,list:[]};t.total+=z.need*cn.cost;t.list.push({n:c[0],qty:z.need,cost:cn.cost})});
  return {goal:R.n,qty:st.qty,tabs:o,tab:/^소울/.test(R.n)?'bri':/^더스크/.test(R.n)?'tala':(Object.keys(o)[0]||null)}};
 function syncCoin(){const N=window.craftCoinNeed();if(N&&N.tab){const b=document.querySelector('#tabs button[data-k="'+N.tab+'"]');if(b&&!b.classList.contains('on'))b.click()}document.dispatchEvent(new Event('craftneed'))}fillGoals();$('goalQty').value=st.qty;
