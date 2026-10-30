@@ -9,7 +9,7 @@ if(path=="/alba/"||path=="/barter/")return;
 var hd=document.querySelector(".head:not(.coinHead)")||document.querySelector(".wrap>.hd");if(!hd)return;
 var h1=hd.querySelector("h1"),p=hd.querySelector("p");var d=document.createElement("div");d.className="kitHd";
 d.innerHTML='<span class="ki">'+I[pg[0]]+'</span><div><b></b><div class="kp"></div></div><span class="kn">TOOL '+pg[1]+'</span>';
-d.querySelector("b").innerHTML=path=="/"?"마비라이프 도우미 키트":(h1?h1.innerHTML:"");
+d.querySelector("b").innerHTML=path=="/"?"마비노기 생활도우미":(h1?h1.innerHTML:"");
 d.querySelector(".kp").textContent=pg[2]||(p?p.textContent:"")||(hd.textContent.replace(h1?h1.textContent:"","").trim());
 nav.after(d);b.classList.add("kit-hd")}
 if(document.readyState=="loading")document.addEventListener("DOMContentLoaded",go);else go()})();
