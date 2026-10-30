@@ -239,7 +239,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
  if(a==='pick6'){const r=b.getBoundingClientRect();setLayer({t:'pick6',p:b.dataset.p,x:r.left,y:r.bottom+4})}
  if(a==='set6'){const g=G[b.dataset.g];layer=null;mut(()=>S.active6[g.post]=g.id,`${g.post} 6티어: ${g.name}`)}
 
- if(a==='flip'){if(e.target.closest('button,input'))return;const k='flip_'+b.dataset.r;UI[k]=!UI[k];try{localStorage.setItem(UIK,JSON.stringify(UI))}catch(x){}renderDash();return}
+ if(a==='flip'){if(e.target.closest('button,input'))return;const k='flip_'+b.dataset.r;UI[k]=!UI[k];try{localStorage.setItem(UIK,JSON.stringify(UI))}catch(x){}const r=D.routes.find(x=>x.id===b.dataset.r);b.outerHTML=cardHtml(r);return}
  if(a==='pasteT'){UI.paste=!UI.paste;try{localStorage.setItem(UIK,JSON.stringify(UI))}catch(x){}return}
  if(a==='sec'){const k=b.dataset.s;UI[k]=!UI[k];try{localStorage.setItem(UIK,JSON.stringify(UI))}catch(x){}renderX();return}
  if(a==='rtab'){const id=b.dataset.r,cur=selRoutes().map(x=>x.id);if(cur.includes(id)&&cur.length<2)return toast('최소 한 루트는 켜져 있어야 합니다');mut(()=>{S.routes=cur.includes(id)?cur.filter(x=>x!==id):[...cur,id];S.route=S.routes[0]});return}
