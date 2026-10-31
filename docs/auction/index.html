@@ -104,25 +104,32 @@ function popH(tt,h){$('mt').textContent=tt;
  <text x="${P}" y="${H-4}" fill="#8a85b0" font-size="10">${f(t0)}</text><text x="${W-10}" y="${H-4}" fill="#8a85b0" font-size="10" text-anchor="end">${f(t1)}</text></svg><p>경매장 체결가 기준 (최근 30일, 10분마다 갱신)</p>`}
  $('mod').className='on'}
 // ── 인챈트스크롤 ──
-let E=null,EH={},EF=null,eAf='';
+let E=null,EH={},EF=null,EFx=null,eAf='';
 const RK=r=>/^\d+$/.test(r)?+r:100+r.charCodeAt(0);
 function eLoad(){if(E)return;E=[];
  Promise.all([fetch('enchant_data.json?t='+Date.now()).then(r=>r.json()),fetch('enchant_history.json?t='+Date.now()).then(r=>r.json()).catch(()=>({t:{}})),fetch('enchant_effects.json').then(r=>r.ok?r.json():null).catch(()=>null)]).then(([d,h,f])=>{
   E=d.rows;EH=h.t||{};
-  if(f){EF={};(Array.isArray(f)?f:f.rows||[]).forEach(x=>{EF[x.name+'|'+x.affix+'|'+String(x.rank).toUpperCase()]=x.effects||[]});}
+  if(f){const list=Array.isArray(f)?f:f.enchants||f.rows||[];EF={};EFx={};
+   list.forEach(x=>{const rk=String(x.rank).toUpperCase(),es=x.effects||[];EF[x.name+'|'+x.affix+'|'+rk]=es;(EFx[x.affix+'|'+rk]||(EFx[x.affix+'|'+rk]=[])).push(x);});}
   const rs=[...new Set(E.map(r=>r.rank))].sort((a,b)=>RK(a)-RK(b));$('eRk').innerHTML+=rs.map(r=>`<option value="${r}">랭크 ${r}</option>`).join('');
   if(EF){const st=new Set();Object.values(EF).forEach(es=>es.forEach(e=>e.stat&&st.add(e.stat)));$('eEf').innerHTML+=[...st].sort().map(x=>`<option>${x}</option>`).join('');$('eEf').disabled=false;$('eSo').querySelector('[value=eff]').disabled=false;$('eNote').textContent='';}
   else $('eNote').textContent='효과 데이터 준비 중 — 지금은 이름·접두/접미·랭크로 검색할 수 있어요.';
   $('eInfo').innerHTML=`인챈트 <b>${d.kinds}</b>종 · 매물 <b>${d.listings.toLocaleString()}</b>건 · 갱신 ${new Date(d.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}`;eDraw()})}
-const eK=r=>r.kind+'|'+r.affix+'|'+r.name+'|'+r.rank,eEffs=r=>EF?EF[r.name+'|'+r.affix+'|'+r.rank]||null:null;
-function eMag(r,st){const es=eEffs(r)||[];return Math.max(0,...es.filter(e=>!st||e.stat===st).map(e=>Math.abs(+e.max||+e.value||0)))}
+const eK=r=>r.kind+'|'+r.affix+'|'+r.name+'|'+r.rank;
+function eEffs(r){if(!EF)return null;const rk=String(r.rank).toUpperCase(),k=r.name+'|'+r.affix+'|'+rk;if(EF[k])return EF[k];
+ const c=(EFx&&EFx[r.affix+'|'+rk])||[],n=r.name,ns=n.replace(/\s/g,'');
+ let hits=c.filter(x=>x.name===n||x.name.endsWith(' '+n)||x.name.endsWith(n)||x.name.split(/\s+/).includes(n));
+ if(!hits.length)hits=c.filter(x=>x.name.replace(/\s/g,'').includes(ns));
+ if(hits.length>1){const p=hits.filter(x=>x.name===n||x.name.startsWith(n+' ')||x.name.split(/\s+/)[0]===n);if(p.length)hits=p}
+ return hits.length?hits[0].effects||[]:null}
+function eMag(r,st){const es=eEffs(r)||[];return Math.max(0,...es.filter(e=>!st||e.stat===st).map(e=>Math.abs(+e.amount||+e.max||+e.value||0)))}
 function eDraw(){if(!E||!E.length&&!E.rows)return;
  const q=$('eq').value.trim().replace(/\s/g,''),rk=$('eRk').value,kd=$('eKd').value,so=$('eSo').value,st=$('eEf').value,has=$('eHas').checked;
  let a=E.filter(r=>(!q||r.name.replace(/\s/g,'').includes(q))&&(!eAf||r.affix===eAf)&&(!rk||r.rank===rk)&&(!kd||r.kind===kd)&&(!has||r.n)&&(!st||eMag(r,st)>0));
  const hv=r=>r.avg||r.last||0,I=1e15;
  a.sort(so==='min'?(x,y)=>(x.min??I)-(y.min??I):so==='minD'?(x,y)=>(y.min??-1)-(x.min??-1):so==='n'?(x,y)=>y.n-x.n:so==='h'?(x,y)=>hv(y)-hv(x):so==='eff'?(x,y)=>eMag(y,st)-eMag(x,st):(x,y)=>x.name.localeCompare(y.name,'ko')||RK(x.rank)-RK(y.rank));
  const sh=a.slice(0,400);
- $('eList').innerHTML=sh.map((r,i)=>{const es=eEffs(r);return `<tr class="r" data-i="${E.indexOf(r)}"><td><span class="aff${r.affix==='접미'?' s':''}">${r.affix}</span>${r.kind==='전용'?'<span class="kd">전용</span>':''}</td><td>${r.name}${es&&es.length?`<div class="eEff">${es.map(e=>e.text||e.stat).join(' · ')}</div>`:''}</td><td>${r.rank}</td><td class="num p">${r.min?man(r.min):'<span class="no">-</span>'}</td><td class="num">${r.n||'<span class="no">0</span>'}</td><td class="num h hm">${r.avg?man(r.avg)+(r.t>1?` <small class="no">(${Math.min(r.t,10)}건 평균)</small>`:''):'<span class="no">-</span>'}</td></tr>`}).join('')||'<tr><td colspan="6" class="no" style="text-align:center;padding:30px">검색 결과가 없습니다.</td></tr>';
+ $('eList').innerHTML=sh.map((r,i)=>{const es=eEffs(r);return `<tr class="r" data-i="${E.indexOf(r)}"><td><span class="aff${r.affix==='접미'?' s':''}">${r.affix}</span>${r.kind==='전용'?'<span class="kd">전용</span>':''}</td><td>${r.name}${es&&es.length?`<div class="eEff">${es.map(e=>e.raw||e.text||((e.stat||'')+(e.amount!=null?' '+e.amount:'')+(e.unit||''))).join(' · ')}</div>`:''}</td><td>${r.rank}</td><td class="num p">${r.min?man(r.min):'<span class="no">-</span>'}</td><td class="num">${r.n||'<span class="no">0</span>'}</td><td class="num h hm">${r.avg?man(r.avg)+(r.t>1?` <small class="no">(${Math.min(r.t,10)}건 평균)</small>`:''):'<span class="no">-</span>'}</td></tr>`}).join('')||'<tr><td colspan="6" class="no" style="text-align:center;padding:30px">검색 결과가 없습니다.</td></tr>';
  if(a.length>sh.length)$('eList').innerHTML+=`<tr><td colspan="6" class="no" style="text-align:center">상위 ${sh.length}개만 표시 (총 ${a.length}개) — 검색으로 좁혀 보세요.</td></tr>`}
 ['eq','eRk','eKd','eSo','eEf','eHas'].forEach(id=>$(id).addEventListener('input',eDraw));
 $('eAf').onclick=e=>{const b=e.target.closest('button');if(!b)return;eAf=b.dataset.a;[...$('eAf').children].forEach(x=>x.className=x===b?'on':'');eDraw()};
