@@ -140,14 +140,15 @@ const rev=(g,q)=>{const s=S.sale[g.id]||{};return((+s.d||0)*(+S.drate||0)+(+s.g|
 function need(goods,useRem=true){const n={};for(const g of goods){const q=useRem?remOf(g):qtyOf(g);for(const[m,k]of g.mats)n[m]=(n[m]||0)+k*q}return n}
 const routeGoods=r=>r.posts.flatMap(activeGoods);
 const shortOf=g=>g.mats.filter(([m,k])=>(C().owned[m]||0)<k*remOf(g)).length;
-function plan(r){const W=+S.cw||0,SL=+S.cs||0;const goods=routeGoods(r).map(g=>({g,left:remOf(g)})).filter(x=>x.left>0);const runs=[];
+function plan(r){const W=+S.cw||0,SL=+S.cs||0;const goods=routeGoods(r).map(g=>({g,left:qtyOf(g)})).filter(x=>x.left>0);const runs=[];
  const order=[...goods].sort((a,b)=>(b.g.tier||0)-(a.g.tier||0)||r.posts.indexOf(a.g.post)-r.posts.indexOf(b.g.post));
  for(let run=0;run<4&&goods.some(x=>x.left);run++){let w=0,s=0;const L=[];
   const pass=(fl,trim)=>{for(const x of order){if(!x.left||!fl(x.g))continue;const ps=x.g.perSlot||1,wt=x.g.weight||0;let q=Math.min(x.left,wt?Math.floor((W-w)/wt):x.left,(SL-s)*ps);
    if(trim&&q>ps&&q%ps&&q<x.left)q-=q%ps;if(q<=0)continue;x.left-=q;w+=q*wt;s+=Math.ceil(q/ps);L.push({g:x.g,q})}};
   if(run===0){pass(g=>(g.tier||0)>=3,true);pass(()=>true)}else pass(()=>true);if(!L.length)break;runs.push({L,w,s})}
- const dn=routeGoods(r).filter(g=>qtyOf(g)>0&&!remOf(g)).map(g=>({g,q:doneOf(g),fin:1}));if(dn.length){if(!runs.length)runs.push({L:[],w:0,s:0});runs[0].L.push(...dn)}
+ const off={};for(const ru of runs)for(const x of ru.L){const o=off[x.g.id]||0;x.off=o;x.dn=Math.max(0,Math.min(x.q,doneOf(x.g)-o));x.fin=x.dn>=x.q?1:0;off[x.g.id]=o+x.q}
  return{runs,W,SL}}
+function unexTo(g,n){const c=C();const cur=c.done[g.id]||0;if(n>=cur)return;mut(()=>{c.done[g.id]=n;for(const[m,k]of g.mats)c.owned[m]=(c.owned[m]||0)+k*(cur-n)},`${g.name} 완료 해제 · 재료 복원`)}
 function unexchange(g){const c=C();const cur=c.done[g.id]||0;if(!cur)return;mut(()=>{c.done[g.id]=0;for(const[m,k]of g.mats)c.owned[m]=(c.owned[m]||0)+k*cur},`${g.name} 완료 해제 · 재료 복원`)}
 function exchange(g,n){const c=C();n=Math.max(0,Math.min(n,qtyOf(g)));const cur=c.done[g.id]||0;if(n===cur)return;const delta=n-cur;
  mut(()=>{c.done[g.id]=n;if(delta>0)for(const[m,k]of g.mats)c.owned[m]=Math.max(0,(c.owned[m]||0)-k*delta)},delta>0?`${g.name} +${delta} · 재료 차감`:`${g.name} ${n}개로 수정`)}
@@ -185,7 +186,7 @@ function xGoods(){const c=C(),r=route();let h=`<div style="display:flex;gap:12px
    <td class="r neg">${gk(cost)}${uc.u?' <span class="warn">+?</span>':''}<div class="mut">개당 ${gk(uc.s)}</div></td>
    <td class="r"><input class="p" data-a="sale" data-k="d" data-g="${g.id}" value="${(S.sale[g.id]||{}).d||''}" placeholder="두카트"> <input class="p" data-a="sale" data-k="g" data-g="${g.id}" value="${(S.sale[g.id]||{}).g||''}" placeholder="골드"></td>
    <td class="r ${hasSale(g)?(pf>=0?'pos':'neg'):'mut'}">${hasSale(g)?(pf>=0?'+':'')+gk(pf):'판매가 미입력'}</td>
-   <td style="white-space:nowrap"><input class="n" style="width:44px" data-a="done" data-g="${g.id}" value="${dn}">/${q} <button class="sm" data-a="ex" data-g="${g.id}" title="남은 수량 교환완료 + 보유재료 차감">✔ 완료</button></td></tr>`}
+   <td style="white-space:nowrap"><input class="n" style="width:44px" data-a="done" data-g="${g.id}" data-off="${x.off}" value="${x.dn}">/${x.q} <button class="sm" data-a="ex" data-g="${g.id}" data-n="${x.off+x.q}" title="남은 수량 교환완료 + 보유재료 차감">✔ 완료</button></td></tr>`}
   h+=`<tr><td></td><td colspan="5" class="tot">${ps} 합계</td><td class="r neg tot">${gk(P.cost)}${P.unk?'<span class="warn">+?</span>':''}</td><td class="r pos tot">${P.rev?gk(P.rev):'-'}</td><td class="r tot ${P.rev-P.cost>=0?'pos':'neg'}">${P.rev?gk(P.rev-P.cost):'-'}</td><td></td></tr></table>`;RT.cost+=P.cost;RT.rev+=P.rev;RT.unk+=P.unk}
  h+=`<div class="tot" style="margin-top:8px">🧾 ${r.name} 총계: 재료비 <span class="neg">${gk(RT.cost)} G</span> · 매출 <span class="pos">${gk(RT.rev)} G</span> · 순이익 <span class="${RT.rev-RT.cost>=0?'pos':'neg'}">${gk(RT.rev-RT.cost)} G</span> · ${esc(c.name)} 진행 ${RT.doneCnt}/${RT.cnt}${RT.unk?' <span class="warn">(가격 모르는 재료 있음)</span>':''} <span class="mut" style="font-weight:400;font-size:13.5px">· 판매가의 두카트는 ⚙ 두카트→골드 환산값 사용</span></div>`;
  h+=`<div class="mut" style="margin-top:4px;font-size:13.5px">진행 요약 (전체 경로): ${S.chars.map(ch=>{let a=0,b=0;for(const g of D.routes.flatMap(x=>x.posts).flatMap(activeGoods)){b+=qtyOf(g);a+=Math.min(ch.done[g.id]||0,qtyOf(g))}return esc(ch.name)+' '+a+'/'+b}).join(' · ')}</div>`;return h}
@@ -204,10 +205,10 @@ function detailHtml(r){const pl=plan(r),n=UI['flip_'+r.id]?2:1,ru=pl.runs[n-1],c
  if(!ru)return h+`<div class="pos">${n}회차 남은 교환 없음 🎉</div>`;
  let tc=0,unk=0;const rows=byPost(ru.L).map(x=>{const g=x.g,u=unitCost(g),q=qtyOf(g),dn=doneOf(g),sl=S.sale[g.id]||{},pf=rev(g,x.q)-u.s*x.q;if(!x.fin){tc+=u.s*x.q;unk+=u.u}
   const mats=g.mats.map(([m,k])=>{const nd=k*x.q,o=c.owned[m]||0,p=price(m);return `<div${o<nd?' class="neg"':''}>${iconHtml(m)}${esc(m)} ×${k} → ${fmt(nd)}${p!=null?` <span class="mut">@${fmt(p)}</span>`:''}${o<nd?` <span class="mut">(보유 ${fmt(o)})</span>`:''}</div>`}).join('');
-  if(x.fin)return `<tr class="done fin cmp"><td><span class="t t${g.tier||0}">T${g.tier||'—'}</span></td><td>${g.post}</td><td colspan="9">${iconHtml(g.name)}${esc(g.name)} <span class="mut">${dn}/${q}</span></td><td style="white-space:nowrap"><button class="sm dong" data-a="unex" data-g="${g.id}" title="다시 누르면 완료 해제 + 재료 복원">✔ 완료</button></td></tr>`;
+  if(x.fin)return `<tr class="done fin cmp"><td><span class="t t${g.tier||0}">T${g.tier||'—'}</span></td><td>${g.post}</td><td colspan="9">${iconHtml(g.name)}${esc(g.name)} <span class="mut">${x.dn}/${x.q}</span></td><td style="white-space:nowrap"><button class="sm dong" data-a="unex" data-g="${g.id}" data-n="${x.off}" title="다시 누르면 완료 해제 + 재료 복원">✔ 완료</button></td></tr>`;
   return `<tr><td><span class="t t${g.tier||0}">T${g.tier||'—'}</span></td><td>${g.post}</td><td>${iconHtml(g.name)}${esc(g.name)}</td><td class="r"><input class="n" style="width:50px" data-a="qty" data-g="${g.id}" value="${q}"></td><td class="r">${x.q}</td><td class="r mut">${g.weight}/${g.perSlot}</td><td class="r mut">${x.q*g.weight}</td><td class="r mut">${Math.ceil(x.q/g.perSlot)}</td><td style="font-size:13.5px">${mats}</td><td class="r neg">${gk(u.s*x.q)}${u.u?'<span class="warn">+?</span>':''}<div class="mut" style="font-size:12.5px">개당 ${gk(u.s)}</div></td>
   <td class="r" style="white-space:nowrap"><input class="p" data-a="sale" data-k="d" data-g="${g.id}" value="${sl.d||''}" placeholder="두카트"> <input class="p" data-a="sale" data-k="g" data-g="${g.id}" value="${sl.g||''}" placeholder="골드"><div class="${hasSale(g)?(pf>=0?'pos':'neg'):'mut'}" style="font-size:12.5px">${hasSale(g)?(pf>=0?'+':'')+gk(pf):'판매가 미입력'}</div></td>
-  <td style="white-space:nowrap"><input class="n" style="width:44px" data-a="done" data-g="${g.id}" value="${dn}">/${q} <button class="sm" data-a="ex" data-g="${g.id}" title="남은 수량 교환완료 + 보유재료 차감">✔ 완료</button></td></tr>`}).join('');
+  <td style="white-space:nowrap"><input class="n" style="width:44px" data-a="done" data-g="${g.id}" data-off="${x.off}" value="${x.dn}">/${x.q} <button class="sm" data-a="ex" data-g="${g.id}" data-n="${x.off+x.q}" title="남은 수량 교환완료 + 보유재료 차감">✔ 완료</button></td></tr>`}).join('');
  const six6=r.posts.filter(ps=>D.goods.some(g=>g.post===ps&&g.tier===6));if(six6.length)h+=`<div style="display:flex;gap:14px;flex-wrap:wrap;margin:4px 0 8px;font-size:14px">${six6.map(ps=>`<label class="mut">${ps} 6티어 이번 시즌 <select data-a="act6" data-p="${ps}">${D.goods.filter(g=>g.post===ps&&g.tier===6).map(g=>`<option value="${g.id}" ${S.active6[ps]===g.id?'selected':''}>${g.name}</option>`).join('')}</select></label>`).join('')}</div>`;
  return h+`<div style="overflow-x:auto"><table class="rt"><tr><th>티어</th><th>교역소</th><th>품목</th><th class="r">주간 수량</th><th class="r">이번 회차</th><th class="r">무게/슬롯당</th><th class="r">무게</th><th class="r">슬롯</th><th>재료 (개당 → 필요)</th><th class="r">재료비</th><th class="r">판매가/개 · 손익</th><th>${esc(c.name)} 교환</th></tr>${rows}</table></div>
  <div class="esum"><span>무게 <b class="${ru.w>pl.W?'neg':''}">${fmt(ru.w)} / ${fmt(pl.W)}</b></span><span>슬롯 <b>${ru.s} / ${pl.SL}</b></span><span>재료비 <b class="neg">${gk(tc)}</b>${unk?'<span class="warn">+?</span>':''}</span></div>`}
@@ -285,8 +286,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
  if(a==='row'){if(e.target.closest('button,i'))return;const id=+b.dataset.g;open=open===id?null:id;render()}
  if(a==='dot'){const g=G[b.dataset.g],i=+b.dataset.i;exchange(g,doneOf(g)===i+1?i:i+1)}
  if(a==='inc'||a==='dec'){const g=G[b.dataset.g];exchange(g,doneOf(g)+(a==='inc'?st:-st))}
- if(a==='unex'){const g=G[b.dataset.g];unexchange(g)}
- if(a==='ex'){const g=G[b.dataset.g];exchange(g,qtyOf(g))}
+ if(a==='unex'){const g=G[b.dataset.g];if(b.dataset.n!=null)unexTo(g,+b.dataset.n);else unexchange(g)}
+ if(a==='ex'){const g=G[b.dataset.g];exchange(g,b.dataset.n!=null?+b.dataset.n:qtyOf(g))}
  if(a==='pick6'){const r=b.getBoundingClientRect();setLayer({t:'pick6',p:b.dataset.p,x:r.left,y:r.bottom+4})}
  if(a==='set6'){const g=G[b.dataset.g];layer=null;mut(()=>S.active6[g.post]=g.id,`${g.post} 6티어: ${g.name}`)}
 
@@ -314,7 +315,7 @@ document.addEventListener('change',e=>{const t=e.target,a=t.dataset.a,c=C(),v=t.
  if(t.id==='apikey'){localStorage.setItem(KEYLS,t.value.trim());toast('API 키 저장 (이 브라우저에만)')}
  if(t.id==='route')mut(()=>S.route=t.value);
  if(a==='act6')mut(()=>S.active6[t.dataset.p]=+t.value);
- if(a==='done')exchange(G[t.dataset.g],+v||0);
+ if(a==='done')exchange(G[t.dataset.g],(+t.dataset.off||0)+(+v||0));
  if(a==='qty')mut(()=>S.qty[t.dataset.g]=Math.max(0,+v||0));
  if(a==='sale')mut(()=>{(S.sale[t.dataset.g]=S.sale[t.dataset.g]||{})[t.dataset.k]=v===''?'':+v});
  if(a==='own')mutMats(()=>c.owned[t.dataset.m]=Math.max(0,+v||0));
