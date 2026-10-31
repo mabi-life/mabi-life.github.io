@@ -35,10 +35,10 @@ body{min-height:100vh;font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun G
 #mod h5{color:#d59bff;font-size:16px;display:flex;gap:8px}#mod h5 span{flex:1}#mod h5 button{background:none;border:0;color:var(--mu);font-size:21px;cursor:pointer}
 #mod p{font-size:14px;color:var(--mu);margin:6px 0}#mod p b{color:var(--gold)}#mod svg{width:100%;height:auto;display:block}
 .siteFoot{margin:20px auto 18px;padding:22px 16px 28px;max-width:1180px;text-align:center;font-size:14px;line-height:1.65;color:#8a90a0;position:relative;border-top:1px solid #232733}.siteFoot .gold{position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:80px;height:2px;background:linear-gradient(90deg,transparent,#f7d98b,transparent)}.siteFoot a{color:inherit;text-decoration:none}.siteFoot a:hover{text-decoration:underline}
-.lv button b.ls{opacity:.6;font-style:italic}.subTab{display:flex;gap:6px;margin:4px 0 12px}.subTab a{padding:6px 16px;border-radius:999px;border:1px solid #3a2f66;background:#1a1530;color:#cfc8f5;text-decoration:none;font-size:15px}.subTab a.on{background:linear-gradient(#f7d98b,#c9a24a);color:#1a1530;font-weight:700;border-color:#f7d98b}.soon{padding:60px 0;text-align:center;color:var(--mu);font-size:16px}.eBar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}.eBar input,.eBar select{font:inherit;font-size:14.5px;background:#1a1530;border:1px solid #3a2f66;color:var(--tx);border-radius:10px;padding:7px 10px}.eBar input{flex:1 1 220px}.eBar select:disabled{opacity:.45}
+.lv button b.ls{opacity:.6;font-style:italic}.subTab{display:flex;gap:6px;margin:4px 0 12px}.subTab a{padding:6px 16px;border-radius:999px;border:1px solid #3a2f66;background:#1a1530;color:#cfc8f5;text-decoration:none;font-size:15px}.subTab a.on{background:linear-gradient(#f7d98b,#c9a24a);color:#1a1530;font-weight:700;border-color:#f7d98b}.soon{padding:60px 0;text-align:center;color:var(--mu);font-size:16px}.eBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:0 0 12px;padding:10px 12px;background:#161229;border:1px solid #2a2350;border-radius:12px}.eBar label{font-size:14px;color:var(--mu)}.eBar input,.eBar select{font:inherit;font-size:14.5px;background:#1a1530;border:1px solid #3a2f66;color:var(--tx);border-radius:10px;padding:7px 10px}.eBar input{flex:1 1 220px}.eBar select:disabled{opacity:.45}
 .eSeg{display:flex;gap:4px}.eSeg button{font:inherit;font-size:14px;padding:6px 12px;border-radius:999px;border:1px solid #3a2f66;background:#1a1530;color:#cfc8f5;cursor:pointer}.eSeg button.on{background:linear-gradient(#f7d98b,#c9a24a);color:#1a1530;font-weight:700;border-color:#f7d98b}
 .eT{width:100%;border-collapse:collapse;font-size:14.5px}.eT th{color:var(--mu);font-weight:500;text-align:left;padding:6px 8px;border-bottom:1px solid #3a2f66;font-size:13px}.eT td{padding:7px 8px;border-bottom:1px solid #231c44}.eT tr.r{cursor:pointer}.eT tr.r:hover td{background:#1d1738}.eT .num{text-align:right;white-space:nowrap}.eT td.p{color:#f7d98b;font-weight:700}.eT td.h{color:#9fd3ff}.eT .no{color:#6f6a90}
-.aff{display:inline-block;font-size:12px;padding:1px 7px;border-radius:999px;border:1px solid #6b5aa8;color:#c9b8ff}.aff.s{border-color:#5a8aa8;color:#9fd3ff}.kd{font-size:11.5px;color:#e8a06a;margin-left:4px}.eNote{font-size:13px;color:var(--mu);margin:0 0 8px}.eEff{font-size:12.5px;color:var(--mu);margin-top:2px}
+.aff{display:inline-block;min-width:34px;text-align:center;font-size:12px;line-height:18px;padding:0 7px;border-radius:999px;border:1px solid #6b5aa8;color:#c9b8ff}.aff.s{border-color:#5a8aa8;color:#9fd3ff}.kd{display:inline-block;font-size:11.5px;line-height:18px;padding:0 6px;border-radius:999px;border:1px solid #7a5a3a;color:#e8a06a;margin-left:4px}.eNote{font-size:13px;color:var(--mu);margin:0 0 8px}.eEff{font-size:12.5px;line-height:1.5;color:#8f89b3;margin-top:3px;word-break:keep-all}.eEff i{font-style:normal;margin:0 5px;color:#4a4270}.eEff .hit{color:#f7d98b}.eT td{vertical-align:top}
 @media(max-width:600px){.eT .hm{display:none}.eT td,.eT th{padding:6px 4px}}</style>  <script type="text/javascript" src="https://openapi.nexon.com/js/analytics.js?app_id=355270" async></script>
 <link rel="stylesheet" href="/css/kit.css?v=9"><script src="/js/kit.js?v=9" defer></script></head>
 <body><div class="wrap">
@@ -53,8 +53,8 @@ body{min-height:100vh;font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun G
 <div id="pE" hidden><div class="head"><h1>경매장 도우미</h1><p>인챈트 스크롤 · 전용 인챈트 스크롤 경매장 최저가 · 매물 수 · 거래 시세</p></div>
 <div class="eBar"><input id="eq" type="search" placeholder="인챈트 이름 검색 (예: 놀라운)"><div class="eSeg" id="eAf"><button data-a="" class="on">전체</button><button data-a="접두">접두</button><button data-a="접미">접미</button></div>
 <select id="eRk"><option value="">랭크 전체</option></select><select id="eKd"><option value="">일반+전용</option><option value="일반">일반</option><option value="전용">전용</option></select>
-<select id="eSo"><option value="min">최저가 낮은순</option><option value="minD">최저가 높은순</option><option value="n">매물 많은순</option><option value="h">최근체결 높은순</option><option value="name">이름순</option><option value="eff" disabled>효과 높은순</option></select>
-<select id="eEf" disabled><option value="">효과 필터</option></select><label class="bar" style="margin:0"><input type="checkbox" id="eHas" checked>&nbsp;매물 있는 것만</label></div>
+<select id="eEf" disabled><option value="">효과 필터 (불러오는 중)</option></select><select id="eSo" title="효과 높은순은 효과를 고른 뒤 사용"><option value="min">최저가 낮은순</option><option value="minD">최저가 높은순</option><option value="n">매물 많은순</option><option value="h">최근체결 높은순</option><option value="name">이름순</option><option value="eff" disabled>효과 높은순</option></select>
+<label class="bar" style="margin:0"><input type="checkbox" id="eHas" checked>&nbsp;매물 있는 것만</label></div>
 <p class="eNote" id="eNote"></p><p class="info" id="eInfo"></p>
 <table class="eT"><thead><tr><th>구분</th><th>이름</th><th>랭크</th><th class="num">최저가</th><th class="num">매물</th><th class="num hm">거래 시세</th></tr></thead><tbody id="eList"></tbody></table></div>
 <div id="mod"><div class="box"><h5><span id="mt"></span><button id="mx" aria-label="닫기">×</button></h5><div id="mb"></div></div></div>
@@ -105,6 +105,7 @@ function popH(tt,h){$('mt').textContent=tt;
  $('mod').className='on'}
 // ── 인챈트스크롤 ──
 let E=null,EH={},EF=null,EFx=null,eAf='';
+const EB=t=>String(t||'').replace(/^.*(?:일\s?때|했을\s?시|있을\s?때|경우|시에?)\s+/,'').replace(/\s+/g,' ').trim();
 const RK=r=>/^\d+$/.test(r)?+r:100+r.charCodeAt(0);
 function eLoad(){if(E)return;E=[];
  Promise.all([fetch('enchant_data.json?t='+Date.now()).then(r=>r.json()),fetch('enchant_history.json?t='+Date.now()).then(r=>r.json()).catch(()=>({t:{}})),fetch('enchant_effects.json').then(r=>r.ok?r.json():null).catch(()=>null)]).then(([d,h,f])=>{
@@ -112,7 +113,7 @@ function eLoad(){if(E)return;E=[];
   if(f){const list=Array.isArray(f)?f:f.enchants||f.rows||[];EF={};EFx={};
    list.forEach(x=>{const rk=String(x.rank).toUpperCase(),es=x.effects||[];EF[x.name+'|'+x.affix+'|'+rk]=es;(EFx[x.affix+'|'+rk]||(EFx[x.affix+'|'+rk]=[])).push(x);});}
   const rs=[...new Set(E.map(r=>r.rank))].sort((a,b)=>RK(a)-RK(b));$('eRk').innerHTML+=rs.map(r=>`<option value="${r}">랭크 ${r}</option>`).join('');
-  if(EF){const st=new Set();Object.values(EF).forEach(es=>es.forEach(e=>e.stat&&st.add(e.stat)));$('eEf').innerHTML+=[...st].sort().map(x=>`<option>${x}</option>`).join('');$('eEf').disabled=false;$('eSo').querySelector('[value=eff]').disabled=false;$('eNote').textContent='';}
+  if(EF){const st=new Set();Object.values(EF).forEach(es=>es.forEach(e=>{if(e.stat){e.b=EB(e.stat);st.add(e.b)}}));$('eEf').innerHTML=`<option value="">효과 전체 (${st.size}종)</option>`+[...st].sort((a,b)=>a.localeCompare(b,'ko')).map(x=>`<option>${x}</option>`).join('');$('eEf').disabled=false;$('eNote').textContent='';}
   else $('eNote').textContent='효과 데이터 준비 중 — 지금은 이름·접두/접미·랭크로 검색할 수 있어요.';
   $('eInfo').innerHTML=`인챈트 <b>${d.kinds}</b>종 · 매물 <b>${d.listings.toLocaleString()}</b>건 · 갱신 ${new Date(d.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}`;eDraw()})}
 const eK=r=>r.kind+'|'+r.affix+'|'+r.name+'|'+r.rank;
@@ -122,14 +123,15 @@ function eEffs(r){if(!EF)return null;const rk=String(r.rank).toUpperCase(),k=r.n
  if(!hits.length)hits=c.filter(x=>x.name.replace(/\s/g,'').includes(ns));
  if(hits.length>1){const p=hits.filter(x=>x.name===n||x.name.startsWith(n+' ')||x.name.split(/\s+/)[0]===n);if(p.length)hits=p}
  return hits.length?hits[0].effects||[]:null}
-function eMag(r,st){const es=eEffs(r)||[];return Math.max(0,...es.filter(e=>!st||e.stat===st).map(e=>Math.abs(+e.amount||+e.max||+e.value||0)))}
+function eMag(r,st){const es=eEffs(r)||[];return Math.max(0,...es.filter(e=>!st||(e.b||EB(e.stat))===st).map(e=>Math.abs(+e.amount||+e.max||+e.value||0)))}
 function eDraw(){if(!E||!E.length&&!E.rows)return;
+ {const o=$('eSo'),fo=o.querySelector('[value=eff]');fo.disabled=!$('eEf').value;if(fo.disabled&&o.value==='eff')o.value='min';}
  const q=$('eq').value.trim().replace(/\s/g,''),rk=$('eRk').value,kd=$('eKd').value,so=$('eSo').value,st=$('eEf').value,has=$('eHas').checked;
  let a=E.filter(r=>(!q||r.name.replace(/\s/g,'').includes(q))&&(!eAf||r.affix===eAf)&&(!rk||r.rank===rk)&&(!kd||r.kind===kd)&&(!has||r.n)&&(!st||eMag(r,st)>0));
  const hv=r=>r.avg||r.last||0,I=1e15;
  a.sort(so==='min'?(x,y)=>(x.min??I)-(y.min??I):so==='minD'?(x,y)=>(y.min??-1)-(x.min??-1):so==='n'?(x,y)=>y.n-x.n:so==='h'?(x,y)=>hv(y)-hv(x):so==='eff'?(x,y)=>eMag(y,st)-eMag(x,st):(x,y)=>x.name.localeCompare(y.name,'ko')||RK(x.rank)-RK(y.rank));
  const sh=a.slice(0,400);
- $('eList').innerHTML=sh.map((r,i)=>{const es=eEffs(r);return `<tr class="r" data-i="${E.indexOf(r)}"><td><span class="aff${r.affix==='접미'?' s':''}">${r.affix}</span>${r.kind==='전용'?'<span class="kd">전용</span>':''}</td><td>${r.name}${es&&es.length?`<div class="eEff">${es.map(e=>e.raw||e.text||((e.stat||'')+(e.amount!=null?' '+e.amount:'')+(e.unit||''))).join(' · ')}</div>`:''}</td><td>${r.rank}</td><td class="num p">${r.min?man(r.min):'<span class="no">-</span>'}</td><td class="num">${r.n||'<span class="no">0</span>'}</td><td class="num h hm">${r.avg?man(r.avg)+(r.t>1?` <small class="no">(${Math.min(r.t,10)}건 평균)</small>`:''):'<span class="no">-</span>'}</td></tr>`}).join('')||'<tr><td colspan="6" class="no" style="text-align:center;padding:30px">검색 결과가 없습니다.</td></tr>';
+ $('eList').innerHTML=sh.map((r,i)=>{const es=eEffs(r);return `<tr class="r" data-i="${E.indexOf(r)}"><td><span class="aff${r.affix==='접미'?' s':''}">${r.affix}</span>${r.kind==='전용'?'<span class="kd">전용</span>':''}</td><td>${r.name}${es&&es.length?`<div class="eEff">${es.map(e=>`<span${$('eEf').value&&(e.b||EB(e.stat))===$('eEf').value?' class="hit"':''}>`+(e.raw||e.text||((e.stat||'')+(e.amount!=null?' '+e.amount:'')+(e.unit||'')))+'</span>').join('<i>·</i>')}</div>`:''}</td><td>${r.rank}</td><td class="num p">${r.min?man(r.min):'<span class="no">-</span>'}</td><td class="num">${r.n||'<span class="no">0</span>'}</td><td class="num h hm">${r.avg?man(r.avg)+(r.t>1?` <small class="no">(${Math.min(r.t,10)}건 평균)</small>`:''):'<span class="no">-</span>'}</td></tr>`}).join('')||'<tr><td colspan="6" class="no" style="text-align:center;padding:30px">검색 결과가 없습니다.</td></tr>';
  if(a.length>sh.length)$('eList').innerHTML+=`<tr><td colspan="6" class="no" style="text-align:center">상위 ${sh.length}개만 표시 (총 ${a.length}개) — 검색으로 좁혀 보세요.</td></tr>`}
 ['eq','eRk','eKd','eSo','eEf','eHas'].forEach(id=>$(id).addEventListener('input',eDraw));
 $('eAf').onclick=e=>{const b=e.target.closest('button');if(!b)return;eAf=b.dataset.a;[...$('eAf').children].forEach(x=>x.className=x===b?'on':'');eDraw()};
