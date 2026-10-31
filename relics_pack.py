@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""무리아스의 유물 경매장 → docs/relics/data.json (아르카나 → 옵션 3종 → Lv1~10 최저가/매물수).
+"""무리아스의 유물 경매장 → docs/auction/data.json (아르카나 → 옵션 3종 → Lv1~10 최저가/매물수).
 Lv = round(값 / 최대 * 10). 키는 NEXON_API_KEY 환경변수."""
 import json, os, re, sys, time, datetime, urllib.request, urllib.parse, collections
 H = os.path.dirname(os.path.abspath(__file__))
@@ -69,10 +69,10 @@ for (sk, opt, verb, u, mx), lvs in agg.items():
                        'lv': {str(l): [c['p'], c['n']] for l, c in sorted(lvs.items())}})
 out = {'updated': datetime.datetime.now(KST).isoformat(timespec='seconds'), 'listings': len(rows),
        'skills': [{'name': a, 'options': sorted(skills[a], key=lambda o: (o['i'], o['name']))} for a in [x for x, _ in ARC] + ['기타'] if skills.get(a)]}
-os.makedirs(f'{H}/docs/relics', exist_ok=True)
-json.dump(out, open(f'{H}/docs/relics/data.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+os.makedirs(f'{H}/docs/auction', exist_ok=True)
+json.dump(out, open(f'{H}/docs/auction/data.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 # 체결 이력: auction/history는 최근 ~1시간만 → 10분마다 auction_buy_id로 중복 제거하며 history.json에 누적 (30일 보관)
-hp = f'{H}/docs/relics/history.json'
+hp = f'{H}/docs/auction/history.json'
 try: hist = json.load(open(hp, encoding='utf-8'))
 except Exception: hist = {}
 seen = set(hist.get('ids') or []); tr = hist.get('t') or {}

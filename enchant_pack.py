@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""인챈트 스크롤 / 전용 인챈트 스크롤 경매장 → docs/relics/enchant_data.json (+ enchant_history.json 누적).
+"""인챈트 스크롤 / 전용 인챈트 스크롤 경매장 → docs/auction/enchant_data.json (+ enchant_history.json 누적).
 키: (kind 일반|전용, affix 접두|접미, name, rank). 효과 텍스트는 API에 없음."""
 import json, os, re, sys, time, datetime, urllib.request, urllib.parse
 H = os.path.dirname(os.path.abspath(__file__))
@@ -36,7 +36,7 @@ for n, kind in NAMES.items():
                 a = agg.setdefault(k, [p, 0]); a[0] = min(a[0], p); a[1] += 1
         cur = d.get('next_cursor'); time.sleep(0.25)
         if not cur: break
-hp = f'{H}/docs/relics/enchant_history.json'
+hp = f'{H}/docs/auction/enchant_history.json'
 try: hist = json.load(open(hp, encoding='utf-8'))
 except Exception: hist = {}
 seen = set(hist.get('ids') or []); tr = hist.get('t') or {}
@@ -65,8 +65,8 @@ for k in sorted(set(agg) | set(tr)):
     if h:
         r['last'] = h[-1][1]; rec = [p for _, p in h[-10:]]; r['avg'] = round(sum(rec) / len(rec)); r['t'] = len(h)
     rows.append(r)
-os.makedirs(f'{H}/docs/relics', exist_ok=True)
+os.makedirs(f'{H}/docs/auction', exist_ok=True)
 json.dump({'updated': now, 'listings': total, 'kinds': len(agg), 'rows': rows},
-          open(f'{H}/docs/relics/enchant_data.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+          open(f'{H}/docs/auction/enchant_data.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 json.dump({'updated': now, 'ids': sorted(seen)[-50000:], 't': tr}, open(hp, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 print('enchant:', total, 'listings,', len(agg), 'keys,', len(rows), 'rows,', sum(map(len, tr.values())), 'trades, unparsed', bad)

@@ -1,9 +1,9 @@
 # 유물 아이콘 패키징 (tools_icons.py 방식): 소스 라바뉴 labanyu.com/arcana/<1-10>, /skill/<id> → tacask-cdn webp(게임 클라 아이콘, ©NEXON)
 # 아르카나 엠블럼 = arcana 페이지 헤더 아이콘, 스킬 아이콘 = skill 페이지 제목 옆 아이콘.
-# docs/relics/icons/orig/*.png 원본 + 2x/*.png (premultiplied-alpha Lanczos 2x) + icons.json. 이름은 relics_pack.py ARC 표.
+# docs/auction/icons/orig/*.png 원본 + 2x/*.png (premultiplied-alpha Lanczos 2x) + icons.json. 이름은 relics_pack.py ARC 표.
 import re,os,ast,json,io,time,urllib.request
 from PIL import Image
-H=os.path.dirname(os.path.abspath(__file__));D=f'{H}/docs/relics/icons'
+H=os.path.dirname(os.path.abspath(__file__));D=f'{H}/docs/auction/icons'
 src=open(f'{H}/relics_pack.py',encoding='utf-8').read()
 ARC=ast.literal_eval(re.search(r'^ARC = (\[.*?\])$',src,re.S|re.M)[1])
 ALIAS={'고결한':'고결한 서약','트라이 어설트 피니시':'트라이 어설트'}
