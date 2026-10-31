@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-SJP2KJK2XP"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-SJP2KJK2XP');</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141029">
+<title>유물 도우미 — 마비노기 생활도우미</title>
+<link rel="icon" href="/favicon.ico?v=6" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=6">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--card:rgba(255,255,255,.05);--line:rgba(247,217,139,.25);--gold:#f7d98b;--tx:#ece8ff;--mu:#a9a2d6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#0b0918 radial-gradient(circle at 50% 0%,#2b2357 0%,#141029 55%,#0b0918 100%) no-repeat fixed;color:var(--tx);padding:18px 14px}
+.wrap{max-width:640px;margin:0 auto}
+.siteNav{display:flex;align-items:center;gap:2px;margin:0 0 10px;font-size:14px;flex-wrap:wrap}.siteNav a,.siteNav span{color:#a9a2d4;text-decoration:none;padding:3px 10px;border-radius:999px}.siteNav a:hover{color:#ffe7a3}.siteNav .on{color:#f7d98b}
+.head{margin:10px 0 14px}.head h1{font-size:30px;font-weight:800;background:linear-gradient(90deg,#f7d98b,#fff3cf,#f7d98b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.verBadge{font-size:12.5px;color:var(--mu);border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:middle;font-weight:500;-webkit-text-fill-color:var(--mu)}
+.head p{margin-top:6px;color:var(--mu);font-size:16px}
+.bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:14px;color:var(--mu)}.bar label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.chips{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+.chip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:74px;padding:8px 4px;border-radius:12px;background:#1a1530;border:1px solid #3a2f66;color:#cfc8f5;font:inherit;font-size:14px;line-height:1.2;text-align:center;word-break:keep-all;cursor:pointer}.chip img{width:36px;height:36px;object-fit:contain}
+@media(max-width:480px){.chips{gap:5px}.chip{min-height:66px;padding:6px 2px;font-size:13px;border-radius:10px}.chip img{width:28px;height:28px}}
+.chip.on{background:linear-gradient(#f7d98b,#c9a24a);color:#1a1530;font-weight:700;border-color:#f7d98b}
+.info{font-size:14px;color:var(--mu);margin:0 0 10px}.info b{color:var(--gold)}
+.blk{background:#1a1530;border:1px solid #3a2f66;border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.blk h4{margin:0;display:flex;align-items:center;gap:10px;color:#d59bff;font-size:17px}.blk h4 span{flex:1;word-break:keep-all}.blk h4 img{width:40px;height:40px;border-radius:6px;flex:none}.blk h4 b{color:#f7d98b;font-size:16px;white-space:nowrap}.blk h4 b.no{color:#6f6a90;font-weight:500}
+.blk p{margin:2px 0 8px;font-size:14px;color:var(--mu)}
+.lv{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.lv button{font:inherit;border:0;cursor:pointer;background:#120e28;border-radius:8px;padding:6px 2px;text-align:center;font-size:13.5px;color:#8a85b0}
+.lv button b{display:block;color:#e8c66a;font-size:14px}.lv button.top{outline:1px solid #e8c66a}.lv button.top b{color:#f7d98b}.lv button.x{opacity:.35}
+.lv button i{display:block;font-style:normal;color:#9fd3ff;font-size:12.5px}
+.lv button:hover{background:#221a44}
+.full{color:var(--gold);font-weight:700;margin-left:4px}.full small{color:var(--mu);font-weight:400;font-size:13px}
+#mod{position:fixed;inset:0;background:rgba(5,4,14,.75);display:none;align-items:center;justify-content:center;padding:16px;z-index:9}#mod.on{display:flex}
+#mod .box{background:#1a1530;border:1px solid var(--line);border-radius:14px;padding:16px;width:100%;max-width:520px}
+#mod h5{color:#d59bff;font-size:16px;display:flex;gap:8px}#mod h5 span{flex:1}#mod h5 button{background:none;border:0;color:var(--mu);font-size:21px;cursor:pointer}
+#mod p{font-size:14px;color:var(--mu);margin:6px 0}#mod p b{color:var(--gold)}#mod svg{width:100%;height:auto;display:block}
+.siteFoot{margin:28px auto 18px;padding:22px 16px 28px;max-width:1180px;text-align:center;font-size:14px;line-height:1.65;color:#8a90a0;position:relative;border-top:1px solid #232733}.siteFoot .gold{position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:80px;height:2px;background:linear-gradient(90deg,transparent,#f7d98b,transparent)}.siteFoot a{color:inherit;text-decoration:none}.siteFoot a:hover{text-decoration:underline}
+.lv button b.ls{opacity:.6;font-style:italic}</style><link rel="stylesheet" href="/font-preview/css/kit.css?v=9"><script src="/font-preview/js/kit.js?v=9" defer></script></head>
+<body><div style="position:sticky;top:0;z-index:9999;background:#1a1610;color:#d9b45a;border-bottom:1px solid #6b5426;font-size:12.5px;text-align:center;padding:3px 8px;pointer-events:none">글자크기 테스트 미리보기 · 라이브 아님</div><div class="wrap">
+<nav class="siteNav" aria-label="도우미 이동"><a href="/font-preview/">홈</a><a href="/font-preview/alba/">알바</a><a href="/font-preview/barter/">물교</a><a href="/font-preview/dungeon/">던전</a><a href="/font-preview/bunbae/">분배</a><a href="/font-preview/craft/">제작</a><span class="on" aria-current="page">유물</span></nav>
+<div class="head"><h1>유물 도우미</h1><p>무리아스의 유물 옵션 레벨별 경매장 최저가 · 매물 수</p></div>
+<div class="bar"><span>아르카나 선택</span><label><input type="checkbox" id="has" checked> 매물 있는 것만</label></div>
+<div class="chips" id="chips"></div>
+<p class="info" id="info"></p>
+<div id="list"></div>
+<div id="mod"><div class="box"><h5><span id="mt"></span><button id="mx" aria-label="닫기">×</button></h5><div id="mb"></div></div></div>
+</div>
+<footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br><span id="upd"></span><br>Lv = 옵션 수치 ÷ 최대치 × 10 (반올림) · 무리아스의 유물 + (이데아) 합산<br>마비노기 공식 서비스와 관련 없는 비공식 팬 도구입니다.<br><a href="/font-preview/privacy/">개인정보처리방침</a></footer>
+<script>
+const $=id=>document.getElementById(id);
+const man=p=>p>=1e8?(p/1e8).toFixed(p%1e8?1:0).replace(/\.0$/,'')+'억':p>=1e4?(+(p/1e4).toFixed(p>=1e5?0:1))+'만':p.toLocaleString();
+let Hs={},D,I={arcana:{},skills:{}},cur=localStorage.relicArc||'';
+const ic=(o,n)=>o?`<img src="icons/2x/${o.key}.png" alt="" width="${o.w}" height="${o.h}" loading="lazy">`:'';
+const skIc=n=>ic(I.skills[Object.keys(I.skills).filter(k=>n.startsWith(k)).sort((a,b)=>b.length-a.length)[0]]);
+Promise.all([fetch('data.json?t='+Date.now()).then(r=>r.json()),fetch('icons/icons.json').then(r=>r.json()).catch(()=>I),fetch('history.json?t='+Date.now()).then(r=>r.json()).catch(()=>({t:{}}))]).then(([d,i,h])=>{D=d;I=i;Hs=h.t||{};
+ $('upd').textContent='갱신 '+new Date(d.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' · 매물 '+d.listings+'건';draw();});
+function val(o,l){const m=String(o.step).match(/^([\d.]+)(.*)$/);return m?'+'+(+(m[1]*l).toFixed(2))+m[2]:''}
+let L;function lk(n,l){const h=Hs[n+'|'+l];return h&&h.length?h[h.length-1]:null}
+function cnt(s){return s.options.reduce((a,o)=>a+Object.values(o.lv).reduce((b,v)=>b+v[1],0),0)}
+function draw(){
+ const has=$('has').checked;
+ const sk=D.skills.filter(s=>!has||cnt(s));
+ if(!sk.find(s=>s.name===cur))cur=sk[0]?.name||'';
+ $('chips').innerHTML=sk.map(s=>`<button class="chip${s.name===cur?' on':''}" data-s="${s.name}">${ic(I.arcana[s.name])}<span>${s.name}</span></button>`).join('');
+ const s=sk.find(s=>s.name===cur);
+ if(!s){$('info').textContent='매물이 있는 아르카나가 없습니다.';$('list').innerHTML='';return}
+ const t10=s.options.map(o=>o.lv['10']),miss=s.options.length-t10.filter(Boolean).length,sum=t10.reduce((a,v)=>a+(v?v[0]:0),0);
+ $('info').innerHTML=`<b>${s.name}</b> · 옵션 ${s.options.length}종 · 매물 ${cnt(s)}건 · <span class="full" title="옵션 3종 각각의 Lv10 최저가 합">풀셋(Lv10) ${sum?man(sum):'-'}${miss?` <small>(${miss}종 Lv10 매물 없음 · 부분합)</small>`:' <small>= Lv10 최저가 3종 합</small>'}</span>`;
+ $('list').innerHTML=s.options.map(o=>{const t=o.lv['10'];
+  return `<div class="blk"><h4>${skIc(o.name)}<span>${o.name}</span>${t?`<b>Lv10 ${t[0].toLocaleString()} G</b>`:(L=lk(o.name,10))?`<b class="no">매물 없음 · 최근 거래가 ${man(L[1])}</b>`:'<b class="no">Lv10 매물 없음</b>'}</h4><p>${o.desc}</p><div class="lv">${
+   [10,9,8,7,6,5,4,3,2,1].map(l=>{const v=o.lv[l];return `<button data-o="${o.name}" data-l="${l}" class="${l==10?'top':''}${v?'':' x'}">Lv${l}<i>${val(o,l)}</i>${v?`<b>${man(v[0])}</b>${v[1]}건`:(L=lk(o.name,l))?`<b class="ls">${man(L[1])}</b>최근 거래가`:`<b>-</b>없음`}</button>`}).join('')}</div></div>`}).join('');
+}
+$('chips').onclick=e=>{const b=e.target.closest('.chip');if(b){cur=localStorage.relicArc=b.dataset.s;draw()}};
+$('has').onchange=draw;
+$('list').onclick=e=>{const b=e.target.closest('.lv button');if(b)pop(b.dataset.o,+b.dataset.l)};
+$('mx').onclick=$('mod').onclick=e=>{if(e.target.id==='mod'||e.target.id==='mx')$('mod').className=''};
+document.onkeydown=e=>{if(e.key==='Escape')$('mod').className=''};
+function pop(n,l){const h=Hs[n+'|'+l]||[];$('mt').textContent=n+' · Lv'+l;
+ if(!h.length){$('mb').innerHTML='<p>최근 거래 기록이 없습니다. (경매장 체결 이력은 수집 시작 이후부터 누적됩니다)</p>'}else{
+ const W=480,H=200,P=36,ts=h.map(x=>Date.parse(x[0]+'Z')),ps=h.map(x=>x[1]),t0=Math.min(...ts),t1=Math.max(...ts),lo=Math.min(...ps)*.9,hi=Math.max(...ps)*1.1||1,
+  X=t=>t1>t0?P+(t-t0)/(t1-t0)*(W-P-10):W/2,Y=p=>H-20-(p-lo)/(hi-lo)*(H-34),pts=h.map((x,i)=>[X(ts[i]),Y(ps[i])]),
+  ln=pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1)).join(''),f=d=>new Date(d).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}),last=h[h.length-1];
+ $('mb').innerHTML=`<p>최근 ${h.length}건 체결 · 최근가 <b>${man(last[1])}</b> · 최저 ${man(Math.min(...ps))} · 최고 ${man(Math.max(...ps))}</p><svg viewBox="0 0 ${W} ${H}"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7d98b" stop-opacity=".35"/><stop offset="1" stop-color="#f7d98b" stop-opacity="0"/></linearGradient></defs>
+ <line x1="${P}" y1="${H-20}" x2="${W-10}" y2="${H-20}" stroke="#3a2f66"/><text x="2" y="${Y(hi/1.1)+4}" fill="#8a85b0" font-size="10">${man(Math.round(hi/1.1))}</text><text x="2" y="${Y(lo/.9)+4}" fill="#8a85b0" font-size="10">${man(Math.round(lo/.9))}</text>
+ ${pts.length>1?`<path d="${ln}L${pts.at(-1)[0]},${H-20}L${pts[0][0]},${H-20}Z" fill="url(#g)"/><path d="${ln}" fill="none" stroke="#f7d98b" stroke-width="2"/>`:''}${pts.map((q,i)=>`<circle cx="${q[0]}" cy="${q[1]}" r="3" fill="#f7d98b"><title>${f(ts[i])} · ${ps[i].toLocaleString()} G</title></circle>`).join('')}${pts.map((q,i)=>{const n=pts.length,e=i==0||i==n-1,ex=i>0&&i<n-1&&((ps[i]>ps[i-1]&&ps[i]>=ps[i+1])||(ps[i]<ps[i-1]&&ps[i]<=ps[i+1])||(ps[i]>=ps[i-1]&&ps[i]>ps[i+1])||(ps[i]<=ps[i-1]&&ps[i]<ps[i+1]));if(!(n<12||e||ex))return'';const up=i==0||i==n-1?q[1]>40:!(i>0&&ps[i]<ps[i-1]),y=up?q[1]-7:q[1]+15,a=q[0]<P+20?'start':q[0]>W-30?'end':'middle';return`<text x="${q[0].toFixed(1)}" y="${y.toFixed(1)}" fill="#f7d98b" font-size="10" font-weight="700" text-anchor="${a}" stroke="#141029" stroke-width="3" paint-order="stroke">${man(ps[i])}</text>`}).join('')}
+ <text x="${P}" y="${H-4}" fill="#8a85b0" font-size="10">${f(t0)}</text><text x="${W-10}" y="${H-4}" fill="#8a85b0" font-size="10" text-anchor="end">${f(t1)}</text></svg><p>경매장 체결가 기준 (최근 30일, 10분마다 갱신)</p>`}
+ $('mod').className='on'}
+</script>
+</body></html>
