@@ -96,14 +96,31 @@ function pack(p,th){var m=p.members||[],di=p.dist?m.indexOf(p.dist):-1,t=p.title
  var a=[2,t,m,di<0&&p.dist?p.dist:di,p.done?1:0,Math.floor((p.ts||Date.now())/1000).toString(36),it];if(th)a.push(th);else if(!it.length)a.pop();return a}
 function encBest(o){var u=new TextEncoder().encode(JSON.stringify(o)),raw='j'+b64u(u);if(typeof CompressionStream==='undefined')return Promise.resolve(raw);
  return pipe(u,new CompressionStream('deflate-raw')).then(function(z){var zs='z'+b64u(z);return zs.length<raw.length?zs:raw})}
-function share(i,withImg){var p=posts[i],base=location.origin+location.pathname+'#s=';
- if(!withImg||!p.thumb)return encBest(pack(p)).then(function(s){copyText(base+s,withImg?' (이미지 없음 · 글자만)':'')});
+function share(i,withImg){var p=posts[i],base=location.origin+location.pathname+'#s=',sb=location.origin+'/b/#';
+ if(!withImg||!p.thumb)return enc3(p).then(function(s){var u=sb+s;copyText(u,(withImg?' (이미지 없음 · 글자만)':'')+(u.length>180?' · 쪽지엔 길 수 있어요':''))});
  var tries=[[240,.6],[180,.5],[120,.45]];
- (function next(k){if(k>=tries.length)return encBest(pack(p)).then(function(s){copyText(base+s,' (이미지가 커서 글자만)')});
+ (function next(k){if(k>=tries.length)return enc3(p).then(function(s){copyText(sb+s,' (이미지가 커서 글자만)')});
   shrink(p.thumb,tries[k][0],tries[k][1]).then(function(th){return encBest(pack(p,th))}).then(function(s){if((base+s).length<=LIMIT)copyText(base+s,' (이미지 포함)');else next(k+1)})})(0)}
 function unpack(o){if(!Array.isArray(o))return o;var m=o[2]||[];return {t:o[1],m:m,d:typeof o[3]==='number'?(m[o[3]]||''):o[3],o:o[4],ts:parseInt(o[5],36)*1000,i:(o[6]||[]).length?o[6]:[],th:o[7]||''}}
+/* 공유 v3 (짧은 링크, /b/#코드): 필드를 \0 으로 이어 붙임 → [플래그+ts36, 제목(날짜 접두어 생략), 분배자(인덱스|=이름), 아이템(\1 구분), 파티원...]
+   플래그: 1=완료, 2=제목 앞 'YYYY.MM.DD - ' 생략. 코드 접두어 Z(deflate)/J(원본)/U(유니코드 글자 그대로) 중 가장 짧은 것 */
+function kstDay(ts){var d=new Date(ts+9*3600e3);return d.getUTCFullYear()+'.'+('0'+(d.getUTCMonth()+1)).slice(-2)+'.'+('0'+d.getUTCDate()).slice(-2)}
+function pack3(p){var m=p.members||[],t=p.title||'',ts=p.ts||Date.now(),f=p.done?1:0,pre=kstDay(ts)+' - ';if(t.indexOf(pre)===0){t=t.slice(pre.length);f|=2}
+ var it=(p.items||[]).filter(function(x){return t.indexOf(x)<0}),di=p.dist?m.indexOf(p.dist):-1,d=p.dist?(di<0?'='+p.dist:String(di)):'';
+ return [f+Math.floor(ts/1000).toString(36),t,d,it.join('\x01')].concat(m).join('\0')}
+function unpack3(s){var a=s.split('\0'),f=+a[0][0],ts=parseInt(a[0].slice(1),36)*1000,m=a.slice(4),d=a[2]||'';
+ d=d?(d[0]==='='?d.slice(1):(m[+d]||'')):'';return {t:(f&2?kstDay(ts)+' - ':'')+a[1],m:m,d:d,o:f&1?1:0,ts:ts,i:a[3]?a[3].split('\x01'):[],th:''}}
+function uEsc(x){return x.replace(/[\x00-\x7f]/g,function(c){return c===' '?'_':/[A-Za-z0-9.\-]/.test(c)?c:'%'+('0'+c.charCodeAt(0).toString(16).toUpperCase()).slice(-2)})}
+function uUnesc(x){return decodeURIComponent(x.replace(/_/g,' '))}
+function enc3(p){var s=pack3(p),u=new TextEncoder().encode(s),c=['J'+b64u(u),'U'+s.split('\0').map(uEsc).join('~')];
+ var done=function(){return c.reduce(function(a,b){return b.length<a.length?b:a})};
+ if(typeof CompressionStream==='undefined')return Promise.resolve(done());
+ return pipe(u,new CompressionStream('deflate-raw')).then(function(z){c.push('Z'+b64u(z));return done()})}
+function dec3(s){if(s[0]==='U')return Promise.resolve(s.slice(1).split('~').map(uUnesc).join('\0'));var u=unb64u(s.slice(1));
+ return (s[0]==='Z'?pipe(u,new DecompressionStream('deflate-raw')):Promise.resolve(u)).then(function(b){return new TextDecoder().decode(b)})}
+function decAny(s){return /^[ZJU]/.test(s)?dec3(s).then(unpack3):dec(s).then(unpack)}
 var shared=null;
-function openShared(){var m=location.hash.match(/^#s=(.+)$/);if(!m)return;dec(m[1]).then(function(o){o=unpack(o);if(!o.i||!o.i.length){var mm=(o.t||'').match(/^\d{4}\.\d\d\.\d\d\s*-\s*(.+)$/);o.i=mm?mm[1].split(' · '):[]}shared=o;
+function openShared(){var m=location.hash.match(/^#s=(.+)$/);if(!m)return;decAny(m[1]).then(function(o){if(!o.i||!o.i.length){var mm=(o.t||'').match(/^\d{4}\.\d\d\.\d\d\s*-\s*(.+)$/);o.i=mm?mm[1].split(' · '):[]}shared=o;
   $('simg').style.display=o.th?'':'none';$('simg').src=o.th||'';$('st').innerHTML='<span class="tag '+(o.o?'done':'open')+'">'+(o.o?'완료':'진행중')+'</span>'+esc(o.t||'');
   $('sm').innerHTML=(o.m&&o.m.length?'파티원 '+o.m.map(function(n){return '<span class="at">@'+esc(n)+'</span>'}).join(''):'')+'<br>👑 분배자 <span class="dist">'+(o.d?esc(o.d):'-')+'</span>';
   $('snote').textContent=o.th?'공유 링크에는 작은 미리보기 이미지만 들어 있어요.':'';
