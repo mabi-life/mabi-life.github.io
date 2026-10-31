@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#141029">
-<title>마비노기 던전 도우미 v1.4.3</title>
+<title>마비노기 던전 도우미 v1.4.4</title>
 <link rel="icon" href="/favicon.ico?v=6" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=6"><link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png?v=6"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=6">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
@@ -173,30 +173,29 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .cfg input{width:76px}
 .cfg label>span{white-space:nowrap;flex:none}
 .head .badge{display:inline-block;margin-top:8px;padding:3px 12px;border-radius:999px;font-size:14px;font-weight:800;color:#2a2040;background:linear-gradient(90deg,#f7d98b,#e9bf5c)}.head .verBadge{display:inline-block;margin:8px 0 0 8px;padding:3px 10px;border-radius:999px;font-size:13.5px;font-weight:800;color:#ffe7a3;background:rgba(247,217,139,.14);border:1px solid rgba(247,217,139,.45);vertical-align:middle}
-.wl{display:flex;align-items:center;gap:10px;margin:-6px 0 14px;padding:8px 12px;border-radius:12px;background:rgba(247,217,139,.07);border:1px solid rgba(247,217,139,.22)}
-.wl .wlab{font-size:16px;font-weight:800;color:#e9dcb4;flex:none}
-.wl .wv{flex:1;text-align:right;font-size:21px;font-weight:800;color:#f7d98b;padding:2px 6px;border-radius:8px;min-height:30px}
+.wl{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;margin:-6px 0 14px;padding:7px 10px;border-radius:12px;background:rgba(247,217,139,.07);border:1px solid rgba(247,217,139,.22);min-width:0}
+.wl .wlab{font-size:14.5px;font-weight:800;color:#e9dcb4;flex:none;white-space:nowrap}
+.wl .wv{flex:1;min-width:0;text-align:right;font-size:21px;font-weight:800;color:#f7d98b;padding:2px 4px;border-radius:8px;min-height:30px;white-space:nowrap;overflow:hidden}
 .wl .wv:hover{background:rgba(247,217,139,.12)}
-.wl .wv.unset{font-size:16px;font-weight:700;color:#9f98c9}
-.wl .wv .ed{font-size:13.5px;margin-left:6px;opacity:.6}
-.wl input{flex:1;min-width:0;text-align:right;padding:6px 10px;border-radius:8px;border:1px solid rgba(247,217,139,.6);background:rgba(0,0,0,.35);color:#fff3cf;font:inherit;font-size:18px;font-weight:800}
+.wl .wv.unset{font-size:14.5px;font-weight:700;color:#9f98c9}
+.wl .wv .ed{font-size:12.5px;margin-left:4px;opacity:.6}
+.wl input{flex:1;min-width:0;text-align:right;padding:5px 8px;border-radius:8px;border:1px solid rgba(247,217,139,.6);background:rgba(0,0,0,.35);color:#fff3cf;font:inherit;font-size:16px;font-weight:800}
 .wl input:focus{outline:2px solid rgba(247,217,139,.6);border-color:transparent}
-.wl .hint{font-size:13.5px;color:#9f98c9;flex:none}
+.wl .hint{font-size:12.5px;color:#9f98c9;flex:none;white-space:nowrap}
 .foot .wealth{color:#f7d98b}
 .banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin:0 auto 18px;padding:12px 16px;border-radius:14px;background:rgba(247,217,139,.10);border:1px solid rgba(247,217,139,.45);font-size:16px;color:#fff3cf}
 .banner[hidden]{display:none}
-@media (max-width:640px){.wl .wv{font-size:18px}.wl .hint{display:none}}
-.wl .wi{flex:1;display:flex;align-items:center;gap:6px;min-width:0}
-.wl .wu{font-size:18px;font-weight:800;color:#f7d98b;flex:none}
-.wl .whb{flex:none;font-size:13.5px;font-weight:700;color:#d9d2ff;padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)}
+@media (max-width:640px){.wl .wv{font-size:16px}.wl .hint{display:none}.wl .wlab{font-size:13.5px}}
+.wl .wi{flex:1;display:flex;align-items:center;gap:4px;min-width:0}
+.wl .wu{font-size:16px;font-weight:800;color:#f7d98b;flex:none}
+.wl .whb{flex:none;font-size:12.5px;font-weight:700;color:#d9d2ff;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);white-space:nowrap}
 .wl .whb:hover{background:rgba(247,217,139,.15);color:#fff}
 .wl .whb b{color:#f7d98b;margin-left:2px}
-.wl.editing{flex-wrap:wrap;align-items:center;row-gap:8px}
-.wl.editing .wi{flex:1 1 100%;min-width:140px;order:3}
-.wl.editing .hint{flex:1 1 100%;order:4;font-size:13.5px}
-.wl.editing input{flex:1;width:100%;min-width:120px;font-size:19px;padding:8px 12px}
-.wl.editing .wu{font-size:19px}
-.wl.editing .wlab,.wl.editing .whb{order:0}
+.wl.editing{flex-wrap:nowrap}
+.wl.editing .wi{flex:1 1 auto;min-width:0}
+.wl.editing .hint{font-size:12px}
+.wl.editing input{flex:1;min-width:72px;font-size:16px;padding:5px 8px}
+.wl.editing .wu{font-size:16px}
 .cbar{display:flex;justify-content:flex-end;margin:-8px 0 6px}
 .cbar .fa{font-size:13.5px;font-weight:700;color:#9f98c9;padding:3px 8px;border-radius:999px}
 .cbar .fa:hover{color:#fff;background:rgba(255,255,255,.07)}
@@ -234,7 +233,7 @@ button.r1:hover .fi{color:#f7d98b}
   <nav class="siteNav" aria-label="도우미 이동"><a id="homeLink" href="/">홈</a><a href="/alba/">알바</a><a href="/barter/">물교</a><span class="on" aria-current="page">던전</span><a href="/bunbae/">분배</a><a href="/craft/">제작</a><a href="/relics/">유물</a></nav>
   <header class="head">
     <h1>던전 도우미</h1>
-    <span class="verBadge" title="라이브 버전">v1.4.3</span><span class="badge">💰 전재산</span>
+    <span class="verBadge" title="라이브 버전">v1.4.4</span><span class="badge">💰 전재산</span>
     <p id="period"></p>
     <p class="sub" id="resetNote"></p>
   </header>
@@ -490,7 +489,7 @@ var KST_OFFSET_MS = 9 * 3600 * 1000;
 var STORAGE_KEY = 'mabiPassTracker.wealth.v1';        // 전재산 버전 전용 (기본 버전과 따로 저장)
 var MAIN_KEY = 'mabiPassTracker.v1';                  // 기본 버전 저장 키 (읽기 전용으로 가져오기만)
 var DEFAULT_CHARS = ['캐릭터 1'];  /* 저장 데이터가 없을 때 기본 캐릭터 (배포본은 publish.py가 1명으로 바꿈) */
-var APP_VER = 'v1.4.3';
+var APP_VER = 'v1.4.4';
 var FEED = '/prices.json';
 var MAIN_ASKED_KEY = 'mabiPassTracker.wealth.mainImportAsked';
 var WEALTH_MAX = 1e13;
@@ -805,6 +804,18 @@ function rowHtml(c, ci, d){
 }
 var wealthEditing = null;   // 편집 중인 캐릭터 id
 function fmtWealth(g){ return g>=MAN ? fmtGold(g) : g.toLocaleString('ko-KR'); }
+
+function fitWealthLines(){
+  document.querySelectorAll('.card .wl:not(.editing) .wv:not(.unset)').forEach(function(btn){
+    btn.style.fontSize = '';
+    var wl = btn.closest('.wl'); if(!wl) return;
+    for (var fs=21; fs>=12; fs-=0.5){
+      btn.style.fontSize = fs+'px';
+      if (wl.scrollWidth <= wl.clientWidth + 1) break;
+    }
+  });
+}
+var _fitWTimer=null; window.addEventListener('resize',function(){ clearTimeout(_fitWTimer); _fitWTimer=setTimeout(fitWealthLines,80); });
 function wealthHtml(c, ci){
   var h='<div class="wl'+(wealthEditing===c.id?' editing':'')+'"><span class="wlab">💰 전재산</span>';
   if (wealthEditing === c.id){
@@ -884,6 +895,7 @@ function render(){
   var label = state.chars.length>1 ? '전체 '+state.chars.length+'캐릭터' : '이번 주';
   var wsum=0, wset=0; state.chars.forEach(function(c){ if(c.wealth!=null){ wsum+=c.wealth; wset++; } });
   document.getElementById('foot').innerHTML = '<div id="wealthLine">💰 전재산 합계 <span class="wealth">'+(wset?fmtWealth(wsum)+' G':'—')+'</span></div><div id="totalLine">💸 '+label+' 지출 <span class="cost">'+fmtGold(tot.spent)+' G</span> · 순이익 '+fmtPL(tot.profit)+'</div><div>⏳ 다음 리셋 <span>'+md(wk.end)+' '+hhmm(RESET_HOUR)+'</span></div>';
+  fitWealthLines();
   if(window.wsSpark) try{ window.wsSpark(); }catch(e){ console.error('wsSpark',e); }
 }
 
@@ -1249,7 +1261,7 @@ if (autoRestored) toast('저장 기록이 없어 최신 자동 백업에서 복�
 loadFeed({quiet:true});
 })();
 </script>
-<script src="wealth-sum.js?v=1.4.3"></script>
+<script src="wealth-sum.js?v=1.4.4"></script>
 <footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br>시세는 10분 단위로 갱신되고 있습니다.<br>마비노기 공식 서비스와 관련 없는 비공식 팬 도구입니다.<br><a href="/privacy/">개인정보처리방침</a></footer><script src="halo-alarm.js?v=6"></script>
 </body>
 </html>
