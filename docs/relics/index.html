@@ -65,10 +65,10 @@ function draw(){
  const s=sk.find(s=>s.name===cur);
  if(!s){$('info').textContent='매물이 있는 아르카나가 없습니다.';$('list').innerHTML='';return}
  const t10=s.options.map(o=>o.lv['10']),miss=s.options.length-t10.filter(Boolean).length,sum=t10.reduce((a,v)=>a+(v?v[0]:0),0);
- $('info').innerHTML=`<b>${s.name}</b> · 옵션 ${s.options.length}종 · 매물 ${cnt(s)}건 · <span class="full" title="옵션 3종 각각의 Lv10 최저가 합">풀셋(Lv10) ${sum?'🪙'+man(sum):'-'}${miss?` <small>(${miss}종 Lv10 매물 없음 · 부분합)</small>`:' <small>= Lv10 최저가 3종 합</small>'}</span>`;
+ $('info').innerHTML=`<b>${s.name}</b> · 옵션 ${s.options.length}종 · 매물 ${cnt(s)}건 · <span class="full" title="옵션 3종 각각의 Lv10 최저가 합">풀셋(Lv10) ${sum?'<img src="/assets/icons/2x/51105.png" alt="G" style="width:1.1em;height:1.1em;vertical-align:-.2em;margin-right:1px">'+man(sum):'-'}${miss?` <small>(${miss}종 Lv10 매물 없음 · 부분합)</small>`:' <small>= Lv10 최저가 3종 합</small>'}</span>`;
  $('list').innerHTML=s.options.map(o=>{const t=o.lv['10'];
-  return `<div class="blk"><h4>${skIc(o.name)}<span>${o.name}</span>${t?`<b>Lv10 🪙${t[0].toLocaleString()} G</b>`:(L=lk(o.name,10))?`<b class="no">매물 없음 · 최근 거래가 🪙${man(L[1])}</b>`:'<b class="no">Lv10 매물 없음</b>'}</h4><p>${o.desc}</p><div class="lv">${
-   [10,9,8,7,6,5,4,3,2,1].map(l=>{const v=o.lv[l];return `<button data-o="${o.name}" data-l="${l}" class="${l==10?'top':''}${v?'':' x'}">Lv${l}<i>${val(o,l)}</i>${v?`<b>🪙${man(v[0])}</b>${v[1]}건`:(L=lk(o.name,l))?`<b class="ls">🪙${man(L[1])}</b>최근 거래가`:`<b>-</b>없음`}</button>`}).join('')}</div></div>`}).join('');
+  return `<div class="blk"><h4>${skIc(o.name)}<span>${o.name}</span>${t?`<b>Lv10 <img src="/assets/icons/2x/51105.png" alt="G" style="width:1.1em;height:1.1em;vertical-align:-.2em;margin-right:1px">${t[0].toLocaleString()} G</b>`:(L=lk(o.name,10))?`<b class="no">매물 없음 · 최근 거래가 <img src="/assets/icons/2x/51105.png" alt="G" style="width:1.1em;height:1.1em;vertical-align:-.2em;margin-right:1px">${man(L[1])}</b>`:'<b class="no">Lv10 매물 없음</b>'}</h4><p>${o.desc}</p><div class="lv">${
+   [10,9,8,7,6,5,4,3,2,1].map(l=>{const v=o.lv[l];return `<button data-o="${o.name}" data-l="${l}" class="${l==10?'top':''}${v?'':' x'}">Lv${l}<i>${val(o,l)}</i>${v?`<b><img src="/assets/icons/2x/51105.png" alt="G" style="width:1.1em;height:1.1em;vertical-align:-.2em;margin-right:1px">${man(v[0])}</b>${v[1]}건`:(L=lk(o.name,l))?`<b class="ls"><img src="/assets/icons/2x/51105.png" alt="G" style="width:1.1em;height:1.1em;vertical-align:-.2em;margin-right:1px">${man(L[1])}</b>최근 거래가`:`<b>-</b>없음`}</button>`}).join('')}</div></div>`}).join('');
 }
 $('chips').onclick=e=>{const b=e.target.closest('.chip');if(b){cur=localStorage.relicArc=b.dataset.s;draw()}};
 $('has').onchange=draw;
