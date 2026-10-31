@@ -13,9 +13,9 @@ function calc(){const p=num($('#price').value),n=Math.max(1,num($('#n').value)),
  const rows=[{c:0,price:0,ben:0}].concat(CP.map(c=>({c,price:cpPrice[c],ben:Math.floor(base*c/100)-(cpPrice[c]??Infinity)})));
  const best=rows.reduce((a,b)=>b.ben>a.ben?b:a),use=rows.find(o=>o.c===force)||best;
  const fee=base-Math.floor(base*use.c/100)+use.price,net=p-fee;
- $('#kor').textContent=kor(p);$('#rFee').textContent=f(fee);$('#rNet').textContent=f(net);const ex=Math.floor(net/n),chk=Math.floor(ex/1e4)*1e4;window._chk=chk;$('#rPer').textContent=f(chk);$('#rExact').textContent=ex!==chk?'정확히 '+f(ex):'';
+ $('#kor').textContent=kor(p);$('#rFee').textContent='🪙'+f(fee);$('#rNet').textContent='🪙'+f(net);const ex=Math.floor(net/n),chk=Math.floor(ex/1e4)*1e4;window._chk=chk;$('#rPer').textContent='🪙'+f(chk);$('#rExact').textContent=ex!==chk?'정확히 '+f(ex):'';
  $('#pick').textContent=(use===best?'★ 추천: ':'선택: ')+(use.c?use.c+'% 쿠폰':'쿠폰 없음')+(use!==best?` (추천은 ${best.c?best.c+'%':'없음'})`:'');
- $('#cpBody').innerHTML=rows.map(o=>`<tr data-c="${o.c}" class="${o===best?'best':''} ${o===use?'sel':''}"><td>${o.c?o.c+'%':'없음'}</td><td>${o.c?f(o.price):'—'}</td><td style="color:${o.ben>0?'var(--ok)':o.ben<0?'#ffb3bd':'inherit'}">${o.ben>0?'+':''}${f(o.ben)}</td></tr>`).join('');
+ $('#cpBody').innerHTML=rows.map(o=>`<tr data-c="${o.c}" class="${o===best?'best':''} ${o===use?'sel':''}"><td>${o.c?o.c+'%':'없음'}</td><td>${o.c?'🪙'+f(o.price):'—'}</td><td style="color:${o.ben>0?'var(--ok)':o.ben<0?'#ffb3bd':'inherit'}">${o.ben>0?'+':''}${f(o.ben)}</td></tr>`).join('');
  document.querySelectorAll('#cpBody tr').forEach(t=>t.onclick=()=>{const c=+t.dataset.c;force=(force===c||c===best.c)?null:c;calc()});
  $('#upd').textContent='시세 '+cpT.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+' 기준 · Open API 최저가';}
 document.querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-rate]').forEach(x=>x.classList.remove('on'));b.classList.add('on');rate=+b.dataset.rate;calc()});
