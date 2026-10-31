@@ -97,10 +97,10 @@ function toggle(id,el){if(busy)return;const root=$('root');const dep=+el.dataset
   setTimeout(()=>{busy=0;Object.keys(st.open).forEach(k=>{if(k===id||k.startsWith(id+'/'))delete st.open[k]});window._act={id,open:0,dep};save();render()},180)}
  else{el.classList.add('press');busy=1;setTimeout(()=>{busy=0;st.open[id]=1;window._act={id,open:1,dep};save();render()},110)}}
 function fillGoals(){const G=gi();const opt=re=>RECIPES.map((r,i)=>re.test(r.n)?`<option value="${i}">${r.n}</option>`:'').join('');
- const so=opt(/^소울/),du=opt(/^더스크/),et=opt(/^(?!소울|더스크)/);
- $('goalSoul').innerHTML='<option value="">— 선택 —</option>'+so+et;$('goalDusk').innerHTML='<option value="">— 선택 —</option>'+du;
- const n=(RECIPES[gi()]||{}).n||'',isD=/^더스크/.test(n);$('goalSoul').value=isD?'':G;$('goalDusk').value=isD?G:'';$('goalSel').innerHTML=so+du+et;$('goalSel').value=G}
-['goalSoul','goalDusk'].forEach(k=>$(k).addEventListener('change',e=>{if(e.target.value==='')return;st.goal=+e.target.value;fillGoals();save();render();syncCoin()}));
+ const nb=opt(/^나이트브링어/),so=opt(/^소울/),du=opt(/^더스크/),E='<option value="">— 선택 —</option>';
+ $('goalNav').innerHTML=E+nb;$('goalSoul').innerHTML=E+so;$('goalDusk').innerHTML=E+du;
+ const n=(RECIPES[gi()]||{}).n||'',k=/^나이트브링어/.test(n)?'goalNav':/^소울/.test(n)?'goalSoul':/^더스크/.test(n)?'goalDusk':'';['goalNav','goalSoul','goalDusk'].forEach(x=>$(x).value=x===k?G:'');$('goalSel').innerHTML=nb+so+du;$('goalSel').value=G}
+['goalNav','goalSoul','goalDusk'].forEach(k=>$(k).addEventListener('change',e=>{if(e.target.value==='')return;st.goal=+e.target.value;fillGoals();save();render();syncCoin()}));
 // 제작 목표 ↔ 코인 탭 연동: 목표 재료 중 구슬 상점 재료의 (부족 수량 × 교환 코인) 합계
 window.craftCoinNeed=function(){const R=RECIPES[gi()];if(!R)return null;const o={};
  matsOf(R).forEach(c=>{const cn=MC.COST[c[0]];if(!cn)return;const z=nodeCost(c,st.qty);const t=o[cn.tab]=o[cn.tab]||{total:0,list:[]};t.total+=z.need*cn.cost;t.list.push({n:c[0],qty:z.need,cost:cn.cost})});
