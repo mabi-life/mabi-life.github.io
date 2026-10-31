@@ -322,30 +322,32 @@ document.addEventListener('change',e=>{const t=e.target,a=t.dataset.a,c=C(),v=t.
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(dOpen){dOpen=null;renderDetail()}else setLayer(null)}if(e.key==='Enter'&&document.activeElement?.dataset?.a==='detail'){dOpen=document.activeElement.dataset.r;renderDetail()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();undo()}});
 
-// ---- 교역 시세 캡처 팝업 (스캐폴드: OCR은 추후 Tesseract.js, 지금은 수동 입력)
-const TQK='mabiBarter.tq';
+// ---- 교역 시세 · 어디에 팔까 (마을 × 교역품 두카트 시세 그리드, OCR은 추후)
+const TQK='mabiBarter.tq2',TOWNS=['티르 코네일','던바튼','반호르','이멘 마하','탈틴','타라','카브','벨바스트','켈라','필리아','코르','발레스'];
+let TQ={};try{TQ=JSON.parse(localStorage.getItem(TQK))||{}}catch(e){}
+const tqSave=()=>{try{localStorage.setItem(TQK,JSON.stringify(TQ))}catch(e){}};
+function tqGoods(){return D.routes.slice(0,2).flatMap(r=>routeGoods(r))}
+function tqBody(){const G2=tqGoods(),c=C();const tot={};let rows='';
+ for(const g of G2){const p=TQ[g.id]||{},q=Math.max(doneOf(g),0)||qtyOf(g);const vals=TOWNS.map(t=>+p[t]||0),mx=Math.max(...vals);
+  TOWNS.forEach((t,i)=>{if(vals[i])tot[t]=(tot[t]||0)+vals[i]*q});
+  rows+=`<tr><td style="white-space:nowrap;text-align:left">${iconHtml(g.name)}<span class="mut">${esc(g.post)} T${g.tier}</span> ${esc(g.name)} <span class="mut">×${q}</span></td>${TOWNS.map((t,i)=>`<td><input class="n tqc${vals[i]&&vals[i]===mx?' best':''}" data-g="${g.id}" data-t="${t}" value="${p[t]?fmt(p[t]):''}"></td>`).join('')}<td style="white-space:nowrap">${mx?`<b class="pos">${esc(TOWNS[vals.indexOf(mx)])}</b> <button class="sm" data-tqa="${g.id}" data-v="${mx}" title="이 값을 판매가(두카트)로 적용">적용</button>`:'<span class="mut">-</span>'}</td></tr>`}
+ const best=Object.entries(tot).sort((x,y)=>y[1]-x[1]);
+ return `<div style="font-size:14px;margin:6px 0">${best.length?`🏆 한 번에 다 팔면 <b class="pos">${esc(best[0][0])}</b> ${fmt(best[0][1])} 두카트`+(best[1]?` <span class="mut">· 2위 ${esc(best[1][0])} ${fmt(best[1][1])}</span>`:''):'<span class="mut">마을별 판매 시세(두카트, 개당)를 넣으면 어디에 팔지 추천해요</span>'}</div>
+ <div style="overflow:auto;max-height:58vh"><table class="dt tqg" style="font-size:13.5px"><tr><th style="text-align:left">교역품 (교환/수량)</th>${TOWNS.map(t=>`<th>${t}</th>`).join('')}<th>추천</th></tr>${rows}
+ <tr><th style="text-align:left">합계</th>${TOWNS.map(t=>`<th class="${best[0]&&best[0][0]===t?'pos':''}">${tot[t]?gk(tot[t]):''}</th>`).join('')}<th></th></tr></table></div>`}
 function tqOpen(){let el=$('#tqPop');if(!el){el=document.createElement('div');el.id='tqPop';document.body.appendChild(el)}
- const v=localStorage.getItem(TQK)||'';
- el.innerHTML=`<div id="tqMask" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:59"></div><div class="pop" style="position:fixed;top:50%;left:50%;right:auto;transform:translate(-50%,-50%);width:min(560px,94vw);max-height:84vh;overflow:auto;z-index:60">
- <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">📷 교역 시세 → 어디에 팔까</h3><button class="sm ghost" id="tqX">✕</button></div>
- <div id="tqDrop" style="margin:8px 0;border:1px dashed #555;border-radius:8px;padding:14px;text-align:center;font-size:13.5px;cursor:pointer">인게임 교역소 시세창 캡처를 <b>Ctrl+V</b>로 붙여넣거나 클릭해서 이미지 선택<input type="file" id="tqFile" accept="image/*" hidden><div id="tqImg"></div></div>
- <div class="mut" style="font-size:13px">자동 인식(OCR)은 준비 중 — 지금은 아래에 <b>마을 판매가</b>를 한 줄씩 넣어주세요. 예: <code>던바튼 12,340</code></div>
- <div style="display:flex;gap:6px;margin-top:6px;font-size:14px"><label>구매가 <input class="n" id="tqBuy" style="width:90px"></label><label>수량 <input class="n" id="tqQty" style="width:60px" value="1"></label></div>
- <textarea id="tqTxt" rows="6" style="width:100%;margin-top:6px;font-size:14px" placeholder="던바튼 12340&#10;반호르 13100&#10;이멘 마하 12800">${esc(v)}</textarea>
- <div id="tqOut" style="margin-top:6px;font-size:14px"></div></div>`;
- const calc=()=>{const t=$('#tqTxt').value;localStorage.setItem(TQK,t);const b=+($('#tqBuy').value.replace(/,/g,''))||0,q=+$('#tqQty').value||1;
-  const L=t.split('\n').map(l=>l.match(/^\s*(.+?)\s+([\d,]+)\s*$/)).filter(Boolean).map(m=>({n:m[1],p:+m[2].replace(/,/g,'')})).sort((a,b)=>b.p-a.p);
-  $('#tqOut').innerHTML=L.length?L.map((x,i)=>`<div class="er" style="grid-template-columns:24px 1fr 90px 100px">${i?'':'🏆'}<span>${esc(x.n)}</span><span class="r">${fmt(x.p)}</span><span class="r ${x.p-b>=0?'pos':'neg'}">${b?(x.p-b>=0?'+':'')+fmt((x.p-b)*q):''}</span></div>`).join(''):'<span class="mut">시세를 넣으면 가장 비싼 마을을 추천해요</span>'};
- const img=fl=>{if(!fl)return;const u=URL.createObjectURL(fl);$('#tqImg').innerHTML=`<img src="${u}" style="max-width:100%;margin-top:8px;border-radius:6px"><div class="mut" style="font-size:12.5px">이미지 확인용 · 값은 직접 입력 (OCR 준비 중)</div>`};
+ el.innerHTML=`<style>.tqg td,.tqg th{padding:3px 4px;text-align:center}.tqg input{width:64px;font-size:13px}.tqg input.best{border-color:#7fd18b;background:rgba(127,209,139,.15)}</style><div id="tqMask" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:59"></div><div class="pop" style="position:fixed;top:50%;left:50%;right:auto;transform:translate(-50%,-50%);width:min(1180px,96vw);max-height:92vh;overflow:auto;z-index:60">
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0">📷 교역 시세 · 어디에 팔까</h3><span style="display:flex;gap:6px"><button class="sm ghost" id="tqClr">시세 비우기</button><button class="sm ghost" id="tqX">✕</button></span></div>
+ <div class="mut" style="font-size:13px;margin-top:4px">물교로 받은 교역품의 <b>마을별 판매 시세(개당 두카트)</b>를 넣으세요. 수량은 교환한 개수(없으면 주간 수량) 기준. 칸 이동은 Tab. 캡처 자동 인식(OCR)은 준비 중 — 캡처를 붙여넣으면 옆에서 보며 입력할 수 있어요.</div>
+ <div id="tqDrop" style="margin:6px 0;border:1px dashed #555;border-radius:8px;padding:8px;text-align:center;font-size:13px;cursor:pointer">캡처 <b>Ctrl+V</b> 또는 클릭해서 이미지 선택<input type="file" id="tqFile" accept="image/*" hidden><div id="tqImg"></div></div>
+ <div id="tqBody">${tqBody()}</div></div>`;
+ const img=fl=>{if(!fl)return;$('#tqImg').innerHTML=`<img src="${URL.createObjectURL(fl)}" style="max-width:100%;max-height:260px;margin-top:6px;border-radius:6px">`};
  $('#tqX').onclick=$('#tqMask').onclick=()=>el.innerHTML='';
+ $('#tqClr').onclick=()=>{if(confirm('입력한 마을별 시세를 모두 비울까요?')){TQ={};tqSave();$('#tqBody').innerHTML=tqBody()}};
  $('#tqDrop').onclick=e=>{if(e.target.id!=='tqFile')$('#tqFile').click()};$('#tqFile').onchange=e=>img(e.target.files[0]);
  el.onpaste=e=>{const it=[...(e.clipboardData?.items||[])].find(x=>x.type.startsWith('image/'));if(it){e.preventDefault();img(it.getAsFile())}};
- ['tqTxt','tqBuy','tqQty'].forEach(i=>$('#'+i).oninput=calc);calc();$('#tqTxt').focus()}
-
-
-const tipEl=document.createElement('div');tipEl.id='tip';document.body.appendChild(tipEl);
-document.addEventListener('mouseover',e=>{const t=e.target.closest('[data-tip]');if(!t){tipEl.style.display='none';return}tipEl.innerHTML=t.dataset.tip;tipEl.style.display='block';const r=t.getBoundingClientRect(),h=tipEl.offsetHeight,w=tipEl.offsetWidth;let y=r.bottom+10,dn=true;if(y+h>innerHeight-8){y=r.top-h-10;dn=false}const x=Math.max(8,Math.min(r.left,innerWidth-w-8));tipEl.className=dn?'dn':'up';tipEl.style.top=Math.max(8,y)+'px';tipEl.style.left=x+'px';tipEl.style.setProperty('--ax',Math.max(10,Math.min(w-20,r.left+14-x))+'px')});
-addEventListener('scroll',()=>tipEl.style.display='none',true);
+ el.onchange=e=>{const t=e.target;if(!t.classList.contains('tqc'))return;const v=+t.value.replace(/[^\d]/g,'')||0,o=TQ[t.dataset.g]=TQ[t.dataset.g]||{};if(v)o[t.dataset.t]=v;else delete o[t.dataset.t];tqSave();const k=[t.dataset.g,t.dataset.t];$('#tqBody').innerHTML=tqBody();const n=document.querySelector(`.tqc[data-g="${k[0]}"][data-t="${k[1]}"]`);const all=[...document.querySelectorAll('.tqc')],i=all.indexOf(n);if(all[i+1])all[i+1].focus()};
+ el.onclick=e=>{const b=e.target.closest('[data-tqa]');if(!b)return;const id=b.dataset.tqa;mut(()=>{(S.sale[id]=S.sale[id]||{}).d=+b.dataset.v},'판매가 적용');$('#tqBody').innerHTML=tqBody()}}
 $('#undoBtn').onclick=undo;addEventListener('pagehide',()=>{clearTimeout(svT);save()});
 function renChar(i){const x=S.chars[i];if(!x)return;const n=(prompt('캐릭터 이름 변경',x.name)||'').trim();if(n&&n!==x.name)mut(()=>S.chars[i].name=n,'이름 변경됨')}
 function delChar(i){const x=S.chars[i];if(!x)return;if(S.chars.length<2)return toast('마지막 캐릭터는 삭제할 수 없습니다');if(confirm(`'${x.name}' 캐릭터를 삭제할까요? (Ctrl+Z로 되돌리기 가능)`))mut(()=>{S.chars.splice(i,1);if(S.cur>i||S.cur>=S.chars.length)S.cur=Math.max(0,S.cur-1)},`'${x.name}' 삭제됨 (Ctrl+Z로 되돌리기)`)}
