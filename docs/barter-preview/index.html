@@ -81,7 +81,7 @@ html{background:#0b0918}.xs{margin-bottom:10px;border-radius:14px;background:rgb
 <link rel="stylesheet" href="/css/kit.css?v=9"><script src="/js/kit.js?v=9" defer></script></head><body><div id="pvban">물교 완료토글 테스트 미리보기 · 라이브 아님</div>
 <nav class="siteNav" aria-label="도우미 이동"><a id="homeLink" href="/">홈</a><a href="/alba/">알바</a><span class="on" aria-current="page">물교</span><a href="/dungeon/">던전</a><a href="/bunbae/">분배</a><a href="/craft/">제작</a><a href="/relics/">유물</a></nav>
 <div class="top"><h1>⚖️ 물물교환</h1><span id="chars" style="display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto"></span><button class="ghost" data-a="addChar" title="캐릭터 추가">＋</button>
-<span style="flex:1"></span><span class="mut" id="reset"></span><button id="undoBtn" class="ghost" title="되돌리기 (Ctrl+Z)">↶</button><button class="ghost" data-a="settings" title="설정" style="font-size:19px">⚙</button></div>
+<span style="flex:1"></span><span class="mut" id="reset"></span><button class="ghost" id="tqBtn" title="교역 시세 캡처 → 어디에 팔지">📷 교역 시세</button><button id="undoBtn" class="ghost" title="되돌리기 (Ctrl+Z)">↶</button><button class="ghost" data-a="settings" title="설정" style="font-size:19px">⚙</button></div>
 <div id="week" class="week"></div>
 <div class="dash" id="dash"></div>
 <div id="xtra"></div>
@@ -318,6 +318,27 @@ document.addEventListener('change',e=>{const t=e.target,a=t.dataset.a,c=C(),v=t.
  if(a==='price')mut(()=>{if(v==='')delete S.prices[t.dataset.m];else S.prices[t.dataset.m]={p:+v,src:'manual'}});
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(dOpen){dOpen=null;renderDetail()}else setLayer(null)}if(e.key==='Enter'&&document.activeElement?.dataset?.a==='detail'){dOpen=document.activeElement.dataset.r;renderDetail()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();undo()}});
+
+// ---- 교역 시세 캡처 팝업 (스캐폴드: OCR은 추후 Tesseract.js, 지금은 수동 입력)
+const TQK='mabiBarter.tq';
+function tqOpen(){let el=$('#tqPop');if(!el){el=document.createElement('div');el.id='tqPop';document.body.appendChild(el)}
+ const v=localStorage.getItem(TQK)||'';
+ el.innerHTML=`<div class="mask" id="tqMask"></div><div class="pop" style="position:fixed;top:60px;left:50%;transform:translateX(-50%);width:min(560px,94vw);max-height:84vh;overflow:auto;z-index:60">
+ <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">📷 교역 시세 → 어디에 팔까</h3><button class="sm ghost" id="tqX">✕</button></div>
+ <div id="tqDrop" style="margin:8px 0;border:1px dashed #555;border-radius:8px;padding:14px;text-align:center;font-size:13.5px;cursor:pointer">인게임 교역소 시세창 캡처를 <b>Ctrl+V</b>로 붙여넣거나 클릭해서 이미지 선택<input type="file" id="tqFile" accept="image/*" hidden><div id="tqImg"></div></div>
+ <div class="mut" style="font-size:13px">자동 인식(OCR)은 준비 중 — 지금은 아래에 <b>마을 판매가</b>를 한 줄씩 넣어주세요. 예: <code>던바튼 12,340</code></div>
+ <div style="display:flex;gap:6px;margin-top:6px;font-size:14px"><label>구매가 <input class="n" id="tqBuy" style="width:90px"></label><label>수량 <input class="n" id="tqQty" style="width:60px" value="1"></label></div>
+ <textarea id="tqTxt" rows="6" style="width:100%;margin-top:6px;font-size:14px" placeholder="던바튼 12340&#10;반호르 13100&#10;이멘 마하 12800">${esc(v)}</textarea>
+ <div id="tqOut" style="margin-top:6px;font-size:14px"></div></div>`;
+ const calc=()=>{const t=$('#tqTxt').value;localStorage.setItem(TQK,t);const b=+($('#tqBuy').value.replace(/,/g,''))||0,q=+$('#tqQty').value||1;
+  const L=t.split('\n').map(l=>l.match(/^\s*(.+?)\s+([\d,]+)\s*$/)).filter(Boolean).map(m=>({n:m[1],p:+m[2].replace(/,/g,'')})).sort((a,b)=>b.p-a.p);
+  $('#tqOut').innerHTML=L.length?L.map((x,i)=>`<div class="er" style="grid-template-columns:24px 1fr 90px 100px">${i?'':'🏆'}<span>${esc(x.n)}</span><span class="r">${fmt(x.p)}</span><span class="r ${x.p-b>=0?'pos':'neg'}">${b?(x.p-b>=0?'+':'')+fmt((x.p-b)*q):''}</span></div>`).join(''):'<span class="mut">시세를 넣으면 가장 비싼 마을을 추천해요</span>'};
+ const img=fl=>{if(!fl)return;const u=URL.createObjectURL(fl);$('#tqImg').innerHTML=`<img src="${u}" style="max-width:100%;margin-top:8px;border-radius:6px"><div class="mut" style="font-size:12.5px">이미지 확인용 · 값은 직접 입력 (OCR 준비 중)</div>`};
+ $('#tqX').onclick=$('#tqMask').onclick=()=>el.innerHTML='';
+ $('#tqDrop').onclick=e=>{if(e.target.id!=='tqFile')$('#tqFile').click()};$('#tqFile').onchange=e=>img(e.target.files[0]);
+ el.onpaste=e=>{const it=[...(e.clipboardData?.items||[])].find(x=>x.type.startsWith('image/'));if(it){e.preventDefault();img(it.getAsFile())}};
+ ['tqTxt','tqBuy','tqQty'].forEach(i=>$('#'+i).oninput=calc);calc();$('#tqTxt').focus()}
+$('#tqBtn').onclick=tqOpen;
 $('#undoBtn').onclick=undo;addEventListener('pagehide',()=>{clearTimeout(svT);save()});
 function renChar(i){const x=S.chars[i];if(!x)return;const n=(prompt('캐릭터 이름 변경',x.name)||'').trim();if(n&&n!==x.name)mut(()=>S.chars[i].name=n,'이름 변경됨')}
 function delChar(i){const x=S.chars[i];if(!x)return;if(S.chars.length<2)return toast('마지막 캐릭터는 삭제할 수 없습니다');if(confirm(`'${x.name}' 캐릭터를 삭제할까요? (Ctrl+Z로 되돌리기 가능)`))mut(()=>{S.chars.splice(i,1);if(S.cur>i||S.cur>=S.chars.length)S.cur=Math.max(0,S.cur-1)},`'${x.name}' 삭제됨 (Ctrl+Z로 되돌리기)`)}
