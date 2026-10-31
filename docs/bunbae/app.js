@@ -105,10 +105,12 @@ function unpack(o){if(!Array.isArray(o))return o;var m=o[2]||[];return {t:o[1],m
 /* 공유 v3 (짧은 링크, /b/#코드): 필드를 \0 으로 이어 붙임 → [플래그+ts36, 제목(날짜 접두어 생략), 분배자(인덱스|=이름), 아이템(\1 구분), 파티원...]
    플래그: 1=완료, 2=제목 앞 'YYYY.MM.DD - ' 생략. 코드 접두어 Z(deflate)/J(원본)/U(유니코드 글자 그대로) 중 가장 짧은 것 */
 function kstDay(ts){var d=new Date(ts+9*3600e3);return d.getUTCFullYear()+'.'+('0'+(d.getUTCMonth()+1)).slice(-2)+'.'+('0'+d.getUTCDate()).slice(-2)}
+/* 첫 필드: KST 'YYYYMMDD-HHMM'+플래그(2면 생략) — 예 U20261031-1718~제목~… (구형 플래그+ts36도 해독) */
+function kstStamp(ts){var d=new Date(ts+9*3600e3),z=function(n){return ('0'+n).slice(-2)};return d.getUTCFullYear()+z(d.getUTCMonth()+1)+z(d.getUTCDate())+'-'+z(d.getUTCHours())+z(d.getUTCMinutes())}
 function pack3(p){var m=p.members||[],t=p.title||'',ts=p.ts||Date.now(),f=p.done?1:0,pre=kstDay(ts)+' - ';if(t.indexOf(pre)===0){t=t.slice(pre.length);f|=2}
  var it=(p.items||[]).filter(function(x){return t.indexOf(x)<0}),di=p.dist?m.indexOf(p.dist):-1,d=p.dist?(di<0?'='+p.dist:String(di)):'';
- return [f+Math.floor(ts/1000).toString(36),t,d,it.join('\x01')].concat(m).join('\0')}
-function unpack3(s){var a=s.split('\0'),f=+a[0][0],ts=parseInt(a[0].slice(1),36)*1000,m=a.slice(4),d=a[2]||'';
+ return [kstStamp(ts)+(f===2?'':f),t,d,it.join('\x01')].concat(m).join('\0')}
+function unpack3(s){var a=s.split('\0'),q=/^(\d{4})(\d\d)(\d\d)-(\d\d)(\d\d)(\d?)$/.exec(a[0]),f=q?(q[6]===''?2:+q[6]):+a[0][0],ts=q?Date.UTC(+q[1],q[2]-1,+q[3],q[4]-9,+q[5]):parseInt(a[0].slice(1),36)*1000,m=a.slice(4),d=a[2]||'';
  d=d?(d[0]==='='?d.slice(1):(m[+d]||'')):'';return {t:(f&2?kstDay(ts)+' - ':'')+a[1],m:m,d:d,o:f&1?1:0,ts:ts,i:a[3]?a[3].split('\x01'):[],th:''}}
 function uEsc(x){return x.replace(/[\x00-\x7f]/g,function(c){return c===' '?'_':/[A-Za-z0-9.\-]/.test(c)?c:'%'+('0'+c.charCodeAt(0).toString(16).toUpperCase()).slice(-2)})}
 function uUnesc(x){return decodeURIComponent(x.replace(/_/g,' '))}
