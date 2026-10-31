@@ -442,7 +442,7 @@ function invOpen(){let el=$('#invPop');if(!el){el=document.createElement('div');
  el.onpaste=e=>{const it=[...(e.clipboardData?.items||[])].find(x=>x.type.startsWith('image/'));if(it){e.preventDefault();img(it.getAsFile())}};
  $('#invAdd').onclick=()=>{const n=$('#invNm').value.trim();if(!n)return;if(!D.materials.includes(n))return toast('모르는 재료 이름');const q=+$('#invQ').value.replace(/[^\d]/g,'')||0,o=R.find(x=>x.n===n);if(o){o.q=q;o.ck=true}else R.push({n,q,ck:true});$('#invNm').value=$('#invQ').value='';draw()};
  $('#invOk').onclick=()=>{const L={};for(const r of R)if(r.ck)L[r.n]=(L[r.n]||0)+r.q;const ck=Object.keys(L);if(!ck.length)return toast('선택된 항목 없음');
-  if(!confirm('보유 수량을 이렇게 덮어쓸까요?\n\n'+ck.map(n=>`${n}: ${C().owned[n]||0} → ${L[n]}`).join('\n')))return;
+  if(!confirm(`보유 수량 ${ck.length}종을 덮어쓸까요?`))return;
   mutMats(()=>{const c=C();for(const n of ck)c.owned[n]=L[n]},`재고 ${ck.length}종 적용`);run++;el.innerHTML=''};
 }
 function tqOpen(){let el=$('#tqPop');if(!el){el=document.createElement('div');el.id='tqPop';document.body.appendChild(el)}
@@ -458,14 +458,14 @@ function tqOpen(){let el=$('#tqPop');if(!el){el=document.createElement('div');el
  el.onpaste=e=>{const it=[...(e.clipboardData?.items||[])].find(x=>x.type.startsWith('image/'));if(it){e.preventDefault();img(it.getAsFile())}};
  el.onchange=e=>{const t=e.target;if(!t.classList.contains('tqc'))return;const v=+t.value.replace(/[^\d]/g,'')||0,o=TQ[t.dataset.g]=TQ[t.dataset.g]||{};if(v)o[t.dataset.t]=v;else delete o[t.dataset.t];tqSave();const k=[t.dataset.g,t.dataset.t];$('#tqBody').innerHTML=tqBody();const n=document.querySelector(`.tqc[data-g="${k[0]}"][data-t="${k[1]}"]`);const all=[...document.querySelectorAll('.tqc')],i=all.indexOf(n);if(all[i+1])all[i+1].focus()};
  el.onclick=e=>{const R=()=>$('#tqBody').innerHTML=tqBody();const ch=e.target.closest('[data-tqr],[data-tqn],[data-tqt]');if(ch){const d=ch.dataset;if(d.tqr){TQ._r=d.tqr;delete TQ._n}if(d.tqn)TQ._n=+d.tqn;if(d.tqt)TQ._t=d.tqt;tqSave();R();const i=document.querySelector('.tqc');if(i&&d.tqt)i.focus();return}
- const oc=e.target.closest('[data-tqocr]');if(oc){const r=$('#tqoR').value,n=+$('#tqoN').value,rn=(tqRoutes().find(x=>x.id===r)||{}).name,ck=[...document.querySelectorAll('.tqoc:checked')].map(x=>x.value);if(confirm(`이렇게 적용할까요?\n\n루트: ${rn}\n회차: ${n}회차\n인식 교역품: ${ck.join(', ')||'없음'}`)){TQ._r=r;TQ._n=n;tqSave();R()}return}const uu=e.target.closest('[data-tqu]');if(uu){if(TQ._u!==uu.dataset.tqu&&Object.keys(TQ).some(k=>k!=='_u')&&!confirm('단위를 바꿔도 입력한 숫자는 그대로예요. 계속할까요?'))return;TQ._u=uu.dataset.tqu;tqSave();return R()}
- const ap=(L)=>{if(!L.length)return;const k=tqU()==='g'?'g':'d',nm=k==='g'?'골드':'두카트';if(!confirm('판매가('+nm+')에 적용할까요?\n\n'+L.map(([id,v])=>{const g=G[id]||{};const o=(S.sale[id]||{})[k];return `${g.name||id}: ${o?fmt(o):'없음'} → ${fmt(v)}`}).join('\n')))return;mut(()=>{for(const[id,v]of L)(S.sale[id]=S.sale[id]||{})[k]=v},'판매가 '+L.length+'종 적용');R()};
+ const oc=e.target.closest('[data-tqocr]');if(oc){const r=$('#tqoR').value,n=+$('#tqoN').value,rn=(tqRoutes().find(x=>x.id===r)||{}).name,ck=[...document.querySelectorAll('.tqoc:checked')].map(x=>x.value);{TQ._r=r;TQ._n=n;tqSave();R()}return}const uu=e.target.closest('[data-tqu]');if(uu){TQ._u=uu.dataset.tqu;tqSave();return R()}
+ const ap=(L)=>{if(!L.length)return;const k=tqU()==='g'?'g':'d',nm=k==='g'?'골드':'두카트';if(!confirm(`판매가(${nm}) ${L.length}종을 덮어쓸까요?`))return;mut(()=>{for(const[id,v]of L)(S.sale[id]=S.sale[id]||{})[k]=v},'판매가 '+L.length+'종 적용');R()};
  const b=e.target.closest('[data-tqa]');if(b)return ap([[b.dataset.tqa,+b.dataset.v]]);
  const al=e.target.closest('[data-tqall]');if(al){const t=al.dataset.tqall;return ap(tqGoods().L.map(({g})=>[g.id,+(TQ[g.id]||{})[t]||0]).filter(x=>x[1]))}};
- el.addEventListener('change',e=>{if(e.target.id==='tqRate'){const v=+e.target.value.replace(/[^\d.]/g,'')||0;if(v!==(+S.drate||0)&&confirm('두카트→골드 비율을 '+v+'(으)로 저장할까요? (메인 손익에도 반영)'))mut(()=>S.drate=v);$('#tqBody').innerHTML=tqBody()}})}
+ el.addEventListener('change',e=>{if(e.target.id==='tqRate'){const v=+e.target.value.replace(/[^\d.]/g,'')||0;if(v!==(+S.drate||0))mut(()=>S.drate=v);$('#tqBody').innerHTML=tqBody()}})}
 $('#undoBtn').onclick=undo;addEventListener('pagehide',()=>{clearTimeout(svT);save()});
 function renChar(i){const x=S.chars[i];if(!x)return;const n=(prompt('캐릭터 이름 변경',x.name)||'').trim();if(n&&n!==x.name)mut(()=>S.chars[i].name=n,'이름 변경됨')}
-function delChar(i){const x=S.chars[i];if(!x)return;if(S.chars.length<2)return toast('마지막 캐릭터는 삭제할 수 없습니다');if(confirm(`'${x.name}' 캐릭터를 삭제할까요? (Ctrl+Z로 되돌리기 가능)`))mut(()=>{S.chars.splice(i,1);if(S.cur>i||S.cur>=S.chars.length)S.cur=Math.max(0,S.cur-1)},`'${x.name}' 삭제됨 (Ctrl+Z로 되돌리기)`)}
+function delChar(i){const x=S.chars[i];if(!x)return;if(S.chars.length<2)return toast('마지막 캐릭터는 삭제할 수 없습니다');mut(()=>{S.chars.splice(i,1);if(S.cur>i||S.cur>=S.chars.length)S.cur=Math.max(0,S.cur-1)},`'${x.name}' 삭제됨 (Ctrl+Z로 되돌리기)`)}
 $('#chars').addEventListener('contextmenu',e=>{const b=e.target.closest('[data-a=char]');if(!b)return;e.preventDefault();renChar(+b.dataset.i)});
 $('#chars').addEventListener('dblclick',e=>{const b=e.target.closest('[data-a=char]');if(b&&!e.target.closest('.cx'))renChar(+b.dataset.i)});
 $('#impFile').onchange=async e=>{try{const o=JSON.parse(await e.target.files[0].text());if(!o.chars)throw 0;mut(()=>S=migrate(o),'가져오기 완료')}catch(x){toast('잘못된 파일')}e.target.value=''};
