@@ -2,14 +2,14 @@
 html body{background:#14161b!important}
 nav.siteNav{flex-wrap:wrap!important;border:1px dashed #4a4f5e!important;border-radius:10px!important;padding:7px 10px!important;background:#1a1d23!important;gap:6px!important;margin-bottom:14px!important}
 nav.siteNav{position:sticky!important;top:0!important;z-index:1000!important;background:#1a1d23!important;box-shadow:0 2px 8px rgba(0,0,0,.45)}
-nav.siteNav:before{content:"마비노기 생활도우미";padding-left:22px;background:url(/img/logo.svg?v=5) left center/18px no-repeat;font-weight:700;color:#e6e8ee;margin-right:10px;font-size:13px;white-space:nowrap}
+nav.siteNav:before{content:"마비노기 생활도우미";padding-left:22px;background:url(/img/logo.svg?v=5) left center/18px no-repeat;font-weight:700;color:#e6e8ee;margin-right:10px;font-size:14px;white-space:nowrap}
 
-nav.siteNav a,nav.siteNav span{border:1px solid #333846!important;border-top:3px solid var(--c,#555)!important;border-radius:6px!important;font-size:12.5px!important;padding:4px 9px!important;white-space:nowrap;background:transparent!important}
+nav.siteNav a,nav.siteNav span{border:1px solid #333846!important;border-top:3px solid var(--c,#555)!important;border-radius:6px!important;font-size:14px!important;padding:4px 9px!important;white-space:nowrap;background:transparent!important}
 nav.siteNav .on{background:#262a33!important;color:#fff!important}
 .kitHd{position:relative;display:flex;align-items:center;gap:12px;background:#1d2027;border:1px solid #333846;border-radius:12px;padding:12px 18px 12px 22px;margin:0 0 14px;text-align:left}
 .kitHd:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--kit,#f7d98b);border-radius:12px 0 0 12px}
-.kitHd .ki{font-size:24px}.kitHd b{font-size:18px;color:#e6e8ee}.kitHd .kp{font-size:12px;color:#8a90a0;margin-top:2px}
-.kitHd .kn{margin-left:auto;flex:none;font-size:10px;color:var(--kit);border:1px solid var(--kit);border-radius:4px;padding:0 6px}
+.kitHd .ki{font-size:24px}.kitHd b{font-size:19px;color:#e6e8ee}.kitHd .kp{font-size:13.5px;color:#8a90a0;margin-top:2px}
+.kitHd .kn{margin-left:auto;flex:none;font-size:11.5px;color:var(--kit);border:1px solid var(--kit);border-radius:4px;padding:0 6px}
 body.kit-hd .head:not(.coinHead),body.kit-hd .wrap>.hd{display:none!important}
 .card,.list,.blk,.totals{box-shadow:inset 4px 0 0 var(--kit,#f7d98b)!important;border-color:#333846!important;background:#1d2027!important;border-radius:12px!important}
 
@@ -19,7 +19,7 @@ body.kit-bar>.wrap,body.kit-bar>.page,body.kit-bar>main{padding-top:0!important;
 .kitBar{position:sticky;top:0;z-index:1000;padding:10px 16px 0;margin:0 0 14px;background:linear-gradient(#14161b 70%,rgba(20,22,27,0))}
 .kitBar>nav.siteNav{position:static!important;max-width:1240px;margin:0 auto!important;box-sizing:border-box}
 .kitBar{max-width:none!important;margin-bottom:14px!important;margin-top:0!important;padding:10px 16px 0!important;box-sizing:border-box!important;left:0}
-.kitBar>nav.siteNav{width:100%;font:13px/1.3 'Noto Sans KR','Malgun Gothic',sans-serif!important;letter-spacing:0!important;flex-wrap:nowrap!important;overflow-x:auto;min-height:44px;align-items:center!important}
+.kitBar>nav.siteNav{width:100%;font:14px/1.3 'Noto Sans KR','Malgun Gothic',sans-serif!important;letter-spacing:0!important;flex-wrap:nowrap!important;overflow-x:auto;min-height:44px;align-items:center!important}
 .kitBar>nav.siteNav a,.kitBar>nav.siteNav span{line-height:1.3!important}
 body.kit-bar .albaGrid{grid-template-areas:". top top" "rail main sum"!important}
 @media(max-width:900px){body.kit-bar .albaGrid{grid-template-areas:"top" "sum" "rail" "main"!important}}
