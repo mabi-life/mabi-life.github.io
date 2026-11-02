@@ -280,6 +280,33 @@ async function invTemplates(st){if(INV_T)return INV_T;const T=[];const ns=D.mate
   const fps=typeof i.id==='number'?[[Math.max(1,Math.round(i.w/24)),Math.max(1,Math.round(i.h/24))]]:[[1,1],[2,2],[1,2],[2,1]];
   for(const[cw,ch]of fps){const c=invCv(INV_S*cw,INV_S*ch),x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);T.push({nm,cw,ch,d:x.getImageData(0,0,c.width,c.height).data})}
   if(st)st(`아이콘 불러오는 중… ${++k}/${ns.length}`)}));return INV_T=T}
+// 빈 칸이 없어도: 칸 사이 밝은 파란 격자선(gutter)으로 칸 위치 찾기. 가방 창이 여러 개면 창마다 따로.
+function invGutterGrid(A,W,H,ec){
+ const L=p=>A[p*4]+A[p*4+1]+A[p*4+2],bl=p=>{const i=p*4,r=A[i],g=A[i+1],b=A[i+2];return g>r+25&&b>r+35&&b>g-15};
+ const lineX=(p,x)=>x>0&&x<W-1&&bl(p)&&L(p)>L(p-1)+30&&L(p)>L(p+1)+30,lineY=(p,y)=>y>0&&y<H-1&&bl(p)&&L(p)>L(p-W)+30&&L(p)>L(p+W)+30;
+ const peaks=(prof,thr)=>{const o=[];for(let i=0;i<prof.length;i++)if(prof[i]>=thr&&prof[i]>=(prof[i-1]||0)&&prof[i]>(prof[i+1]||0))o.push(i);return o};
+ const runs=(ls,P)=>{const R=[];let c=[];for(const x of ls){const l=c[c.length-1],d=x-l,k=Math.round(d/P);if(c.length&&k>=1&&k<=3&&Math.abs(d-k*P)<=k){for(let i=1;i<k;i++)c.push(l+Math.round(d*i/k));c.push(x)}else if(!c.length||d>P+1){if(c.length>=2)R.push(c);c=[x]}}if(c.length>=2)R.push(c);return R};
+ const vc=(xs,y0)=>{let s=0;for(const x of xs)for(let y=y0;y<y0+P-1;y++)s+=y>=0&&y<H&&lineX(y*W+x,x);return s/(xs.length*(P-1))},hc=(ys,x0)=>{let s=0;for(const y of ys)for(let x=x0;x<x0+P-1;x++)s+=x>=0&&x<W&&lineY(y*W+x,y);return s/(ys.length*(P-1))};
+ const near=(p)=>{const i=p*4;return Math.abs(A[i]-ec[0])<20&&Math.abs(A[i+1]-ec[1])<20&&Math.abs(A[i+2]-ec[2])<20};
+ const bgFrac=(x0,y0,w,h)=>{if(x0<0||y0<0||x0+w>W||y0+h>H)return 0;let s=0;for(let y=y0;y<y0+h;y++)for(let x=x0;x<x0+w;x++)s+=near(y*W+x);return s/(w*h)};
+ const cx=new Float32Array(W);for(let y=0;y<H;y++)for(let x=1;x<W-1;x++)if(lineX(y*W+x,x))cx[x]++;
+ const lx=peaks(cx,Math.max(6,H*0.12));const dd={};for(let i=1;i<lx.length;i++){const d=lx[i]-lx[i-1];if(d>=12&&d<=90)for(const e of[d-1,d,d+1])dd[e]=(dd[e]||0)+(e===d?2:1)}
+ const top=Object.entries(dd).sort((a,b)=>b[1]-a[1])[0];if(!top)return null;const P=+top[0],out=[];
+ const XR=runs(lx,P);let prevEnd=0;for(const xr of XR){const xa=xr[0],xb=xr[xr.length-1],cy=new Float32Array(H);
+  for(let y=1;y<H-1;y++)for(let x=xa;x<=xb;x++)if(lineY(y*W+x,y))cy[y]++;
+  const ly=peaks(cy,Math.max(6,(xb-xa)*0.15)),yrs=runs(ly,P);if(!yrs.length)continue;
+  const xs=[...xr];// 바깥쪽 한 줄씩은 테두리 선이 달라서 안 잡힘 → 칸 배경이 보이면 한 칸 확장
+  const k=XR.indexOf(xr),lo=Math.max(prevEnd+4,k>0?XR[k-1][XR[k-1].length-1]+P+4:0),hi=k+1<XR.length?XR[k+1][0]-P-4:W;
+  for(const yr of yrs){const ys=[...yr],X=[...xs];
+   const th=Math.max(0.08,0.4*bgFrac(X[0]+1,ys[0]+1,X[X.length-1]-X[0]-1,ys[ys.length-1]-ys[0]-1));
+   for(let n=0;n<2;n++){const ya=ys[0],yb=ys[ys.length-1],hh=yb-ya,xw=X[X.length-1]-X[0];
+    if(X[0]-P>=lo&&(bgFrac(X[0]-P+1,ya,P-1,hh)>th||hc(ys,X[0]-P+1)>0.4))X.unshift(X[0]-P);
+    if(X[X.length-1]+P<=hi&&(bgFrac(X[X.length-1]+1,ya,P-1,hh)>th||hc(ys,X[X.length-1]+1)>0.4))X.push(X[X.length-1]+P);
+    if(ya-P>=-1&&(bgFrac(X[0]+1,ya-P+1,xw,P-1)>th||vc(X.slice(1,-1),ya-P+1)>0.4))ys.unshift(ya-P);
+    if(yb+P<=H&&(bgFrac(X[0]+1,yb+1,xw,P-1)>th||vc(X.slice(1,-1),yb+1)>0.4))ys.push(yb+P)}
+   const cells=[];for(let j=0;j+1<ys.length;j++)for(let i=0;i+1<X.length;i++){const x=X[i]+1,y=ys[j]+1;if(x>=0&&y>=0&&x+P-1<=W&&y+P-1<=H)cells.push([x,y])}
+   if(cells.length>=4){prevEnd=Math.max(prevEnd,X[X.length-1]);out.push({x:X[0],y:ys[0],cols:X.length-1,rows:ys.length-1,cells})}}}
+ return out.length?{P,bags:out}:null}
 async function invRecognize(file,st,alive){
  const bm=await invImgLoad(URL.createObjectURL(file)),W=bm.naturalWidth,H=bm.naturalHeight,cv=invCv(W,H),cx=cv.getContext('2d');cx.drawImage(bm,0,0);const A=cx.getImageData(0,0,W,H).data;
  const T=await invTemplates(st);if(!alive())return null;st('칸 찾는 중…');
@@ -292,16 +319,22 @@ async function invRecognize(file,st,alive){
  for(let p=0;p<W*H;p++){if(!E[p]||seen[p])continue;let x0=1e9,y0=1e9,x1=-1,y1=-1,cnt=0;const q=[p];seen[p]=1;
   while(q.length){const c=q.pop(),x=c%W,y=(c-x)/W;cnt++;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;for(const n of[c-1,c+1,c-W,c+W]){if(n>=0&&n<W*H&&E[n]&&!seen[n]&&Math.abs(n%W-x)<=1){seen[n]=1;q.push(n)}}}
   const w=x1-x0+1,h=y1-y0+1;if(w>=10&&w<=90&&Math.abs(w-h)<=2&&cnt>w*h*0.8)cells.push([x0,y0,w])}
- if(cells.length<3)return{items:[],why:'빈 칸이 너무 적어서 격자를 못 찾았어요'};
+ // 빈 칸이 3개 이상이면 빈 칸 간격으로, 아니면(꽉 찬 가방) 칸 사이 격자선으로 찾기
+ const key=(x,y)=>x+','+y,grid=new Set();let P,IN,K,empty;
+ if(cells.length>=3){
  const dx={};for(const a of cells)for(const b of cells){const d=b[0]-a[0];if(Math.abs(b[1]-a[1])<=1&&d>0&&d<120)dx[d]=(dx[d]||0)+1}
- const P=+Object.entries(dx).sort((a,b)=>b[1]-a[1])[0][0],IN=Math.round(P*20/24),K=P/24;
+ P=+Object.entries(dx).sort((a,b)=>b[1]-a[1])[0][0];IN=Math.round(P*20/24);K=P/24;
  const par=cells.map((_,i)=>i),f=i=>{while(par[i]!==i)i=par[i]=par[par[i]];return i},m=d=>{const r=((d%P)+P)%P;return Math.min(r,P-r)<=1};
  cells.forEach((a,i)=>cells.forEach((b,j)=>{if(m(b[0]-a[0])&&m(b[1]-a[1])&&Math.abs(b[0]-a[0])<=3*P&&Math.abs(b[1]-a[1])<=3*P)par[f(i)]=f(j)}));
  const G={};cells.forEach((c,i)=>(G[f(i)]=G[f(i)]||[]).push(c));
- const key=(x,y)=>x+','+y,grid=new Set(),empty=new Set(cells.map(c=>key(c[0],c[1])));
+ empty=new Set(cells.map(c=>key(c[0],c[1])));
  for(const g of Object.values(G)){if(g.length<3)continue;const xs=g.map(c=>c[0]),ys=g.map(c=>c[1]);
   for(let x=Math.min(...xs)-2*P;x<=Math.max(...xs)+2*P;x+=P)for(let y=Math.min(...ys)-2*P;y<=Math.max(...ys)+2*P;y+=P)if(x>=0&&y>=0&&x+IN<=W&&y+IN<=H)grid.add(key(x,y))}
- const isOcc=(x,y)=>{if(!grid.has(key(x,y))||empty.has(key(x,y)))return false;let s=0;for(let j=0;j<IN;j++)for(let i=0;i<IN;i++)s+=E[(y+j)*W+x+i];return s<IN*IN*0.6};
+ }
+ if(!grid.size){const GG=invGutterGrid(A,W,H,ec);if(!GG)return{items:[],why:'칸 격자를 못 찾았어요 — 가방 창이 다른 UI에 가리지 않게, 가방 창 전체가 보이도록 캡처해 주세요(가방 하나만 크게 찍으면 더 잘 돼요)'};
+  P=GG.P;IN=Math.round(P*20/24);K=P/24;empty=new Set();for(const b of GG.bags)for(const[x,y]of b.cells)grid.add(key(x,y))}
+ const snap=(x,y)=>{if(grid.has(key(x,y)))return key(x,y);for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1]])if(grid.has(key(x+a,y+b)))return key(x+a,y+b);return null};
+ const isOcc=(x,y)=>{const k=snap(x,y);if(!k||empty.has(k))return false;[x,y]=k.split(',').map(Number);let s=0;for(let j=0;j<IN;j++)for(let i=0;i<IN;i++)s+=E[(y+j)*W+x+i];return s<IN*IN*0.6};
  const occ=[...grid].map(k=>k.split(',').map(Number)).filter(([x,y])=>isOcc(x,y));
  const crop=(x,y,w,h,ow,oh)=>{const c=invCv(ow,oh),t=c.getContext('2d');t.drawImage(cv,x,y,w,h,0,0,ow,oh);return t.getImageData(0,0,ow,oh).data};
  const sigOf=(x,y,cw,ch)=>{const d=crop(x,y,P*cw-(P-IN),P*ch-(P-IN),8,8);let s='';for(let i=0;i<64;i++){const v=(d[i*4]+d[i*4+1]+d[i*4+2])/3;s+=Math.min(15,v>>4).toString(16)}return s};
@@ -315,7 +348,7 @@ async function invRecognize(file,st,alive){
  cand.sort((a,b)=>a.d-b.d);const used=new Set(),hits=[];
  for(const c of cand){if(!c.lr&&c.d>24)break;const ks=[];for(let i=0;i<c.cw;i++)for(let j=0;j<c.ch;j++)ks.push(key(c.x+i*P,c.y+j*P));if(ks.some(k=>used.has(k)))continue;ks.forEach(k=>used.add(k));
   c.q=invQty(cx,c.x,c.y,K);c.sig=sigOf(c.x,c.y,c.cw,c.ch);c.sure=c.lr||c.d<=20;hits.push(c)}
- return{items:hits,why:''}}
+ return{items:hits,why:hits.length?'':occ.length?`칸 ${occ.length}개는 찾았지만 아는 재료 아이콘이 없어요(재료가 아닌 물건이거나 다른 UI에 가려졌을 수 있어요)`:'칸은 찾았지만 찬 칸이 없어요 — 재료가 든 칸이 보이게 캡처해 주세요'}}
 function invQty(cx,x,y,K){const w=Math.round(20*K),h=Math.round(8*K),X=Math.round(x-2*K),Y=Math.round(y-2*K);if(X<0||Y<0)return 1;
  let d;if(Math.abs(K-1)<0.05)d=cx.getImageData(X,Y,20,8).data;else{const c=invCv(20,8),t=c.getContext('2d');t.imageSmoothingEnabled=false;t.drawImage(cx.canvas,X,Y,w,h,0,0,20,8);d=t.getImageData(0,0,20,8).data}
  const M=(i,j)=>{const o=(j*20+i)*4,r=d[o],g=d[o+1],b=d[o+2];return Math.min(r,g,b)>170||(r>200&&g>170&&b<140)};
@@ -327,7 +360,7 @@ function invQty(cx,x,y,K){const w=Math.round(20*K),h=Math.round(8*K),X=Math.roun
 function invOpen(){let el=$('#invPop');if(!el){el=document.createElement('div');el.id='invPop';document.body.appendChild(el)}let run=0;
  el.innerHTML=`<div id="invMask" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:59"></div><div class="pop" style="position:fixed;top:50%;left:50%;right:auto;transform:translate(-50%,-50%);width:min(520px,94vw);max-height:88vh;overflow:auto;z-index:60">
  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0">📦 재고체크 <span class="mut" style="font-size:13px">(테스트버전)</span></h3><button class="sm ghost" id="invX">✕</button></div>
- <div class="mut" style="font-size:13px;margin-top:4px">인벤토리 캡처를 넣으면 <b>아이콘</b>으로 재료를 찾고 칸 왼쪽 위 숫자로 수량을 읽어요. 이름이 틀리면 바꿔 주세요 — 다음부터 그 아이콘을 기억해요. 보유 수량엔 <b>확인 후</b> 적용.</div>
+ <div class="mut" style="font-size:13px;margin-top:4px">인벤토리 캡처를 넣으면 <b>아이콘</b>으로 재료를 찾고 칸 왼쪽 위 숫자로 수량을 읽어요. 이름이 틀리면 바꿔 주세요 — 다음부터 그 아이콘을 기억해요. 보유 수량엔 <b>확인 후</b> 적용.<br>💡 가방 창 전체가 다른 UI에 가리지 않게 찍어 주세요. 여러 가방을 한 번에 찍어도 되지만, 안 잡히면 가방 하나씩 크게 캡처하면 더 잘 돼요.</div>
  <div id="invDrop" style="margin:6px 0;border:1px dashed #555;border-radius:8px;padding:8px;text-align:center;font-size:13px;cursor:pointer">캡처 <b>Ctrl+V</b> 또는 클릭해서 이미지 선택<input type="file" id="invFile" accept="image/*" hidden><div id="invImg"></div></div>
  <div style="display:flex;gap:4px;margin:4px 0"><input id="invNm" list="invDl" placeholder="재료 이름 (수동 추가)" style="flex:1;min-width:0"><datalist id="invDl">${D.materials.map(m=>`<option value="${esc(m)}">`).join('')}</datalist><input id="invQ" inputmode="numeric" placeholder="수량" style="width:70px"><button class="sm" id="invAdd">추가</button></div>
  <div id="invList" style="max-height:260px;overflow:auto"></div>
