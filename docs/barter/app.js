@@ -268,18 +268,19 @@ function tqOcrShow(){const st=$('#tqOcr');if(!st||!TQO)return;const{hit,best}=TQ
  루트 <select id="tqoR">${R.map(r=>`<option value="${r.id}"${best&&best.r===r.id?' selected':''}>${esc(r.name)}</option>`).join('')}</select> 회차 <select id="tqoN">${[1,2].map(k=>`<option${best&&best.n===k?' selected':''}>${k}</option>`).join('')}</select>
  <button class="sm" data-tqocr="1">확인 후 적용</button><details style="margin-top:4px"><summary class="mut">인식 원문</summary><div class="mut" style="font-size:12.5px;max-height:90px;overflow:auto">${esc(TQO.raw)}</div></details></div>`}
 // ---- 재고체크 (테스트버전): 인벤토리 캡처 → 아이콘 매칭 + 수량 숫자 인식, 확인 후 적용
-const INV_LS='mabiBarter.invIconLearn.v1',INV_S=12;let INV_T=null;
+// INV_S=24: 슬롯 피치(~24px)에 맞춘 매칭 해상도. 고해상도에선 서브픽셀 어긋남으로 평균차가 약간 커져 컷오프 24→26 (sure<=20 유지)
+const INV_LS='mabiBarter.invIconLearn.v1',INV_S=24;let INV_T=null,INV_TS=0;
 const INV_DG={'.#.##..#..#.###':1,'####.##.##.####':0,'###..#####..###':2,'###..####..####':3,'..#.###.####..#':4,'####..###..####':5,'####..####.####':6,'####.#..#..#..#':7,'####.#####.####':8,'####.####..####':9};
 function invLearnGet(){try{return JSON.parse(localStorage.getItem(INV_LS)||'[]')}catch(e){return[]}}
 function invLearn(sig,cw,ch,n){if(!sig)return;const a=invLearnGet().filter(x=>!(x.cw===cw&&x.ch===ch&&invSigD(x.s,sig)<=0.6));a.push({s:sig,cw,ch,n});while(a.length>400)a.shift();localStorage.setItem(INV_LS,JSON.stringify(a))}
 function invSigD(a,b){let d=0;for(let i=0;i<64;i++)d+=Math.abs(parseInt(a[i],16)-parseInt(b[i],16));return d/64}
 function invCv(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
 function invImgLoad(src){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src})}
-async function invTemplates(st){if(INV_T)return INV_T;const T=[];const ns=D.materials.filter(m=>ICONS[m]);let k=0;
+async function invTemplates(st){if(INV_T&&INV_TS===INV_S)return INV_T;const T=[];const ns=D.materials.filter(m=>ICONS[m]);let k=0;
  await Promise.all(ns.map(async nm=>{const i=ICONS[nm];let im;try{im=await invImgLoad(`/assets/icons/orig/${i.id}.png`)}catch(e){return}
   const fps=typeof i.id==='number'?[[Math.max(1,Math.round(i.w/24)),Math.max(1,Math.round(i.h/24))]]:[[1,1],[2,2],[1,2],[2,1]];
   for(const[cw,ch]of fps){const c=invCv(INV_S*cw,INV_S*ch),x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);T.push({nm,cw,ch,d:x.getImageData(0,0,c.width,c.height).data})}
-  if(st)st(`아이콘 불러오는 중… ${++k}/${ns.length}`)}));return INV_T=T}
+  if(st)st(`아이콘 불러오는 중… ${++k}/${ns.length}`)}));INV_TS=INV_S;return INV_T=T}
 // 빈 칸이 없어도: 칸 사이 밝은 파란 격자선(gutter)으로 칸 위치 찾기. 가방 창이 여러 개면 창마다 따로.
 function invGutterGrid(A,W,H,ec){
  const L=p=>A[p*4]+A[p*4+1]+A[p*4+2],bl=p=>{const i=p*4,r=A[i],g=A[i+1],b=A[i+2];return g>r+25&&b>r+35&&b>g-15};
@@ -346,7 +347,7 @@ async function invRecognize(file,st,alive){
    let s=0,ws=0;for(let j=0;j<h;j++)for(let i=0;i<w;i++){if(j<INV_S/2&&i<INV_S*0.8)continue;const o=(j*w+i)*4,al=t.d[o+3]/255;if(al<0.05)continue;s+=al*(Math.abs(c[o]-t.d[o])+Math.abs(c[o+1]-t.d[o+1])+Math.abs(c[o+2]-t.d[o+2]))/3;ws+=al}
    if(ws<w*h*0.15)continue;cand.push({d:s/ws,x,y,nm:t.nm,cw:t.cw,ch:t.ch})}}
  cand.sort((a,b)=>a.d-b.d);const used=new Set(),hits=[];
- for(const c of cand){if(!c.lr&&c.d>24)break;const ks=[];for(let i=0;i<c.cw;i++)for(let j=0;j<c.ch;j++)ks.push(key(c.x+i*P,c.y+j*P));if(ks.some(k=>used.has(k)))continue;ks.forEach(k=>used.add(k));
+ for(const c of cand){if(!c.lr&&c.d>26)break;const ks=[];for(let i=0;i<c.cw;i++)for(let j=0;j<c.ch;j++)ks.push(key(c.x+i*P,c.y+j*P));if(ks.some(k=>used.has(k)))continue;ks.forEach(k=>used.add(k));
   c.q=invQty(cx,c.x,c.y,K);c.sig=sigOf(c.x,c.y,c.cw,c.ch);c.sure=c.lr||c.d<=20;hits.push(c)}
  return{items:hits,why:hits.length?'':occ.length?`칸 ${occ.length}개는 찾았지만 아는 재료 아이콘이 없어요(재료가 아닌 물건이거나 다른 UI에 가려졌을 수 있어요)`:'칸은 찾았지만 찬 칸이 없어요 — 재료가 든 칸이 보이게 캡처해 주세요'}}
 function invQty(cx,x,y,K){const w=Math.round(20*K),h=Math.round(8*K),X=Math.round(x-2*K),Y=Math.round(y-2*K);if(X<0||Y<0)return 1;
