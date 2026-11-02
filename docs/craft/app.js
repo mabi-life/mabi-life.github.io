@@ -106,7 +106,7 @@ function fillGoals(){const G=gi();const opt=re=>RECIPES.map((r,i)=>re.test(r.n)?
 window.craftCoinNeed=function(){const R=RECIPES[gi()];if(!R)return null;const o={};
  matsOf(R).forEach(c=>{const cn=MC.COST[c[0]];if(!cn)return;const z=nodeCost(c,st.qty);const t=o[cn.tab]=o[cn.tab]||{total:0,list:[]};t.total+=z.need*cn.cost;t.list.push({n:c[0],qty:z.need,cost:cn.cost})});
  return {goal:R.n,qty:st.qty,tabs:o,tab:/^소울/.test(R.n)?'bri':/^더스크/.test(R.n)?'tala':(Object.keys(o)[0]||null)}};
-function syncCoin(){const N=window.craftCoinNeed();if(N&&N.tab){const b=document.querySelector('#tabs button[data-k="'+N.tab+'"]');if(b&&!b.classList.contains('on'))b.click()}document.dispatchEvent(new Event('craftneed'))}fillGoals();$('goalQty').value=st.qty;
+function syncCoin(){const nv=/^나이트브링어/.test((RECIPES[gi()]||{}).n||''),vc=document.getElementById('vCoin');if(vc)vc.hidden=nv;const N=window.craftCoinNeed();if(N&&N.tab){const b=document.querySelector('#tabs button[data-k="'+N.tab+'"]');if(b&&!b.classList.contains('on'))b.click()}document.dispatchEvent(new Event('craftneed'))}fillGoals();$('goalQty').value=st.qty;
 $('goalSel').onchange=e=>{st.goal=+e.target.value;save();render();syncCoin()};$('goalQty').onchange=e=>{st.qty=Math.max(1,+e.target.value||1);e.target.value=st.qty;save();render();syncCoin()};
 $('resetBtn').onclick=()=>{st.own={};st.open={};save();render();syncCoin()};
 render();
