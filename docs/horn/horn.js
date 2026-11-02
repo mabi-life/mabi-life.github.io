@@ -1,14 +1,17 @@
 // 서버별 거뿔(거대한 외침의 뿔피리) 내역 — /horn_history.json (캐릭터명 미저장). #horn / #horn-하프 로 바로가기
-(function(){var D=null,S=localStorage.getItem('hornSrv')||'하프',L=document.getElementById('hList'),Q=document.getElementById('hQ'),LIM=300;
+(function(){var D=null,S=localStorage.getItem('hornSrv')||'하프',L=document.getElementById('hList'),Q=document.getElementById('hQ'),LIM=300,C=localStorage.getItem('hornCat')||'';
+var RX={p:/모집|파티|구인|파모|ㅁㅈ|인원|자리|명\s*구|딜러|탱|힐러|글렌|크롬|브리|레이드|\d\s*\/\s*\d/,b:/삽니다|사요|구합니다|구해요|구함|구매|매입|구구|ㅅㅅ|삼니다|살게요|사봅니다/,s:/팝니다|팔아요|판매|ㅍㅍ|팜|팔게요|처분|떨이|ㅍㅁ/};
+function cat(m){if(!C)return true;var b=RX.b.test(m),s=RX.s.test(m);if(C==='b')return b;if(C==='s')return s;return RX.p.test(m)&&!(b||s)||/모집|구인|파티/.test(m)}
 function esc(s){return s.replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function tm(t){var d=new Date(t);if(isNaN(d))return'';var k=new Date(d.getTime()+9*36e5),n=new Date(Date.now()+9*36e5),p=function(x){return('0'+x).slice(-2)};
  return(k.getUTCDate()!==n.getUTCDate()?(k.getUTCMonth()+1)+'/'+k.getUTCDate()+' ':'')+p(k.getUTCHours())+':'+p(k.getUTCMinutes())}
-function draw(){document.querySelectorAll('#hSrv button').forEach(function(b){b.classList.toggle('on',b.dataset.s===S)});
- if(!D)return;var q=Q.value.trim(),r=D.rows.filter(function(x){return x.s===S&&(!q||x.m.indexOf(q)>=0)}).sort(function(a,b){return a.t<b.t?1:-1});
+function draw(){document.querySelectorAll('#hSrv button').forEach(function(b){b.classList.toggle('on',b.dataset.s===S)});document.querySelectorAll('#hCat button').forEach(function(b){b.classList.toggle('on',b.dataset.c===C)});
+ if(!D)return;var q=Q.value.trim(),r=D.rows.filter(function(x){return x.s===S&&cat(x.m)&&(!q||x.m.indexOf(q)>=0)}).sort(function(a,b){return a.t<b.t?1:-1});
  document.getElementById('hCnt').textContent=r.length+'건'+(r.length>LIM?' · 최신 '+LIM+'건만 표시':'');
- L.innerHTML=r.length?r.slice(0,LIM).map(function(x){return'<li><time datetime="'+esc(x.t)+'">'+tm(x.t)+'</time>'+(x.n?'<button class="nm" data-n="'+esc(x.n)+'" title="눌러서 복사">'+esc(x.n)+'</button>':'')+'<span>'+esc(x.m)+'</span></li>'}).join(''):'<li class="em">'+(q?'검색 결과가 없어요':'아직 모인 거뿔이 없어요')+'</li>'}
+ L.innerHTML=r.length?r.slice(0,LIM).map(function(x){return'<li><time datetime="'+esc(x.t)+'">'+tm(x.t)+'</time>'+(x.n?'<button class="nm" data-n="'+esc(x.n)+'" title="눌러서 복사">'+esc(x.n)+'</button>':'')+'<span>'+esc(x.m)+'</span></li>'}).join(''):'<li class="em">'+(q||C?'검색 결과가 없어요':'아직 모인 거뿔이 없어요')+'</li>'}
 document.getElementById('hSrv').addEventListener('click',function(e){var s=e.target.dataset&&e.target.dataset.s;if(s){S=s;localStorage.setItem('hornSrv',s);L.scrollTop=0;draw()}});
 Q.addEventListener('input',draw);
+document.getElementById('hCat').addEventListener('click',function(e){var c=e.target.dataset&&e.target.dataset.c;if(c!=null){C=c;localStorage.setItem('hornCat',c);L.scrollTop=0;draw()}});
 var T=document.createElement('div');T.id='hToast';document.body.appendChild(T);var tt;
 function toast(t){T.textContent=t;T.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){T.classList.remove('on')},1400)}
 L.addEventListener('click',function(e){var b=e.target.closest('.nm');if(!b)return;var n=b.dataset.n;
