@@ -1,7 +1,7 @@
 {
  "source": "https://biketago.com/enchant/ (쫀득쫀득 인챈트; list pages pageSize=30, p=1..35, parsed from page PDF render)",
  "scraped_at": "2026-11-01T06:22:50+09:00",
- "count": 1034,
+ "count": 1037,
  "enchants": [
   {
    "id": 1034,
@@ -33508,6 +33508,109 @@
    ],
    "on": null,
    "exclusive": false
+  },
+  {
+   "id": 1035,
+   "affix": "접두",
+   "rank": "9",
+   "name": "봄의",
+   "effects": [
+    {
+     "stat": "최대대미지",
+     "amount": 3,
+     "min": 3,
+     "unit": "",
+     "raw": "최대대미지 3 증가"
+    },
+    {
+     "stat": "최소대미지",
+     "amount": 3,
+     "min": 3,
+     "unit": "",
+     "raw": "최소대미지 3 증가"
+    },
+    {
+     "stat": "행운",
+     "amount": 8,
+     "min": 8,
+     "unit": "",
+     "raw": "행운 8 증가"
+    }
+   ],
+   "on": "지원용 던전 체인 블레이드",
+   "exclusive": true,
+   "source": "https://tirnanog.tistory.com/42 (던전 가이드 제 1~4 지원품 상자 전용 인챈트 스크롤 표)"
+  },
+  {
+   "id": 1036,
+   "affix": "접두",
+   "rank": "6",
+   "name": "겨울의",
+   "effects": [
+    {
+     "stat": "최대대미지",
+     "amount": 16,
+     "min": 16,
+     "unit": "",
+     "raw": "최대대미지 16 증가"
+    },
+    {
+     "stat": "최소대미지",
+     "amount": 12,
+     "min": 12,
+     "unit": "",
+     "raw": "최소대미지 12 증가"
+    },
+    {
+     "stat": "행운",
+     "amount": 20,
+     "min": 20,
+     "unit": "",
+     "raw": "행운 20 증가"
+    }
+   ],
+   "on": "지원용 던전 체인 블레이드",
+   "exclusive": true,
+   "source": "https://tirnanog.tistory.com/42 (던전 가이드 제 1~4 지원품 상자 전용 인챈트 스크롤 표)"
+  },
+  {
+   "id": 1037,
+   "affix": "접미",
+   "rank": "6",
+   "name": "제 4 단계",
+   "effects": [
+    {
+     "stat": "최대대미지",
+     "amount": 28,
+     "min": 28,
+     "unit": "",
+     "raw": "최대대미지 28 증가"
+    },
+    {
+     "stat": "최소대미지",
+     "amount": 12,
+     "min": 12,
+     "unit": "",
+     "raw": "최소대미지 12 증가"
+    },
+    {
+     "stat": "최대생명력",
+     "amount": 80,
+     "min": 80,
+     "unit": "",
+     "raw": "최대생명력 80 증가"
+    },
+    {
+     "stat": "최대스태미나",
+     "amount": 80,
+     "min": 80,
+     "unit": "",
+     "raw": "최대스태미나 80 증가"
+    }
+   ],
+   "on": "지원용 던전 체인 블레이드",
+   "exclusive": true,
+   "source": "https://tirnanog.tistory.com/42 (던전 가이드 제 1~4 지원품 상자 전용 인챈트 스크롤 표)"
   }
  ]
 }

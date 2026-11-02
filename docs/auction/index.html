@@ -120,7 +120,7 @@ let E=null,EH={},EF=null,EFx=null,eAf='';
 const EB=t=>String(t||'').replace(/^.*(?:일\s?때|했을\s?시|있을\s?때|경우|시에?)\s+/,'').replace(/\s+/g,' ').trim();
 const RK=r=>/^\d+$/.test(r)?+r:100+r.charCodeAt(0);
 function eLoad(){if(E)return;E=[];
- Promise.all([fetch('enchant_data.json?t='+Date.now()).then(r=>r.json()),fetch('enchant_history.json?t='+Date.now()).then(r=>r.json()).catch(()=>({t:{}})),fetch('enchant_effects.json').then(r=>r.ok?r.json():null).catch(()=>null)]).then(([d,h,f])=>{
+ Promise.all([fetch('enchant_data.json?t='+Date.now()).then(r=>r.json()),fetch('enchant_history.json?t='+Date.now()).then(r=>r.json()).catch(()=>({t:{}})),fetch('enchant_effects.json?v=20261102').then(r=>r.ok?r.json():null).catch(()=>null)]).then(([d,h,f])=>{
   E=d.rows;EH=h.t||{};
   if(f){const list=Array.isArray(f)?f:f.enchants||f.rows||[];EF={};EFx={};
    list.forEach(x=>{const rk=String(x.rank).toUpperCase(),es=x.effects||[];EF[x.name+'|'+x.affix+'|'+rk]=es;(EFx[x.affix+'|'+rk]||(EFx[x.affix+'|'+rk]=[])).push(x);});}
