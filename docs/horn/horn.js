@@ -20,7 +20,7 @@ L.addEventListener('click',function(e){var b=e.target.closest('.nm');if(!b)retur
 function go(){var h=decodeURIComponent(location.hash.slice(1));if(!/^horn/.test(h))return;var s=h.split('-')[1];if(s&&/^(류트|만돌린|하프|울프)$/.test(s)){S=s;draw()}
  setTimeout(function(){document.getElementById("vHorn").scrollIntoView({behavior:'smooth',block:'start'})},60)}
 addEventListener('hashchange',go);
-fetch('/horn_history.json?t='+Math.floor(Date.now()/6e5)).then(function(r){return r.json()}).then(function(d){D=d;
+fetch('https://mabi-horn.mabilife.workers.dev/horn_history.json?t='+Math.floor(Date.now()/6e4)).catch(function(){return fetch('/horn_history.json?t='+Math.floor(Date.now()/6e5))}).then(function(r){return r.json()}).then(function(d){D=d;
  document.getElementById('hUpd').textContent='갱신 '+(d.updated||'').replace('T',' ').slice(0,16)+' (KST) · 자동 수집 · 아이디 누르면 복사돼요';draw()})
  .catch(function(){L.innerHTML='<li class="em">거뿔 내역을 못 불러왔어요. 잠시 후 다시 시도해 주세요</li>'});
 draw();go()})();
