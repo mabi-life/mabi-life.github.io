@@ -1,3 +1,4 @@
 User-agent: *
 Disallow: /_mock/
 Allow: /
+Sitemap: https://mabi-life.com/sitemap.xml
