@@ -37,3 +37,6 @@ html{overflow-y:scroll!important;overflow-x:hidden!important;scrollbar-gutter:st
 .toolAbout summary{cursor:pointer;color:#e6e8ee;font-weight:600}
 .toolAbout dt{color:#e6e8ee;font-weight:600;margin-top:10px}
 .toolAbout dd{margin:2px 0 0 0}
+.toolAbout .howtoFig{margin:10px 0 14px;padding:0;max-width:100%}
+.toolAbout .howtoFig img{display:block;max-width:min(100%,670px);height:auto;border:1px solid #333846;border-radius:10px;background:#14161b}
+.toolAbout .howtoFig figcaption{margin-top:6px;font-size:13px;color:#8a90a0;line-height:1.55}
