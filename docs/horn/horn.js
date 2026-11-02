@@ -10,7 +10,7 @@ function draw(){document.querySelectorAll('#hSrv button').forEach(function(b){b.
 document.getElementById('hSrv').addEventListener('click',function(e){var s=e.target.dataset&&e.target.dataset.s;if(s){S=s;localStorage.setItem('hornSrv',s);L.scrollTop=0;draw()}});
 Q.addEventListener('input',draw);
 function go(){var h=decodeURIComponent(location.hash.slice(1));if(!/^horn/.test(h))return;var s=h.split('-')[1];if(s&&/^(류트|만돌린|하프|울프)$/.test(s)){S=s;draw()}
- setTimeout(function(){document.getElementById('vHorn').scrollIntoView({behavior:'smooth',block:'start'})},60)}
+ setTimeout(function(){document.getElementById("vHorn").scrollIntoView({behavior:'smooth',block:'start'})},60)}
 addEventListener('hashchange',go);
 fetch('/horn_history.json?t='+Math.floor(Date.now()/6e5)).then(function(r){return r.json()}).then(function(d){D=d;
  document.getElementById('hUpd').textContent='갱신 '+(d.updated||'').replace('T',' ').slice(0,16)+' (KST) · 10분마다 자동 수집 · 캐릭터명은 저장 안 해요';draw()})
