@@ -66,7 +66,7 @@ body{min-height:100vh;font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun G
 </div>
 <div id="pE" hidden><div class="head"><h1>경매장 도우미</h1><p>인챈트 스크롤 · 전용 인챈트 스크롤 경매장 최저가 · 매물 수 · 거래 시세</p></div>
 <div class="eBar eBox"><div class="eRow"><input id="eq" type="search" placeholder="인챈트 이름 검색 (예: 놀라운)"><label class="bar" style="margin:0"><input type="checkbox" id="eHas" checked>&nbsp;매물 있는 것만</label></div>
-<div class="eRow"><span class="eLb">적용 위치</span><div class="eSeg" id="eOn" title="적용 위치"><button data-g="" class="on">위치 전체</button><button data-g="무기">무기</button><button data-g="방어구">방어구</button><button data-g="장신구">장신구</button><button data-g="머리">머리</button><button data-g="손·발">손·발</button><button data-g="기타">기타</button></div></div>
+<div class="eRow"><span class="eLb">적용 위치</span><div class="eSeg" id="eOn" title="적용 위치"><button data-g="" class="on">위치 전체</button><button data-g="무기">무기</button><button data-g="방어구">방어구</button><button data-g="경갑" title="경갑옷 · 더스크바운드 비고러스 계열">경갑</button><button data-g="중갑" title="중갑옷 · 더스크바운드 이지스 계열">중갑</button><button data-g="천옷" title="천옷 · 더스크바운드 에테리얼 계열">천옷</button><button data-g="장신구">장신구</button><button data-g="머리">머리</button><button data-g="손·발">손·발</button><button data-g="기타">기타</button></div></div>
 <div class="eRow"><span class="eLb">효과 분류</span><div class="eSeg" id="eCtC"><button class="on" data-c="">분류 전체</button></div></div>
 <div class="eRow" id="eEfR" hidden><span class="eLb">세부 효과</span><div class="eSeg eGrid" id="eEfC"></div></div>
 <div class="eRow eOpt"><span class="eLb">옵션</span><div class="eSeg" id="eAf"><button data-a="" class="on">전체</button><button data-a="접두">접두</button><button data-a="접미">접미</button></div><select id="eRk"><option value="">랭크 전체</option></select><select id="eKd"><option value="">일반+전용</option><option value="일반">일반</option><option value="전용">전용</option></select><select id="eSo" title="효과 높은순은 효과를 고른 뒤 사용"><option value="min">최저가 낮은순</option><option value="minD">최저가 높은순</option><option value="n">매물 많은순</option><option value="h">최근체결 높은순</option><option value="name">이름순</option><option value="eff" disabled>효과 높은순</option></select><select id="eCt" hidden disabled><option value="">효과 분류 전체</option></select><select id="eEf" hidden disabled><option value="">효과 필터 (불러오는 중)</option></select></div>
@@ -131,6 +131,12 @@ let E=null,EH={},EF=null,EFx=null,eAf='',eOn='';
 const OG=o=>{const g=new Set();if(!o)return g;o=String(o);
  if(/무기|한손|양손|활|석궁|원드|스태프|너클|랜스|듀얼건|체인|실린더|수리검|낫|검|소드|블레이드|대검|몽둥이|도끼|둔기|오브|마도서|사이드|볼트|보우/.test(o))g.add('무기');
  if(/옷|갑옷|천옷|마법의상|방패|실드|투구|제복|방어구/.test(o))g.add('방어구');
+ // 갑옷 무게: 더스크바운드 비고러스=경갑, 이지스=중갑, 에테리얼=천옷
+ {const x=o.replace(/\(갑옷 제외\)/g,''),ga=/(^|[^경중])갑옷/.test(x);
+ if(/경갑|비고러스|가죽 소재의 갑옷/.test(x)||ga)g.add('경갑');
+ if(/중갑|이지스/.test(x)||(ga&&!/가죽 소재/.test(x)))g.add('중갑');
+ if(/천옷|에테리얼|마법의상/.test(x)||/(^|[,\s(])옷/.test(o))g.add('천옷');
+ if(/비고러스|이지스|에테리얼|더스크바운드/.test(o))g.add('방어구');}
  if(/장신구|귀마개/.test(o))g.add('장신구');
  if(/머리|모자|투구/.test(o))g.add('머리');
  if(/손|발|장갑|신발|건틀렛|부츠/.test(o.replace(/한손|양손/g,'')))g.add('손·발');
