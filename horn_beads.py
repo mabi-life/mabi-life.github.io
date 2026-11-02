@@ -13,7 +13,7 @@ KW = ('구슬', '구구', '거뿔', '거대한 외침', '거대 뿔', '거대뿔
 try: db = json.load(open(P, encoding='utf-8'))
 except Exception: db = {}
 rows = {r['id']: r for r in db.get('rows', [])}
-HP = f'{H}/docs/horn_history.json'  # 서버별 거뿔 내역 전체 (캐릭터명 미저장, id 해시만)
+HP = f'{H}/docs/horn_history.json'  # 서버별 거뿔 내역 (n=발신 캐릭터명: 클릭 복사용 표시만, 48h 후 삭제)
 try: hdb = json.load(open(HP, encoding='utf-8'))
 except Exception: hdb = {}
 hrows = {r['id']: r for r in hdb.get('rows', [])}
@@ -30,7 +30,7 @@ for s in SERVERS:
         who = hashlib.sha1((x.get('character_name') or '').encode()).hexdigest()[:8]
         t = x.get('date_send') or ''
         rid = hashlib.sha1(f'{s}|{who}|{t}|{m}'.encode()).hexdigest()[:12]
-        if m: hrows.setdefault(rid, {'id': rid, 's': s, 't': t, 'm': m})
+        if m: hrows.setdefault(rid, {'id': rid, 's': s, 't': t, 'n': (x.get('character_name') or '').strip(), 'm': m})
         if not any(k in m for k in KW): continue
         rows.setdefault(rid, {'id': rid, 's': s, 'w': who, 't': t, 'm': m})
     time.sleep(0.2)
