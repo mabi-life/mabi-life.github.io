@@ -13,3 +13,9 @@ URL: https://mabi-life.github.io/prices.json
 - 🔥 HOT = `volume24`(없으면 `volume`) ≥ `hotMinVolume` (피드 p80 근사, 알바·물교 재료용)
 
 앱: 알바 도우미 https://mabi-life.github.io/alba/ · 물교 도우미 https://mabi-life.github.io/barter/ · 던전 도우미 https://mabi-life.github.io/dungeon/
+
+## 뿔피리 갱신 주기 (update-horn.yml)
+GitHub 스케줄은 10분 cron이어도 실제론 ~1시간 간격으로 밀림. 촘촘하게 하려면 외부 핑:
+cron-job.org에서 10분마다 POST
+`https://api.github.com/repos/mabi-life/mabi-life.github.io/actions/workflows/horn.yml/dispatches`
+헤더 `Authorization: Bearer <fine-grained PAT, 이 repo Actions: write>`, `Accept: application/vnd.github+json`, 바디 `{"ref":"main"}`.

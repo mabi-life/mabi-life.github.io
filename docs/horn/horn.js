@@ -21,6 +21,6 @@ function go(){var h=decodeURIComponent(location.hash.slice(1));if(!/^horn/.test(
  setTimeout(function(){document.getElementById("vHorn").scrollIntoView({behavior:'smooth',block:'start'})},60)}
 addEventListener('hashchange',go);
 fetch('/horn_history.json?t='+Math.floor(Date.now()/6e5)).then(function(r){return r.json()}).then(function(d){D=d;
- document.getElementById('hUpd').textContent='갱신 '+(d.updated||'').replace('T',' ').slice(0,16)+' (KST) · 10분마다 자동 수집 · 아이디 누르면 복사돼요';draw()})
+ document.getElementById('hUpd').textContent='갱신 '+(d.updated||'').replace('T',' ').slice(0,16)+' (KST) · 자동 수집 · 아이디 누르면 복사돼요';draw()})
  .catch(function(){L.innerHTML='<li class="em">거뿔 내역을 못 불러왔어요. 잠시 후 다시 시도해 주세요</li>'});
 draw();go()})();
