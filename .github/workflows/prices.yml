@@ -22,8 +22,10 @@ jobs:
         env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
       - run: python enchant_pack.py || true
         env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
+      - run: python warranty_pack.py || true
+        env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
       - run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/prices.json docs/history_roll.json docs/pyeollin_history.json docs/horn_beads.json docs/auction/data.json docs/auction/history.json docs/auction/enchant_data.json docs/auction/enchant_history.json
+          git add docs/prices.json docs/history_roll.json docs/pyeollin_history.json docs/horn_beads.json docs/auction/data.json docs/auction/history.json docs/auction/enchant_data.json docs/auction/enchant_history.json docs/auction/warranty_data.json docs/auction/warranty_history.json
           git diff --cached --quiet || (git commit -m "prices: $(date -u +%FT%TZ)" && git pull --rebase && git push)

@@ -1,0 +1,12 @@
+{"note":"일반 = 일반 교역 차익 증가 %, barter = 물물교환 판매액 증가 %, ducat = 사용 즉시 (시즌) 두카트. 출처 없는 값은 null.",
+"sources":{"labanyu_trade":"https://mabi.labanyu.com/trade/info","labanyu_imp_special":"https://mabi.labanyu.com/item/NDM0Njg1","labanyu_irusa":"https://mabi.labanyu.com/item/NDI5OTI5","labanyu_imp_fine":"https://labanyu.com/item/NDE5MzIx","jp_wiki":"https://mabitem.memo.wiki/d/%a5%a2%a5%a4%a5%c6%a5%e0%a5%ea%a5%b9%a5%c8/%b8%f2%b0%d7%ca%dd%be%da%bd%f1","mabi_world_wiki":"https://wiki.mabinogiworld.com/view/Letter_of_Guarantee"},
+"items":[
+{"name":"이루샤의 특별한 보증서","trade":300,"barter":75,"ducat":3000,"note":"골드 차익 제외 (경험치·시즌 두카트만)","src":["labanyu_irusa","jp_wiki"]},
+{"name":"임프의 특별한 보증서","trade":200,"barter":150,"ducat":3000,"src":["labanyu_trade","labanyu_imp_special"]},
+{"name":"임프의 고급 보증서","trade":150,"barter":75,"ducat":1500,"src":["labanyu_trade","labanyu_imp_fine","jp_wiki"]},
+{"name":"고블린의 고급 보증서","trade":120,"barter":60,"ducat":1200,"src":["labanyu_trade","jp_wiki"]},
+{"name":"오거의 고급 보증서","trade":90,"barter":45,"ducat":900,"src":["labanyu_trade","jp_wiki"]},
+{"name":"임프의 보증서","trade":50,"barter":25,"ducat":500,"src":["labanyu_trade","jp_wiki"]},
+{"name":"고블린의 보증서","trade":40,"barter":20,"ducat":400,"src":["labanyu_trade","jp_wiki"]},
+{"name":"오거의 보증서","trade":30,"barter":15,"ducat":300,"src":["labanyu_trade","jp_wiki"]}
+]}
