@@ -261,15 +261,49 @@ const tqN=x=>x.replace(/[^가-힣A-Za-z0-9]/g,'');
 function tqLev(a,b){const m=a.length,n=b.length,d=Array.from({length:m+1},(_,i)=>[i]);for(let j=1;j<=n;j++)d[0][j]=j;for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][n]}
 function tqFind(t,k){if(t.includes(k))return true;if(k.length<3)return false;for(let i=0;i+k.length<=t.length;i++)if(tqLev(t.substr(i,k.length),k)<=Math.floor(k.length/4))return true;return false}
 // 시세창 1장 = 교역품 1종의 마을별 시세. 품목명 + (마을명, 숫자) 줄을 뽑아 확인 후 누적
-async function tqOcr(fl){const st=$('#tqOcr');try{await tqLoadT();const{data}=await Tesseract.recognize(fl,'kor+eng');const lines=data.text.split(/\n/).map(l=>l.trim()).filter(Boolean);
+// 시세창 숫자: 게임 비트맵 글꼴(흰 글자+검은 테두리) 템플릿 매칭 → 실패 시 Tesseract 보조
+const TQ_TPL={"0":[7,"vvvvvvvsj749opa9qyl995uh4hu54y4j5y44z4q4z34z4q4z33z4q4z54z4i4z64th5hs5datzq8eue558jpvvvuuuu"],"1":[5,"vvvvo449vhaz7vdtz7v9az7vc4z7vd4z7ve4z7ui4z7up4z7uk4z7um949uquuuuu"],"2":[7,"uuuuuuutf449pqgcuyl9j6p99ydaa7h7yichuu5y9fju7iq5nlh9y9hnm8qc9up6qq449gazzzzm7844449luuuuuuu"],"3":[7,"uuuuuuu94449up3yzyl9j7449tg7puu9zm6p94apain7zzt5il94atm8muucyq87559ui69zzyicj95558upuuuuuuu"],"4":[7,"vvvvvvvtvv949rpvedz4nmu4tz4lncgtz4oj9t4z4p7md4z4o8t44z48azzzzze6544z45ruu4z4muuu948ouuuuuuu"],"5":[7,"vvvvvvvf55558k4tzzzl43te558a5td48mi6tyyl8db748ql5ivvjdy5iuueeu66449uh74yzyk9f94449lmuuuuuuu"],"6":[7,"uuuuuuuu9447is9gzzq7kgzb47igzd47iuizlzq9iizh4lq7iz4n9z4jy4n9y4lth4lq7g8uyq9jke447iuquuuuuuu"],"7":[7,"vvvvvvv944447gazzzzq56444qh8mvq9z9jpv9iq8nrv5zdhmnm9z4unn9lq7uon4ydhuiqdy4uumu949uupuuuuuuu"],"8":[7,"vvvvvvvse555jr79uyq9f3yh5hy57y9edy93ql9hq599yyu6a7yh9hy8ct5i8z98zd5iy37dtyt89tf557isuuuuuuu"],"9":[7,"uuuuuuurg858gk69qyq8d3yd5dy39y5i5z38y5i9z34yd5dz369uyqz5je44hq8644dy984zzud8e9444guhuuuuuuu"],"만":[11,"c20002e46mv2uzzzs2nl6t0zc0ex0nl6n0xceex0nl6h0zceex0nl040zc0ex0nzz02szzzs2nl06c200024nl6uu2sgau4nl6uu2sgauk46miu2sg000006iu4nzzzzzz0iui40000006u"]},TQ_TH=13;
+function tqImgData(fl,f){return new Promise((ok,no)=>{const u=URL.createObjectURL(fl),im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=Math.round(im.width*(f||1));c.height=Math.round(im.height*(f||1));const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ok({c,A:x.getImageData(0,0,c.width,c.height).data,W:c.width,H:c.height})};im.onerror=no;im.src=u})}
+function tqDigits(A,W,H){const L=(x,y)=>{if(x<0||y<0||x>=W||y>=H)return 0.9;const i=(y*W+x)*4;return(A[i]+A[i+1]+A[i+2])/765};
+ const wh=(x,y)=>{const i=(y*W+x)*4;return Math.min(A[i],A[i+1],A[i+2])>=222},dk=(x,y)=>L(x,y)<0.5;
+ const m=new Uint8Array(W*H);for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++)if(wh(x,y)&&(dk(x-1,y)||dk(x+1,y)||dk(x,y-1)||dk(x,y+1)))m[y*W+x]=1;
+ const ch=new Float32Array(W);for(let y=0;y<H;y++)for(let x=0;x<W;x++)ch[x]+=m[y*W+x];
+ const WW=50;let best=[-1,0];for(let a=0;a+WW<W;a+=2){let s=0;for(let x=a;x<a+WW;x++)s+=ch[x];if(s>best[0])best=[s,a]}
+ const a=best[1],xs=Math.max(0,a-25),xe=Math.min(W,a+WW+25),T={};for(const k in TQ_TPL){const[w,s]=TQ_TPL[k];T[k]={w,t:[...s].map(c=>parseInt(c,36)/35)}}
+ const rb=[];let s=-1,g=0;for(let y=0;y<H;y++){let c=0;for(let x=a;x<a+WW;x++)c+=m[y*W+x];if(c>0){if(s<0)s=y;g=y}else if(s>=0&&y-g>2){if(g-s>=5)rb.push([s,g]);s=-1}}
+ const out=[];for(const[y0,y1]of rb){let R=-1;for(let y=y0;y<=y1;y++)for(let x=xs;x<xe;x++)if(m[y*W+x])R=Math.max(R,x);if(R<0)continue;
+  const col=x=>{for(let y=y0;y<=y1;y++)if(dk(x,y))return true;return false};while(R+1<W&&col(R+1))R++;
+  let cy=Math.round((y0+y1)/2),r=R+1,str='';for(let k=0;k<9;k++){let bs=[1e9];for(const c in T){const{w,t}=T[c];for(let dx=-3;dx<=3;dx++)for(let dy=-2;dy<=2;dy++){const rr=r-1+dx;let e=0;for(let y=0;y<TQ_TH;y++)for(let x=0;x<w;x++)e+=(L(rr-w+1+x,cy+dy-6+y)-t[y*w+x])**2;e/=w*TQ_TH;if(e<bs[0])bs=[e,c,rr,cy+dy]}}
+   if(bs[0]>0.045)break;str=bs[1]+str;r=bs[2]-T[bs[1]].w+2;cy=bs[3];if(r<xs)break}
+  out.push({y:Math.round((y0+y1)/2),str,price:str?tqPrice(str):null})}return out}
+// "1만1683" / "만 53" / "4454" / OCR 잡음(시즌 두카트, 루카트…) → 숫자. 만이 없으면 1만을 붙이지 않음
+function tqPrice(l){let s=String(l).replace(/[시사]\s*[즌존준].*$/,'').replace(/[두루주투무]\s*[카키가]\s*[트드토].*$/,'');
+ s=s.replace(/[Oo]/g,'0').replace(/[Il|]/g,'1').replace(/(\d)[,.](\d)/g,'$1$2');
+ const m=s.match(/(\d{0,2})\s*[만민많말]\s*(\d{1,4})?/);if(m&&(m[1]||m[2])){const v=(m[1]?+m[1]:1)*10000+(m[2]?+m[2]:0);return v>=1000&&v<=999999?v:null}
+ const ns=(s.match(/\d{4,5}/g)||[]).map(Number).filter(v=>v>=1000&&v<=99999);return ns.length?ns[ns.length-1]:null}
+const TQ_AL=[['티르코네일',0],['코네일',0],['코네밀',0],['코네',0],['티르',0],['던바튼',1],['바튼',1],['던바',1],['반호르',2],['호르',2],['이멘마하',3],['멘마하',3],['이멘',3],['마하',3],['탈틴',4],['탈딘',4],['타라',5],['카브',6],['벨바스트',7],['바스트',7],['벨바',7],['켈라',8],['렐라',8],['필리아',9],['리아',9],['필리',9],['코르',10],['발레스',11],['발리스',11],['레스',11]].sort((a,b)=>b[0].length-a[0].length);
+function tqTown(l){const t=tqN(String(l).replace(/\d.*$/,''));if(!t)return null;for(const[k,i]of TQ_AL)if(t.includes(k))return TOWNS[i];
+ for(const[k,i]of TQ_AL)if(k.length>=3)for(let j=0;j+k.length<=t.length;j++)if(tqLev(t.substr(j,k.length),k)<=1)return TOWNS[i];return null}
+function tqPrepCanvas(src,f,thr){const c=document.createElement('canvas');c.width=Math.round(src.width*f);c.height=Math.round(src.height*f);const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(src,0,0,c.width,c.height);
+ const d=x.getImageData(0,0,c.width,c.height),A=d.data;for(let i=0;i<A.length;i+=4){let v=0.3*A[i]+0.59*A[i+1]+0.11*A[i+2];v=thr?(v<thr?0:255):Math.max(0,Math.min(255,(v-128)*1.6+128));A[i]=A[i+1]=A[i+2]=v}x.putImageData(d,0,0);return c}
+async function tqOcr(fl){const st=$('#tqOcr');try{
+ let I=await tqImgData(fl),rows=tqDigits(I.A,I.W,I.H),ok=rows.filter(r=>r.price).length;
+ if(ok<10){const ys=rows.map(r=>r.y),d=[];for(let i=1;i<ys.length;i++)d.push(ys[i]-ys[i-1]);d.sort((a,b)=>a-b);const p=d[d.length>>1]||16;
+  for(const f of[...new Set([16/p,0.5,2/3,0.8,1.25,1.5,2])]){if(!(f>0.3&&f<3)||Math.abs(f-1)<0.05)continue;const J=await tqImgData(fl,f),r2=tqDigits(J.A,J.W,J.H),o2=r2.filter(r=>r.price).length;if(o2>ok){ok=o2;rows=r2;I=J}if(ok>=10)break}}
+ const pr={},pl=rows.filter(r=>r.price);let how='';
+ if(pl.length>=12){pl.slice(-12).forEach((r,i)=>pr[TOWNS[i]]=r.price);how='숫자 '+12+'줄'}
+ await tqLoadT();const{data}=await Tesseract.recognize(tqPrepCanvas(I.c,2.5,0),'kor+eng');const lines=(data.lines||[]).map(l=>({t:l.text.trim(),y:(l.bbox.y0+l.bbox.y1)/5}));const tl=lines.length?lines.map(l=>l.t):data.text.split(/\n/).map(l=>l.trim());
+ if(pl.length<12){// 마을 이름 줄 y와 숫자 줄 y 매칭 → 남은 칸은 순서대로
+  for(const l of lines){const tw=tqTown(l.t);if(!tw||pr[tw])continue;let b=null;for(const r of pl)if(Math.abs(r.y-l.y)<7&&(!b||Math.abs(r.y-l.y)<Math.abs(b.y-l.y)))b=r;const v=b?b.price:tqPrice(l.t.replace(/^[^\d만]*/,''));if(v)pr[tw]=v}
+  if(pl.length>=10&&Object.keys(pr).length<pl.length){const sh={};pl.forEach((r,i)=>{for(const t in pr)if(pr[t]===r.price){const k=TOWNS.indexOf(t)-i;sh[k]=(sh[k]||0)+1}});const o=+(Object.entries(sh).sort((a,b)=>b[1]-a[1])[0]||[0])[0];pl.forEach((r,i)=>{const t=TOWNS[i+o];if(t&&!pr[t])pr[t]=r.price})}
+  how=pl.length?'숫자 '+pl.length+'줄 + 글자 인식':'글자 인식'}
  const rg=new Set(tqGoods().L.map(x=>x.g.id)),gs=[...D.goods].sort((x,y)=>(rg.has(y.id)-rg.has(x.id))||(y.name.length-x.name.length));let gid=null;
- for(const l of lines){const t=tqN(l);if(t.length<2)continue;const g=gs.find(g=>tqFind(t,tqN(g.name)));if(g){gid=g.id;break}}
- const pr={};for(const l of lines){const t=tqN(l),tw=TOWNS.find(w=>tqFind(t,tqN(w)));if(!tw||pr[tw])continue;const ns=(l.replace(/(\d),(\d)/g,'$1$2').match(/\d{2,7}/g)||[]).map(Number);if(ns.length)pr[tw]=ns[ns.length-1]}
- TQO={gid:gid||(TQ._last&&tqGoods().L.find(x=>!TQ[x.g.id])||{g:{}}).g.id||null,pr,raw:lines.join(' / ')};tqOcrShow()}catch(e){if(st)st.innerHTML='⚠ 자동 인식 실패 — 아래 표에 직접 입력해도 돼요. ('+esc(String(e.message||e))+')'}}
+ for(const l of tl){const t=tqN(l);if(t.length<2)continue;const g=gs.find(g=>tqFind(t,tqN(g.name)));if(g){gid=g.id;break}}
+ TQO={gid:gid||(TQ._last&&tqGoods().L.find(x=>!TQ[x.g.id])||{g:{}}).g.id||null,pr,how,raw:tl.filter(Boolean).join(' / ')+(pl.length?' ‖ 숫자: '+pl.map(r=>r.str).join(', '):'')};tqOcrShow()}catch(e){if(st)st.innerHTML='⚠ 자동 인식 실패 — 아래 표에 직접 입력해도 돼요. ('+esc(String(e.message||e))+')'}}
 function tqOcrShow(){const st=$('#tqOcr');if(!st||!TQO)return;const{gid,pr}=TQO,L=tqGoods().L,opts=[...L.map(x=>x.g),...D.goods.filter(g=>!L.some(x=>x.g.id===g.id))];
  st.innerHTML=`<div style="border:1px solid #4a3b6b;border-radius:8px;padding:8px;margin-top:4px;color:inherit;text-align:left"><b>🔎 인식 결과</b> — 품목과 숫자를 확인하고 담아 주세요<div style="margin:6px 0">품목 <select id="tqoG">${opts.map(g=>`<option value="${g.id}"${g.id===gid?' selected':''}>${esc(g.name)}${TQ[g.id]?' ✓':''}</option>`).join('')}</select></div>
  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px">${TOWNS.map(t=>`<label style="white-space:nowrap">${esc(t)} <input class="n tqop" data-t="${esc(t)}" inputmode="numeric" style="width:70px" value="${pr[t]?pr[t]:''}"></label>`).join('')}</div>
- <div style="margin-top:6px"><button class="sm" data-tqocr="1">✅ 이 품목 시세 담기</button> <span class="mut">${Object.keys(pr).length}개 마을 인식</span></div><details style="margin-top:4px"><summary class="mut">인식 원문</summary><div class="mut" style="font-size:12.5px;max-height:90px;overflow:auto">${esc(TQO.raw)}</div></details></div>`}
+ <div style="margin-top:6px"><button class="sm" data-tqocr="1">✅ 이 품목 시세 담기</button> <span class="mut">${Object.keys(pr).length}/12개 마을 시세 인식${TQO.how?' ('+esc(TQO.how)+')':''}</span></div><details style="margin-top:4px"><summary class="mut">인식 원문</summary><div class="mut" style="font-size:12.5px;max-height:90px;overflow:auto">${esc(TQO.raw)}</div></details></div>`}
 // ---- 재고체크: 인벤토리 캡처 → 아이콘 매칭 + 수량 숫자 인식, 확인 후 적용
 // INV_S=24: 슬롯 피치(~24px)에 맞춘 매칭 해상도. 고해상도에선 서브픽셀 어긋남으로 평균차가 약간 커져 컷오프 24→26 (sure<=20 유지)
 const INV_LS='mabiBarter.invIconLearn.v1',INV_S=24;let INV_T=null,INV_TS=0;
