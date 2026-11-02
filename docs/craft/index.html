@@ -101,7 +101,7 @@ html{scrollbar-gutter:auto}#root .row{contain:layout}
 </style>
   <script type="text/javascript" src="https://openapi.nexon.com/js/analytics.js?app_id=355270" async></script>
 <link rel="stylesheet" href="/css/site-chrome.css?v=1"><style>input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}input[type=number]{-moz-appearance:textfield;appearance:textfield}.head{text-align:left!important}.head h1{letter-spacing:.5px!important}</style>
-<link rel="stylesheet" href="/css/kit.css?v=9"><script src="/js/kit.js?v=9" defer></script></head><body><div class="wrap">
+<link rel="stylesheet" href="/css/kit.css?v=10"><script src="/js/kit.js?v=9" defer></script></head><body><div class="wrap">
 <nav class="siteNav" aria-label="도우미 이동"><a href="/">홈</a><a href="/alba/">알바</a><a href="/barter/">물교</a><a href="/dungeon/">던전</a><a href="/bunbae/">분배</a><span class="on" aria-current="page">제작</span><a href="/auction/">경매장</a></nav>
 <div class="head"><h1>제작 도우미<span class="verBadge">v0.10 beta</span></h1><p id="craftDesc">목표 아이템이 위, 재료가 아래로 뻗어 나갑니다. 카드를 클릭하면 펼치기·접기. 보유 수량을 입력하면 부족분만 계산합니다.</p></div>
 <section id="vCraft">
@@ -131,6 +131,7 @@ html{scrollbar-gutter:auto}#root .row{contain:layout}
 </div>
 </section>
 </div>
+<section class="toolAbout" aria-label="제작 도우미 안내"><h2>제작 도우미 안내</h2><p>만들고 싶은 아이템의 재료 트리를 펼쳐 필요한 재료 개수와 부족분을 계산하고, 재료를 직접 모을지 사서 만들지 판단할 수 있도록 경매장 시세와 정가 코인 가치를 함께 보여 주는 도구입니다.</p><details><summary>자세한 사용법 · 예시 · 한계 · 자주 묻는 질문</summary><h3>언제 쓰면 좋나요?</h3><p>제작 아이템은 하위 재료가 또 다른 재료로 만들어지는 경우가 많아, 최종 개수만 보고 준비하면 중간에 재료가 모자라기 쉽습니다. 목표 수량을 넣고 가진 재료를 입력하면 단계별로 부족한 양이 나오므로, 무엇을 더 모으거나 사야 하는지 바로 알 수 있습니다. 예전 정가 코인 계산기 기능도 이 페이지로 합쳐졌습니다.</p><h3>어떻게 계산하나요?</h3><p>재료 트리는 레시피 데이터를 기준으로 필요한 개수를 곱해 나가며 계산합니다. 각 재료의 가격은 넥슨 Open API 경매장 최저가(약 10분 갱신)를 쓰고, 구슬류 시세는 거대한 외침의 뿔피리 원문을 자동으로 파싱한 참고값을 사용합니다.</p><h3>예시</h3><p>어떤 완성품 1개에 중간 재료 3개가 필요하고, 중간 재료 1개에 기본 재료 5개가 들어간다고 해 봅시다. 완성품 2개를 만들려면 중간 재료 6개, 기본 재료 30개가 필요합니다. 기본 재료를 12개 가지고 있다면 18개가 부족하고, 개당 1,500골드라면 27,000골드어치를 더 사야 합니다. 그런데 중간 재료를 경매장에서 개당 6,000골드에 바로 살 수 있다면 6개에 36,000골드로, 기본 재료부터 만드는 쪽(18개 구매 + 가진 재료 소모)과 시간 대비 효율을 비교해 볼 수 있습니다.</p><h3>한계</h3><ul><li>비공식 팬 도구라 레시피 변경이나 신규 제작품 반영이 늦을 수 있습니다.</li><li>제작 성공률이나 품질 차이는 계산에 넣지 않으므로 실패 가능성이 있다면 여유분을 준비하세요.</li><li>뿔피리 기반 구슬 시세는 채팅 원문을 파싱한 값이라 오타나 허위 매물에 영향을 받을 수 있습니다.</li><li>API 지연이나 매물 부족으로 시세가 실제와 다를 수 있습니다.</li></ul><h3>자주 묻는 질문</h3><dl><dt>정가 코인 계산기는 어디로 갔나요?</dt><dd>이 제작 도우미 안으로 통합되었습니다. 예전 주소로 들어와도 이 페이지로 이동합니다.</dd><dt>가진 재료를 입력하면 저장되나요?</dt><dd>입력값은 사용 중인 브라우저에만 저장되며 서버로 보내지 않습니다.</dd><dt>재료를 사는 게 나은지 만드는 게 나은지 알려 주나요?</dt><dd>두 경우의 골드 가치를 비교할 수 있게 보여 주지만, 들이는 시간까지 고려한 최종 판단은 직접 해야 합니다.</dd><dt>구슬 시세가 이상하게 높거나 낮아요.</dt><dd>뿔피리 원문에서 자동으로 뽑은 참고값이라 튀는 값이 섞일 수 있습니다. 여러 매물을 함께 확인해 주세요.</dd></dl></details></section>
 <footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br>시세는 10분 단위로 갱신되고 있습니다.<br>구슬 시세는 거대한 외침의 뿔피리 원문을 자동 파싱한 참고값입니다.<br>마비노기 공식 서비스와 관련 없는 비공식 팬 도구입니다.<br><a href="/privacy/">개인정보처리방침</a></footer>
 <script src="/coin/core.js?v=4"></script>
 <script src="app.js?v=3.8"></script>

@@ -24,3 +24,13 @@ body.kit-bar>.wrap,body.kit-bar>.page,body.kit-bar>main{padding-top:0!important;
 body.kit-bar .albaGrid{grid-template-areas:". top top" "rail main sum"!important}
 @media(max-width:900px){body.kit-bar .albaGrid{grid-template-areas:"top" "sum" "rail" "main"!important}}
 html{overflow-y:scroll!important;scrollbar-gutter:stable}
+/* toolAbout: 하단 설명/FAQ */
+.toolAbout{max-width:960px;margin:28px auto 8px;padding:16px 20px;background:#1a1d23;border:1px solid #333846;border-radius:12px;color:#b9bfcc;font-size:14px;line-height:1.75;text-align:left}
+.toolAbout h2{font-size:16px;color:#e6e8ee;margin:0 0 8px}
+.toolAbout h3{font-size:14.5px;color:#e3c98a;margin:16px 0 6px}
+.toolAbout p,.toolAbout li{margin:0 0 6px}
+.toolAbout ul{padding-left:20px;margin:0 0 6px}
+.toolAbout details{margin-top:10px;border-top:1px dashed #333846;padding-top:8px}
+.toolAbout summary{cursor:pointer;color:#e6e8ee;font-weight:600}
+.toolAbout dt{color:#e6e8ee;font-weight:600;margin-top:10px}
+.toolAbout dd{margin:2px 0 0 0}
