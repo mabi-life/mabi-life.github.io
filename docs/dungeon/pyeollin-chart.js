@@ -27,7 +27,7 @@
     if (a.length < 2 && P.length) a = P.slice(-2);
     if (!a.length) return;
 
-    var W = 640, H = 220, L = 48, T = 12, B = 40;
+    var W = 640, H = 236, L = 48, T = 12, B = 56;
     s.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
     var xs = a.map(function (p) { return +new Date(p.t); });
     var ys = a.map(function (p) { return p.min; });
@@ -92,7 +92,7 @@
         d: 'M' + v.cx + ' ' + (baseY - 1) + ' l-3.5 -5.5 h7 z', fill: '#7ee0b5'
       }));
       s.appendChild(el('text', {
-        class: 'vt', x: v.cx, y: baseY + 12, 'text-anchor': 'middle'
+        class: 'vt', x: v.cx, y: baseY + 26, 'text-anchor': 'middle'
       }, kt(v.t)));
     });
 
