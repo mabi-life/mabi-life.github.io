@@ -1,7 +1,7 @@
 // 서버별 거뿔(거대한 외침의 뿔피리) 내역 — /horn_history.json (캐릭터명 미저장). #horn / #horn-하프 로 바로가기
 (function(){var D=null,S=localStorage.getItem('hornSrv')||'하프',L=document.getElementById('hList'),Q=document.getElementById('hQ'),LIM=300,C=localStorage.getItem('hornCat')||'';
-var RX={p:/모집|구인|파티|파모|ㅁㅈ|구구|\d+\s*인/,b:/삽니다|사요|구합니다|구해요|구함|구매|매입|ㅅㅅ|삼니다|살게요|사봅니다/,s:/팝니다|팔아요|판매|ㅍㅍ|팜|팔게요|처분|떨이|ㅍㅁ/};
-function cat(m){if(!C)return true;var b=RX.b.test(m),s=RX.s.test(m);if(C==='b')return b;if(C==='s')return s;return RX.p.test(m)}
+var RX={r:/(딜|탱|힐|세|서|법|궁|냥|댄|전|알|석|수|도|힐러|딜러|탱커|세가|서폿|서포터|법사|궁수|음유|연주|바드|전사|격가|인형|체인|듀얼|암살|도적|마법사|전투|대검|석궁|장궁)\s*\d+(\s*[~\-]\s*\d+)?\s*(명\s*)?(구함|구해요|구합니다|구인|모집|급구|ㄱㅎ)/,p:/모집|구인|파티|파모|ㅁㅈ|구구|\d+\s*인/,b:/삽니다|사요|구합니다|구해요|구함|구매|매입|ㅅㅅ|삼니다|살게요|사봅니다/,s:/팝니다|팔아요|판매|ㅍㅍ|팜|팔게요|처분|떨이|ㅍㅁ/};
+function cat(m){if(!C)return true;var r=RX.r.test(m),b=!r&&RX.b.test(m),s=RX.s.test(m);if(C==='b')return b;if(C==='s')return s;return r||RX.p.test(m)}
 function esc(s){return s.replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function tm(t){var d=new Date(t);if(isNaN(d))return'';var k=new Date(d.getTime()+9*36e5),n=new Date(Date.now()+9*36e5),p=function(x){return('0'+x).slice(-2)};
  return(k.getUTCDate()!==n.getUTCDate()?(k.getUTCMonth()+1)+'/'+k.getUTCDate()+' ':'')+p(k.getUTCHours())+':'+p(k.getUTCMinutes())}
