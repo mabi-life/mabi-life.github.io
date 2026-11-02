@@ -1,5 +1,5 @@
 const D=JSON.parse(document.getElementById('data').textContent),SNAP=JSON.parse(document.getElementById('snap').textContent||'null');
-const LS='mabiBarter.v1',KEYLS='mabiBarter.apikey',$=s=>document.querySelector(s),G=Object.fromEntries(D.goods.map(g=>[g.id,g]));
+const LS='mabiBarter.v1',$=s=>document.querySelector(s),G=Object.fromEntries(D.goods.map(g=>[g.id,g]));
 const CARRIERS=[{n:'그랜마 상인+알파카 마차',w:1200,s:11},{n:'직접 입력',w:null,s:null}];
 const fmt=n=>n==null||isNaN(n)?'-':Math.round(n).toLocaleString('ko-KR');
 /* HOT: 체결물량 기준 (listing count 아님). prices.json volume24(없으면 volume).
@@ -173,7 +173,7 @@ function render(){checkReset();const c=C();
  renderX();renderLayer();renderDetail();tickShip()}
 // ---- 팝오버/모달
 function renderLayer(){const el=$('#layer');if(!layer){el.innerHTML='';return}let h='';const c=C();
- if(layer.t==='settings'){h=`<div class="pop" style="top:54px;right:24px;width:360px"><label>API 키 <input id="apikey" type="password" style="width:200px" value="${esc(localStorage.getItem(KEYLS)||'')}" placeholder="선택 · 공유 시세 실패 시에만 사용"></label>
+ if(layer.t==='settings'){h=`<div class="pop" style="top:54px;right:24px;width:360px">
   <label>시세 <button id="priceBtn">💹 시세 불러오기</button></label>
   <label>운송 <select id="carrier">${CARRIERS.map((x,i)=>`<option value="${i}" ${i==S.carrier?'selected':''}>${x.n}</option>`).join('')}</select></label>
   <label>무게 / 슬롯 <span><input class="n" id="cw" value="${S.cw}" ${CARRIERS[S.carrier].w?'disabled':''}> <input class="n" style="width:50px" id="cs" value="${S.cs}" ${CARRIERS[S.carrier].w?'disabled':''}></span></label>
@@ -222,7 +222,7 @@ document.addEventListener('click',e=>{const id=e.target.id;
 document.addEventListener('change',e=>{const t=e.target,a=t.dataset.a,c=C(),v=t.value.replace(/,/g,'');
  if(t.id==='carrier')mut(()=>{S.carrier=+t.value;const k=CARRIERS[S.carrier];if(k.w){S.cw=k.w;S.cs=k.s}});
  if(t.id==='cw')mut(()=>S.cw=+v||0);if(t.id==='cs')mut(()=>S.cs=+v||0);if(t.id==='drate')mut(()=>S.drate=+v||0);
- if(t.id==='apikey'){localStorage.setItem(KEYLS,t.value.trim());toast('API 키 저장 (이 브라우저에만)')}
+ 
  if(t.id==='route')mut(()=>S.route=t.value);
  if(a==='act6')mut(()=>S.active6[t.dataset.p]=+t.value);
  if(a==='done')exchange(G[t.dataset.g],(+t.dataset.off||0)+(+v||0));
@@ -411,16 +411,11 @@ $('#chars').addEventListener('dblclick',e=>{const b=e.target.closest('[data-a=ch
 const tipEl=document.createElement('div');tipEl.id='tip';document.body.appendChild(tipEl);
 document.addEventListener('mouseover',e=>{const t=e.target.closest('[data-tip]');if(!t){tipEl.style.display='none';return}tipEl.innerHTML=t.dataset.tip;tipEl.style.display='block';const r=t.getBoundingClientRect(),h=tipEl.offsetHeight,w=tipEl.offsetWidth;let y=r.bottom+10,dn=true;if(y+h>innerHeight-8){y=r.top-h-10;dn=false}const x=Math.max(8,Math.min(r.left,innerWidth-w-8));tipEl.className=dn?'dn':'up';tipEl.style.top=Math.max(8,y)+'px';tipEl.style.left=x+'px';tipEl.style.setProperty('--ax',Math.max(10,Math.min(w-20,r.left+14-x))+'px')});
 $('#impFile').onchange=async e=>{try{const o=JSON.parse(await e.target.files[0].text());if(!o.chars)throw 0;mut(()=>S=migrate(o),'가져오기 완료')}catch(x){toast('잘못된 파일')}e.target.value=''};
-async function fetchPrice(name,key){const r=await fetch('https://open.api.nexon.com/mabinogi/v1/auction/list?item_name='+encodeURIComponent(name),{headers:{'x-nxopen-api-key':key}});if(!r.ok)throw new Error(r.status);const j=await r.json();const it=(j.auction_item||[]).filter(x=>x.item_name===name);return it.length?Math.min(...it.map(x=>x.auction_price_per_unit)):null}
 const FEED='/prices.json';
 async function loadFeed(){const r=await fetch(FEED+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error(r.status);const j=await r.json();if(!j.prices)throw new Error('bad');return j}
 const feedTime=u=>{const d=new Date(u);return isNaN(d)?'?':d.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})};
 async function loadPrices(){const ms0=Object.keys(need([...routeGoods(D.routes[0]),...routeGoods(D.routes[1])],false));
  try{const j=await loadFeed();const res={};for(const m of ms0){const e=j.prices[m];if(e&&e.min!=null)res[m]={p:e.min,count:e.count,volume:e.volume,volume24:e.volume24,trades:e.trades,trades24:e.trades24}}if(!Object.keys(res).length)throw new Error('empty');const t=Date.parse(j.updated)||Date.now();if(j.hotMinVolume!=null)feedHotMin=j.hotMinVolume;
-  return mut(()=>{for(const[m,v]of Object.entries(res))S.prices[m]={p:v.p,src:'feed',t,count:v.count,volume:v.volume,volume24:v.volume24,trades:v.trades,trades24:v.trades24}},`공유 시세 ${Object.keys(res).length}종 (${feedTime(j.updated)} 기준)`)}catch(x){if(!localStorage.getItem(KEYLS))return toast('공유 시세를 불러오지 못했습니다 (⚙ API 키로 직접 조회 가능)')}
- return loadPricesApi()}
-async function loadPricesApi(){const key=localStorage.getItem(KEYLS);if(!key)return toast('API 키를 먼저 입력하세요');const ms=Object.keys(need([...routeGoods(D.routes[0]),...routeGoods(D.routes[1])],false));
- const btn=$('#priceBtn');const res={};let fail=0;for(let i=0;i<ms.length;i++){if(btn)btn.textContent=`API ${i+1}/${ms.length}`;try{const p=await fetchPrice(ms[i],key);if(p!=null)res[ms[i]]=p;else fail++}catch(x){fail++;if(x.message==='429')await new Promise(r=>setTimeout(r,1500))}await new Promise(r=>setTimeout(r,250))}
- mut(()=>{for(const[m,p]of Object.entries(res))S.prices[m]={p,src:'api',t:Date.now()}},`시세 ${Object.keys(res).length}종 갱신${fail?` · 실패 ${fail}`:''}`)}
+  return mut(()=>{for(const[m,v]of Object.entries(res))S.prices[m]={p:v.p,src:'feed',t,count:v.count,volume:v.volume,volume24:v.volume24,trades:v.trades,trades24:v.trades24}},`공유 시세 ${Object.keys(res).length}종 (${feedTime(j.updated)} 기준)`)}catch(x){return toast('공유 시세를 불러오지 못했습니다 · 잠시 후 다시 시도하세요')}}
 window.__barter={get S(){return S},plan,weekKey,render,exchange,parsePaste,migrate,setOpen:id=>{open=id;render()},setLayer,route,get UI(){return UI},HOT_MIN,get feedHotMin(){return feedHotMin},hotIcon,hotMat,hotMetric};
 render();

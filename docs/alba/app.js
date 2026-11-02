@@ -145,7 +145,6 @@ function render(){const B=budget(),c=ch(),ids=expandedSet(B),f=focus(c,ids);
 function renderCombo(){const B=budget();const rows=S.jobs.map(j=>({j,b:best(j,B),m:mixOf(j,B)})).filter(x=>x.b&&x.m.gold>x.b.g).sort((a,b)=>b.m.gold-a.m.gold);
  $('#pCombo').innerHTML=`<b>조합 계산 · 등급별 P ×${mul()}</b><div class="mu" style="font-size:13.5px;margin:4px 0 10px">한 NPC 보상을 섞어 포인트를 다 쓸 때 (단일 최고보다 나은 것만)</div>${rows.map(x=>`<div class="row combo"><label>${x.j.npc}</label><span style="flex:1;font-size:14px">${x.m.pick.map(([r,n])=>r.item+'×'+n).join(' + ')}</span><span class="gold">+${fmt(x.m.gold)}</span><span class="mu">${jb(x.j)}P · 남음 ${x.m.left}</span></div>`).join('')||'<div class="mu">없음</div>'}`}
 function renderSet(){const s=S.set;$('#pSet').innerHTML=`<b>⚙ 설정</b>
- <div class="row"><label>API 키</label><input id="sKey" type="password" style="flex:1" value="${apiKey()}" placeholder="선택 · 공유 시세 실패 시에만 사용"></div>
  <div class="row"><label>기본 포인트</label><span class="mu" style="font-size:13.5px">등급이 한도를 정함 (초급240·중급360·고급600)</span></div>
  ${s.names.map((n,i)=>`<div class="row"><label>${n} 배율</label><input data-mult="${i}" type="number" step="0.05" value="${s.mult[i]}" style="width:90px"><span class="mu">= ${Math.round(s.base*s.mult[i])}P</span></div>`).join('')}
 
@@ -158,7 +157,6 @@ function renderPrice(){const list=[];S.jobs.forEach(j=>j.rewards.forEach(r=>{if(
  $('#pPrice').innerHTML=`<div class="row"><b style="flex:1">💰 시세</b><input id="pq" placeholder="찾기" value="${pq}" style="width:160px"><span class="mu" style="font-size:13.5px">${SNAP.ts?'스냅샷 '+SNAP.ts:''}</span><button id="bFetch">⚡ 시세 불러오기</button></div>
  <table><thead><tr><th>NPC</th><th>보상</th><th class="n">시트/수동</th><th>경매장 이름</th><th class="n">경매장 최저가</th><th>사용</th></tr></thead><tbody>${list.map(([j,r])=>`<tr data-rid="${r.id}"><td class="mu">${j.npc}</td><td>${r.item}${verifyBadge(r)}</td><td class="n"><input data-pf="price" type="number" value="${r.price??''}" placeholder="—" style="width:90px"></td><td><input data-pf="api" value="${r.api||''}" placeholder="경매 없음" style="width:190px"></td><td class="n">${r.apiPrice!=null?fmt(r.apiPrice):'<span class="mu">—</span>'}</td><td><button class="tg${(r.useApi||r.price==null)?' api':''}" data-use="${r.id}" ${(r.apiPrice==null||r.price==null)?'disabled':''}>${(r.useApi||r.price==null)&&r.apiPrice!=null?'경매장':'시트'}</button></td></tr>`).join('')}</tbody></table>`;
  const q=$('#pq');if(q&&document.activeElement!==q&&pq){q.focus();q.setSelectionRange(pq.length,pq.length)}}
-const apiKey=()=>localStorage.getItem(KEY+'.key')||localStorage.getItem(V1KEY+'.key')||'';
 const FEED='/prices.json';
 /* HOT: 체결물량 기준 (listing count 아님). prices.json volume24(없으면 volume).
    history API는 ~1h만 제공 → 피드가 auction_buy_id로 24h 근사 누적. hotMinVolume=피드 p80.
@@ -195,13 +193,7 @@ function applyFeedPrices(P,updated,{quiet=false,hotMin=null}={}){const ts=feedTs
  change(go,`공유 시세 갱신 (${ts} 기준)`);return k}
 async function fetchPrices({quiet=false}={}){try{const r=await fetch(FEED+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error(r.status);const j=await r.json();const P=j.prices||{};if(!Object.keys(P).length)throw new Error('empty');
   return applyFeedPrices(P,j.updated,{quiet,hotMin:j.hotMinVolume??null})}catch(e){if(quiet){toast('공유 시세 갱신 실패 · 저장된 시세 사용');return 0}
-  if(!apiKey())return toast('공유 시세를 불러오지 못함 (⚙ API 키로 직접 조회 가능)')}
- return fetchPricesApi()}
-async function fetchPricesApi(){const key=apiKey();if(!key)return toast('⚙에서 API 키를 먼저 입력');const names=[...new Set(S.jobs.flatMap(j=>j.rewards.map(r=>r.api)).filter(Boolean))];const res={};let n=0;
- for(const nm of names){for(let a=0;a<6;a++){try{const r=await fetch('https://open.api.nexon.com/mabinogi/v1/auction/list?item_name='+encodeURIComponent(nm),{headers:{'x-nxopen-api-key':key}});
-  if(r.status===429){await new Promise(z=>setTimeout(z,1000*(a+1)));continue}if(!r.ok){res[nm]=null;break}const d=await r.json();const p=(d.auction_item||[]).map(x=>x.auction_price_per_unit).filter(x=>x>0);res[nm]=p.length?Math.min(...p):null;break}catch(e){await new Promise(z=>setTimeout(z,500))}}
-  if(++n%10===0)toast(`불러오는 중… ${n}/${names.length}`);await new Promise(z=>setTimeout(z,120))}
- change(()=>S.jobs.forEach(j=>j.rewards.forEach(r=>{if(r.api&&res[r.api]!==undefined)r.apiPrice=res[r.api]})),'시세 갱신 완료')}
+  return toast('공유 시세를 불러오지 못함 · 잠시 후 다시 시도')}}
 function importV1(o){const nS=fresh();nS.set.base=o.set.base;nS.set.mult=o.set.mult;nS.set.reset=o.set.reset;nS.buff=o.buff||0;nS.cur=o.cur||0;nS.erinOff=o.erinOff||0;
  const map={};(o.jobs||[]).forEach((j,i)=>{const npc=nS.jobs.find(x=>x.npc===(OLDNAME[j.npc]||j.npc))||null;const r=npc&&npc.rewards.find(r=>r.sheet&&r.item===j.item);map[j.id]=npc&&npc.id;if(r){r.price=j.price;r.qty=j.qty;r.pts=j.pts;if(j.api)r.api=j.api;if(j.apiPrice!=null)r.apiPrice=j.apiPrice;r.useApi=!!j.useApi}});
  nS.chars=(o.chars||[]).map(c=>({name:c.name,day:c.day,done:[...new Set((c.done||[]).map(d=>map[d]).filter(Boolean))]}));if(!nS.chars.length)nS.chars=fresh().chars;return nS}
@@ -233,7 +225,7 @@ document.addEventListener('mousedown',e=>{if(!e.target.closest('.pop,#bSet,#bPri
 document.addEventListener('input',e=>{if(e.target.id==='pq'){pq=e.target.value;renderPrice()}});
 document.addEventListener('change',e=>{const t=e.target,d=t.dataset,num=v=>v===''?null:Math.max(0,+v||0);
  if(t.id==='pq')return;
- if(t.id==='sKey'){t.value.trim()?localStorage.setItem(KEY+'.key',t.value.trim()):localStorage.removeItem(KEY+'.key');return toast('키 저장됨 (이 PC에만)')}
+ 
  if(t.id==='sBase')return change(()=>S.set.base=num(t.value)||600);if(d.mult)return change(()=>S.set.mult[+d.mult]=num(t.value)||1);if(t.id==='sReset')return change(()=>S.set.reset=t.value||'07:00');
  if(t.id==='sOff')return change(()=>S.erinOff=Math.round(+t.value||0));if(t.id==='sFold')return change(()=>S.set.fold=t.value);
  if(t.id==='sTopN')return change(()=>S.set.topN=num(t.value)||0);if(t.id==='sMin')return change(()=>S.set.minGold=num(t.value)||0);
