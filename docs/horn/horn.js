@@ -1,6 +1,6 @@
 // 서버별 거뿔(거대한 외침의 뿔피리) 내역 — /horn_history.json (캐릭터명 미저장). #horn / #horn-하프 로 바로가기
 (function(){var D=null,S=localStorage.getItem('hornSrv')||'하프',L=document.getElementById('hList'),Q=document.getElementById('hQ'),LIM=300,C=localStorage.getItem('hornCat')||'';
-var RX={p:/모집|구인|파티|파모|ㅁㅈ|구구/,b:/삽니다|사요|구합니다|구해요|구함|구매|매입|ㅅㅅ|삼니다|살게요|사봅니다/,s:/팝니다|팔아요|판매|ㅍㅍ|팜|팔게요|처분|떨이|ㅍㅁ/};
+var RX={p:/모집|구인|파티|파모|ㅁㅈ|구구|\d+\s*인/,b:/삽니다|사요|구합니다|구해요|구함|구매|매입|ㅅㅅ|삼니다|살게요|사봅니다/,s:/팝니다|팔아요|판매|ㅍㅍ|팜|팔게요|처분|떨이|ㅍㅁ/};
 function cat(m){if(!C)return true;var b=RX.b.test(m),s=RX.s.test(m);if(C==='b')return b;if(C==='s')return s;return RX.p.test(m)}
 function esc(s){return s.replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function tm(t){var d=new Date(t);if(isNaN(d))return'';var k=new Date(d.getTime()+9*36e5),n=new Date(Date.now()+9*36e5),p=function(x){return('0'+x).slice(-2)};
