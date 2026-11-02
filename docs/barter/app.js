@@ -419,7 +419,7 @@ function invOpen(){let el=$('#invPop');if(!el){el=document.createElement('div');
    const e=$('#invSt');if(e)e.textContent=out.items.length?`아이콘 매칭으로 ${Object.keys(g).length}종(${out.items.length}칸) 찾음 — ?표시는 확인 필요. 이름·수량 확인 후 적용`:(out.why||'아이콘 매칭으로 찾은 재료가 없어요')+' — 아래에서 직접 추가해 주세요.';draw()}
   catch(er){console.error(er);const e=$('#invSt');if(e)e.textContent='인식 실패 — 수동으로 추가해 주세요.'}};
  $('#invX').onclick=$('#invMask').onclick=()=>{run++;el.innerHTML=''};
- $('#invDrop').onclick=e=>{if(e.target.id==='invFile'||e.target.closest('#invImg,input,select,textarea,button,label,a,[data-tqu],[data-tqocr]'))return;$('#invFile').click()};$('#invFile').onchange=e=>img(e.target.files[0]);
+ $('#invDrop').onclick=e=>{const ii=$('#invImg');if(!e.target.isConnected||(ii&&ii.childElementCount)||e.target.id==='invFile'||e.target.closest('#invImg,input,select,textarea,button,label,a,[data-tqu],[data-tqocr]'))return;$('#invFile').click()};$('#invFile').onchange=e=>img(e.target.files[0]);
  el.onpaste=e=>{const it=[...(e.clipboardData?.items||[])].find(x=>x.type.startsWith('image/'));if(it){e.preventDefault();img(it.getAsFile())}};
  $('#invAdd').onclick=()=>{const n=$('#invNm').value.trim();if(!n)return;if(!D.materials.includes(n))return toast('모르는 재료 이름');const q=+$('#invQ').value.replace(/[^\d]/g,'')||0,o=R.find(x=>x.n===n);if(o){o.q=q;o.ck=true}else R.push({n,q,ck:true});$('#invNm').value=$('#invQ').value='';draw()};
  $('#invOk').onclick=()=>{const L={};for(const r of R)if(r.ck)L[r.n]=(L[r.n]||0)+r.q;const ck=Object.keys(L);if(!ck.length)return toast('선택된 항목 없음');
@@ -435,7 +435,7 @@ function tqOpen(){tqWLoad();let el=$('#tqPop');if(!el){el=document.createElement
  const img=fl=>{if(!fl)return;$('#tqImg').innerHTML=`<img src="${URL.createObjectURL(fl)}" style="max-width:100%;max-height:200px;margin-top:6px;border-radius:6px"><div id="tqOcr" class="mut" style="font-size:14px;margin-top:4px">🔎 인식 중… (처음엔 언어 데이터 받느라 10~20초)</div>`;tqOcr(fl)};
  $('#tqX').onclick=$('#tqMask').onclick=()=>el.innerHTML='';
  $('#tqClr').onclick=()=>{if(confirm('입력한 마을별 시세를 모두 비울까요?')){TQ={};tqSave();$('#tqBody').innerHTML=tqBody()}};
- $('#tqDrop').onclick=e=>{if(e.target.id==='tqFile'||e.target.closest('#tqImg,input,select,textarea,button,label,a,[data-tqu],[data-tqocr]'))return;$('#tqFile').click()};$('#tqFile').onchange=e=>img(e.target.files[0]);
+ $('#tqDrop').onclick=e=>{const ti=$('#tqImg');if(!e.target.isConnected||(ti&&ti.childElementCount)||e.target.id==='tqFile'||e.target.closest('#tqImg,input,select,textarea,button,label,a,[data-tqu],[data-tqocr]'))return;$('#tqFile').click()};$('#tqFile').onchange=e=>img(e.target.files[0]);
  el.onpaste=e=>{const it=[...(e.clipboardData?.items||[])].find(x=>x.type.startsWith('image/'));if(it){e.preventDefault();img(it.getAsFile())}};
  el.onchange=e=>{const t=e.target;if(!t.classList.contains('tqc'))return;const v=+t.value.replace(/[^\d]/g,'')||0,o=TQ[t.dataset.g]=TQ[t.dataset.g]||{};if(v)o[t.dataset.t]=v;else delete o[t.dataset.t];tqSave();const k=[t.dataset.g,t.dataset.t];$('#tqBody').innerHTML=tqBody();const n=document.querySelector(`.tqc[data-g="${k[0]}"][data-t="${k[1]}"]`);const all=[...document.querySelectorAll('.tqc')],i=all.indexOf(n);if(all[i+1])all[i+1].focus()};
  el.onclick=e=>{const R=()=>$('#tqBody').innerHTML=tqBody();const ch=e.target.closest('[data-tqr],[data-tqn],[data-tqt]');if(ch){const d=ch.dataset;if(d.tqr){TQ._r=d.tqr;delete TQ._n}if(d.tqn)TQ._n=+d.tqn;if(d.tqt)TQ._t=d.tqt;tqSave();R();const i=document.querySelector('.tqc');if(i&&d.tqt)i.focus();return}
