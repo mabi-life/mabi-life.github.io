@@ -28,6 +28,7 @@ body{min-height:100vh;font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun G
 .chips{display:flex;flex-wrap:nowrap;gap:8px;margin-bottom:12px}.chips .chip{flex:1 1 0;min-width:0}@media(max-width:900px){.chips{flex-wrap:wrap}.chips .chip{flex:1 1 calc(20% - 8px)}}
 .chip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:74px;padding:8px 4px;border-radius:12px;background:#1a1530;border:1px solid #3a2f66;color:#cfc8f5;font:inherit;font-size:14px;line-height:1.2;text-align:center;word-break:keep-all;cursor:pointer}.chip img{width:36px;height:36px;object-fit:contain}
 @media(max-width:480px){.chips{gap:5px}.chip{min-height:66px;padding:6px 2px;font-size:13px;border-radius:10px}.chip img{width:28px;height:28px}}
+.eDg{display:flex;gap:8px}.eDg button{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#1a1530;border:2px solid}.eDg i{width:14px;height:14px;border-radius:3px;border:2px solid currentColor;display:inline-block}.eDg .dB{color:#ff8fa3;border-color:#c2415d}.eDg .dG{color:#7cc8ff;border-color:#2f7fc1}.eDg .dB.on{background:#c2415d;color:#fff}.eDg .dG.on{background:#2f7fc1;color:#fff}.eDg .on i{background:#fff;border-color:#fff}.dgT{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:700;color:#fff;vertical-align:middle}.dgT.b{background:#c2415d}.dgT.g{background:#2f7fc1}
 .chip.on{background:linear-gradient(#f7d98b,#c9a24a);color:#1a1530;font-weight:700;border-color:#f7d98b}
 .info{font-size:14px;color:var(--mu);margin:0 0 10px}.info b{color:var(--gold)}
 .list3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch;justify-content:center;width:100%;max-width:1440px;margin:6px auto 0;padding:0}.list3 .blk{margin-bottom:0}@media(max-width:900px){.list3{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.list3{grid-template-columns:1fr}}
@@ -67,6 +68,7 @@ td.eLoc{white-space:nowrap}.loc{display:inline-block;max-width:9em;overflow:hidd
 <div id="pE" hidden><div class="head"><h1>경매장 도우미</h1><p>인챈트 스크롤 · 전용 인챈트 스크롤 경매장 최저가 · 매물 수 · 거래 시세</p></div>
 <div class="eBar eBox"><div class="eRow"><input id="eq" type="search" placeholder="인챈트 이름 검색 (예: 놀라운)"><label class="bar" style="margin:0"><input type="checkbox" id="eHas" checked>&nbsp;매물 있는 것만</label></div>
 <div class="eRow"><span class="eLb">적용 위치</span><div class="eSeg" id="eOn" title="적용 위치"><button data-g="" class="on">위치 전체</button><button data-g="무기">무기</button><button data-g="방어구">방어구</button><button data-g="경갑" title="경갑옷 · 더스크바운드 비고러스 계열">경갑</button><button data-g="중갑" title="중갑옷 · 더스크바운드 이지스 계열">중갑</button><button data-g="천옷" title="천옷 · 더스크바운드 에테리얼 계열">천옷</button><button data-g="장신구">장신구</button><button data-g="머리">머리</button><button data-g="손·발">손·발</button><button data-g="기타">기타</button></div></div>
+<div class="eRow"><span class="eLb">드랍 던전</span><div class="eDg" id="eDg"><button data-d="브리" class="dB" title="브리 레흐 (일반·믿음의 균열) 드랍"><i></i>브리</button><button data-d="글렌" class="dG" title="글렌 베르나 (쉬움·일반) 드랍"><i></i>글렌</button></div></div>
 <div class="eRow"><span class="eLb">효과 분류</span><div class="eSeg" id="eCtC"><button class="on" data-c="">분류 전체</button></div></div>
 <div class="eRow" id="eEfR" hidden><span class="eLb">세부 효과</span><div class="eSeg eGrid" id="eEfC"></div></div>
 <div class="eRow eOpt"><span class="eLb">옵션</span><div class="eSeg" id="eAf"><button data-a="" class="on">전체</button><button data-a="접두">접두</button><button data-a="접미">접미</button></div><select id="eRk"><option value="">랭크 전체</option></select><select id="eKd"><option value="">일반+전용</option><option value="일반">일반</option><option value="전용">전용</option></select><select id="eSo" title="효과 높은순은 효과를 고른 뒤 사용"><option value="min">최저가 낮은순</option><option value="minD">최저가 높은순</option><option value="n">매물 많은순</option><option value="h">최근체결 높은순</option><option value="name">이름순</option><option value="eff" disabled>효과 높은순</option></select><select id="eCt" hidden disabled><option value="">효과 분류 전체</option></select><select id="eEf" hidden disabled><option value="">효과 필터 (불러오는 중)</option></select></div>
@@ -127,7 +129,8 @@ function popH(tt,h,tp){const M=tp?{set innerHTML(v){$('tip').innerHTML='<h5>'+tt
  <text x="${P}" y="${H-4}" fill="#8a85b0" font-size="10">${f(t0)}</text><text x="${W-10}" y="${H-4}" fill="#8a85b0" font-size="10" text-anchor="end">${f(t1)}</text></svg><p>경매장 체결가 기준 (최근 30일, 10분마다 갱신)</p>`}
  if(!tp)$('mod').className='on'}
 // ── 인챈트스크롤 ──
-let E=null,EH={},EF=null,EFx=null,eAf='',eOn='';
+let E=null,EH={},EF=null,EFx=null,eAf='',eOn='',EDG={},eDg=new Set();
+const eDgOf=r=>EDG[r.name.replace(/\s/g,'')]||'';
 const OLT=t=>{t=t.replace(/에 착용하는 아이템|\s/g,'');
  if(/^(무기|양손무기|한손무기|장거리무기|근접무기|마족표무기)$/.test(t))return t.replace('무기','')||'무기';
  if(/^(옷|갑옷)$/.test(t))return '몸';if(/^(모자|투구|머리)$/.test(t))return '머리';
@@ -155,8 +158,8 @@ const ECat=b=>ECT.find(c=>c[1].test(b))[0];
 const EB=t=>String(t||'').replace(/^.*(?:일\s?때|했을\s?시|있을\s?때|경우|시에?)\s+/,'').replace(/\s+/g,' ').trim();
 const RK=r=>/^\d+$/.test(r)?+r:100+r.charCodeAt(0);
 function eLoad(){if(E)return;E=[];
- Promise.all([fetch('enchant_data.json?t='+Date.now()).then(r=>r.json()),fetch('enchant_history.json?t='+Date.now()).then(r=>r.json()).catch(()=>({t:{}})),fetch('enchant_effects.json?v=20261102').then(r=>r.ok?r.json():null).catch(()=>null)]).then(([d,h,f])=>{
-  E=d.rows;EH=h.t||{};
+ Promise.all([fetch('enchant_data.json?t='+Date.now()).then(r=>r.json()),fetch('enchant_history.json?t='+Date.now()).then(r=>r.json()).catch(()=>({t:{}})),fetch('enchant_effects.json?v=20261102').then(r=>r.ok?r.json():null).catch(()=>null),fetch('enchant_source.json?v=20261103').then(r=>r.ok?r.json():null).catch(()=>null)]).then(([d,h,f,sr])=>{
+  E=d.rows;if(sr)['브리','글렌'].forEach(k=>(sr[k]||[]).forEach(n=>EDG[n.replace(/\s/g,'')]=k));EH=h.t||{};
   if(f){const list=Array.isArray(f)?f:f.enchants||f.rows||[];EF={};EFx={};
    list.forEach(x=>{const rk=String(x.rank).toUpperCase(),es=x.effects||[];es.on=x.on||'';EF[x.name+'|'+x.affix+'|'+rk]=es;(EFx[x.affix+'|'+rk]||(EFx[x.affix+'|'+rk]=[])).push(x);});}
   const rs=[...new Set(E.map(r=>r.rank))].sort((a,b)=>RK(a)-RK(b));$('eRk').innerHTML+=rs.map(r=>`<option value="${r}">랭크 ${r}</option>`).join('');
@@ -182,19 +185,20 @@ function eMag(r,st){const es=eEffs(r)||[];return Math.max(0,...es.filter(e=>!st|
 function eDraw(){if(!E||!E.length&&!E.rows)return;
  {const o=$('eSo'),fo=o.querySelector('[value=eff]');fo.disabled=!$('eEf').value;if(fo.disabled&&o.value==='eff')o.value='min';}
  const q=$('eq').value.trim().replace(/\s/g,''),rk=$('eRk').value,kd=$('eKd').value,so=$('eSo').value,st=$('eEf').value,ct=$('eCt').value,has=$('eHas').checked;
- let a=E.filter(r=>(!q||r.name.replace(/\s/g,'').includes(q))&&(!eAf||r.affix===eAf)&&(!rk||r.rank===rk)&&(!kd||r.kind===kd)&&(!has||r.n)&&(!st||eMag(r,st)>0)&&(!ct||st||(eEffs(r)||[]).some(e=>e.stat&&ECat(e.b||EB(e.stat))===ct))&&(!eOn||(()=>{const es=eEffs(r);return es&&es.on&&OG(es.on).has(eOn)})()));
+ let a=E.filter(r=>(!q||r.name.replace(/\s/g,'').includes(q))&&(!eAf||r.affix===eAf)&&(!rk||r.rank===rk)&&(!kd||r.kind===kd)&&(!has||r.n)&&(!st||eMag(r,st)>0)&&(!ct||st||(eEffs(r)||[]).some(e=>e.stat&&ECat(e.b||EB(e.stat))===ct))&&(!eDg.size||eDg.has(eDgOf(r)))&&(!eOn||(()=>{const es=eEffs(r);return es&&es.on&&OG(es.on).has(eOn)})()));
  const hv=r=>r.avg||r.last||0,I=1e15;
  // 핫 기본화면: 검색·필터·정렬을 하나도 안 건드린 첫 화면에서만 적용.
  // 점수 = 최근 체결건수(t) × log10(평균 체결가) + 매물수(n)×0.2 → 많이·비싸게 거래되는 인챈트가 위로. 상위 EHOT개만 노출.
- const hot=!q&&!eAf&&!rk&&!kd&&!st&&!ct&&!eOn&&so==='min',EHOT=60;
+ const hot=!q&&!eDg.size&&!eAf&&!rk&&!kd&&!st&&!ct&&!eOn&&so==='min',EHOT=60;
  if(hot){const hs=r=>(r.t||0)*Math.log10(hv(r)+1)+(r.n||0)*.2;a=a.filter(r=>r.t).sort((x,y)=>hs(y)-hs(x)).slice(0,EHOT)}
  $('eHot').hidden=!hot;
  if(!hot)a.sort(so==='min'?(x,y)=>(x.min??I)-(y.min??I):so==='minD'?(x,y)=>(y.min??-1)-(x.min??-1):so==='n'?(x,y)=>y.n-x.n:so==='h'?(x,y)=>hv(y)-hv(x):so==='eff'?(x,y)=>eMag(y,st)-eMag(x,st):(x,y)=>x.name.localeCompare(y.name,'ko')||RK(x.rank)-RK(y.rank));
  const sh=a.slice(0,400);
- $('eList').innerHTML=sh.map((r,i)=>{const es=eEffs(r);return `<tr class="r" data-i="${E.indexOf(r)}"><td><span class="aff${r.affix==='접미'?' s':''}">${r.affix}</span>${r.kind==='전용'?'<span class="kd">전용</span>':''}</td><td class="eLoc">${OL(es&&es.on)}</td><td>${r.name}${es&&es.length?`<div class="eEff">${es.map(e=>`<span${$('eEf').value&&(e.b||EB(e.stat))===$('eEf').value?' class="hit"':''}>`+(e.raw||e.text||((e.stat||'')+(e.amount!=null?' '+e.amount:'')+(e.unit||'')))+'</span>').join('<i>·</i>')}</div>`:''}</td><td>${r.rank}</td><td class="num p">${r.min?man(r.min):'<span class="no">-</span>'}</td><td class="num">${r.n||'<span class="no">0</span>'}</td><td class="num h hm">${r.avg?man(r.avg)+(r.t>1?` <small class="no">(${Math.min(r.t,10)}건 평균)</small>`:''):'<span class="no">-</span>'}</td></tr>`}).join('')||'<tr><td colspan="7" class="no" style="text-align:center;padding:30px">검색 결과가 없습니다.</td></tr>';
+ $('eList').innerHTML=sh.map((r,i)=>{const es=eEffs(r);return `<tr class="r" data-i="${E.indexOf(r)}"><td><span class="aff${r.affix==='접미'?' s':''}">${r.affix}</span>${r.kind==='전용'?'<span class="kd">전용</span>':''}</td><td class="eLoc">${OL(es&&es.on)}</td><td>${r.name}${(d=>d?`<span class="dgT ${d==='브리'?'b':'g'}">${d}</span>`:'')(eDgOf(r))}${es&&es.length?`<div class="eEff">${es.map(e=>`<span${$('eEf').value&&(e.b||EB(e.stat))===$('eEf').value?' class="hit"':''}>`+(e.raw||e.text||((e.stat||'')+(e.amount!=null?' '+e.amount:'')+(e.unit||'')))+'</span>').join('<i>·</i>')}</div>`:''}</td><td>${r.rank}</td><td class="num p">${r.min?man(r.min):'<span class="no">-</span>'}</td><td class="num">${r.n||'<span class="no">0</span>'}</td><td class="num h hm">${r.avg?man(r.avg)+(r.t>1?` <small class="no">(${Math.min(r.t,10)}건 평균)</small>`:''):'<span class="no">-</span>'}</td></tr>`}).join('')||'<tr><td colspan="7" class="no" style="text-align:center;padding:30px">검색 결과가 없습니다.</td></tr>';
  if(a.length>sh.length)$('eList').innerHTML+=`<tr><td colspan="6" class="no" style="text-align:center">상위 ${sh.length}개만 표시 (총 ${a.length}개) — 검색으로 좁혀 보세요.</td></tr>`}
 ['eq','eRk','eKd','eSo','eEf','eHas'].forEach(id=>$(id).addEventListener('input',eDraw));
 $('eOn').onclick=e=>{const b=e.target.closest('button');if(!b)return;eOn=b.dataset.g;[...$('eOn').children].forEach(x=>x.className=x===b?'on':'');eDraw()};
+$('eDg').onclick=e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.d;eDg.has(k)?eDg.delete(k):eDg.add(k);b.classList.toggle('on',eDg.has(k));eDraw()};
 $('eAf').onclick=e=>{const b=e.target.closest('button');if(!b)return;eAf=b.dataset.a;[...$('eAf').children].forEach(x=>x.className=x===b?'on':'');eDraw()};
 $('eList').onclick=e=>{const t=e.target.closest('tr.r');if(!t)return;const r=E[+t.dataset.i];popH(`${r.kind==='전용'?'전용 ':''}${r.name} (${r.affix} · 랭크 ${r.rank})`,EH[eK(r)]||[])};
 tab();
