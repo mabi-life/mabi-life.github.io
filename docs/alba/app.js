@@ -45,7 +45,7 @@ const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
 function change(fn,msg){undo.push(JSON.stringify(S));if(undo.length>100)undo.shift();fn();save();render();if(msg)toast(msg)}
 function doUndo(){if(!undo.length)return toast('되돌릴 것 없음');S=JSON.parse(undo.pop());save();render();toast('되돌림')}
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),1500)}
-const gradeBase=n=>n>=100?600:n>=50?360:240;const bIdx=()=>(paeaOn()?2:0)+(isFri()?1:0);const mul=()=>S.set.mult[(S.buff=bIdx())]||1;const jb=j=>Math.round(gradeBase((S.typeWins||{})[j.type||j.id]||0)*mul());/*업종 등급 완성점수 × 버프배율*/const budget=()=>Math.round(600*mul());/*고급 기준 최대치(표시용)*/
+const gradeBase=n=>n>=100?600:n>=50?360:240;const bIdx=()=>(paeaOn()?2:0)+(isFri()?1:0);const mul=()=>S.set.mult[(S.buff=bIdx())]||1;const GPTS=[240,360,600];const tGrade=t=>{const g=(S.typeGrade||{})[t];return g===1||g===2?g:0};const jb=j=>Math.round(GPTS[tGrade(j.type||j.id)]*mul());/*업종 등급 완성점수 × 버프배율*/const budget=()=>Math.round(600*mul());/*고급 기준 최대치(표시용)*/
 const unit=r=>(!r.useApi&&r.price!=null)?r.price:(r.apiPrice!=null?r.apiPrice:(r.price!=null?r.price:null));
 function count(r,B){if(!r.pts)return 0;let q=Math.floor(B/r.pts);return r.max?Math.min(q,r.max):q}
 const rgold=(r,B)=>{if(r.excl)return null;const u=unit(r);return(u==null||!r.qty||!r.pts)?null:count(r,B)*u*r.qty};
@@ -263,19 +263,32 @@ if(!S.typeWins||typeof S.typeWins!=='object')S.typeWins={};
 /*업종별 성공 횟수·등급 v1.6.6*/
 const GRADE_ORDER=["General","Grocery Store","Church","Healer's House","Bank","Blacksmith Shop","General Shop","Adventurers' Association","Clothing Shop","Bookstore","Weapons Shop","Inn","Stope","Pub","Music Shop","Flower Shop","Library","Alchemist House","Street Artist","Jousting Arena","Pontiff's Court","Lighthouse","Puppet Shop"];
 const gTypes=()=>{const m=new Map();DATA.forEach(d=>{const t=d.type||d.id;if(!m.has(t))m.set(t,ROLEKO[d.id]||SHOPKO[t]||t)});return [...m]};
-const gradeOf=n=>n>=100?['고급','#f7c948']:n>=50?['중급','#60a5fa']:['초급','#8a90a0'];
-function winOnDone(c,id){if(S.autoWin===false)return;const j=S.jobs.find(x=>x.id===id)||DATA.find(x=>x.id===id);if(!j)return;const t=j.type||j.id;if(c.winDay!==c.day){c.winDay=c.day;c.winT=[]}if(c.winT.includes(t))return;c.winT.push(t);S.typeWins=S.typeWins||{};S.typeWins[t]=(S.typeWins[t]||0)+1;if(!$('#pGrade').classList.contains('hid'))setTimeout(renderGrade)}
-function renderGrade(){const W=S.typeWins||{},q=t=>t.replace(/"/g,'&quot;');
+/*v1.7 등급 체크: 횟수 대신 업종별 초·중·고 체크(S.typeGrade: 0초 1중 2고). 옛 typeWins는 1회 이관 후 보존*/
+if(!S.typeGrade||typeof S.typeGrade!=='object'){S.typeGrade={};Object.entries(S.typeWins||{}).forEach(([t,n])=>{if(n>=100)S.typeGrade[t]=2;else if(n>=50)S.typeGrade[t]=1})}
+const GNAME=['초급','중급','고급'],GCOL=['#8a90a0','#60a5fa','#f7c948'];
+function winOnDone(){}/*자동 +1 폐지 (체크 방식)*/
+function renderGrade(){const q=t=>t.replace(/"/g,'&quot;');
  const ix=t=>{const i=GRADE_ORDER.indexOf(t);return i<0?999:i};
- const rows=gTypes().sort((a,b)=>ix(a[0])-ix(b[0])||a[1].localeCompare(b[1],'ko')).map(([t,ko])=>{
-  const n=W[t]||0,[g,col]=gradeOf(n);
-  return `<tr><td>${ko}</td><td><span style="border:1px solid ${col};color:${col};border-radius:999px;padding:0 7px;font-size:13px;white-space:nowrap">${g}</span></td><td style="white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:6px"><button type="button" data-gw="${q(t)}" data-gd="-1" class="gPm gPmM" aria-label="감소" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;margin:0;border:0;border-radius:6px;cursor:pointer;font-size:16px;line-height:1;font-weight:700;box-shadow:inset 0 -1px 0 #0004;background:linear-gradient(180deg,#c76b6b,#a84848);color:#fff">−</button><input class="gWin" type="number" min="0" step="1" inputmode="numeric" data-gw="${q(t)}" value="${n}" style="width:5.2em;height:22px;box-sizing:border-box;text-align:right;background:#1b1f28;color:#e8e6e0;border:1px solid #555;border-radius:6px;padding:0 6px;font-size:14px;line-height:22px"><button type="button" data-gw="${q(t)}" data-gd="1" class="gPm gPmP" aria-label="증가" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;margin:0;border:0;border-radius:6px;cursor:pointer;font-size:16px;line-height:1;font-weight:700;box-shadow:inset 0 -1px 0 #0004;background:linear-gradient(180deg,#5fbe84,#3d9a5f);color:#fff">+</button><span style="color:var(--mu);font-size:14px">회</span></span></td></tr>`}).join('');
- $('#pGrade').innerHTML=`<b>아르바이트 기록</b><div class="mu" style="font-size:13.5px;margin:4px 0 6px">업종별 성공 횟수 · 50 중급 · 100 고급 · 완성 점수 초급240·중급360·고급600이 보상 계산에 반영됨 · 일부는 실제 수주 등급과 다를 수 있음 · 숫자 직접 입력</div><label style="font-size:14px;display:block;margin-bottom:6px"><input type="checkbox" id="gAuto" ${S.autoWin===false?'':'checked'}> 완료(✓) 시 업종 +1 (하루 1회)</label><div style="max-height:60vh;overflow:auto"><table><thead><tr><th>이름</th><th>등급</th><th>성공</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+ const cb=(t,g,k)=>{const on=g>=k,col=GCOL[k];return `<button type="button" class="gChk" data-gt="${q(t)}" data-gk="${k}" aria-pressed="${on}" title="${GNAME[k]}${k?(on?' 해제':' 체크'):''}" style="min-width:58px;padding:2px 8px;margin-right:4px;border-radius:999px;font-size:13.5px;border:1px solid ${on?col:'#444'};color:${on?col:'#666'};background:${on?'#ffffff10':'transparent'}">${on?'✓':'□'} ${GNAME[k]}</button>`};
+ const rows=gTypes().sort((a,b)=>ix(a[0])-ix(b[0])||a[1].localeCompare(b[1],'ko')).map(([t,ko])=>{const g=tGrade(t);
+  return `<tr><td>${ko}</td><td style="white-space:nowrap">${cb(t,g,0)}${cb(t,g,1)}${cb(t,g,2)}</td><td class="n mu">${GPTS[g]}P</td></tr>`}).join('');
+ $('#pGrade').innerHTML=`<b>아르바이트 등급</b><div class="mu" style="font-size:13.5px;margin:4px 0 6px">업종별로 도달한 등급만 체크하세요 (횟수 기록 불필요) · 중급 체크 = 초급 포함 · 체크를 다시 누르면 한 단계 내려감 · 완성 점수 초급240·중급360·고급600이 보상 계산에 반영됨</div><div style="max-height:60vh;overflow:auto"><table><thead><tr><th>업종</th><th>등급 체크</th><th class="n">점수</th></tr></thead><tbody>${rows}</tbody></table></div>`}
 (()=>{const P=$('#pGrade');
- const commit=inp=>{const ty=inp.dataset.gw;let n=parseInt(String(inp.value).replace(/[^0-9]/g,''),10);if(!Number.isFinite(n)||n<0)n=0;n=Math.min(Math.floor(n),999999);change(()=>{S.typeWins=S.typeWins||{};S.typeWins[ty]=n});const keep=document.activeElement===inp;renderGrade();if(keep){const ninp=P.querySelector(`input.gWin[data-gw="${ty.replace(/"/g,'\\"')}"]`);if(ninp){ninp.focus();ninp.select()}}};
- P.addEventListener('change',e=>{if(e.target.id==='gAuto'){S.autoWin=e.target.checked;save();return}if(e.target.classList&&e.target.classList.contains('gWin'))commit(e.target)});
- P.addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('gWin')&&e.key==='Enter'){e.preventDefault();e.target.blur()}});
- P.addEventListener('click',e=>{const b=e.target.closest('[data-gd]');if(!b||!P.contains(b))return;e.preventDefault();e.stopPropagation();const ty=b.dataset.gw,d=+b.dataset.gd;change(()=>{S.typeWins=S.typeWins||{};S.typeWins[ty]=Math.max(0,Math.min(999999,(S.typeWins[ty]||0)+d))});renderGrade()});
+ P.addEventListener('click',e=>{const b=e.target.closest('[data-gk]');if(!b||!P.contains(b))return;e.preventDefault();e.stopPropagation();const t=b.dataset.gt,k=+b.dataset.gk,g=tGrade(t);const n=(g===k&&k>0)?k-1:k;change(()=>{S.typeGrade=S.typeGrade||{};if(n)S.typeGrade[t]=n;else delete S.typeGrade[t]});renderGrade()});
 })();
-let feedReady=null;/*persist catalog migrate*/save();window.__alba={get S(){return S},get feedReady(){return feedReady},isUla,erinAbs,erinDay,gameDay,seqPlan,shopOf,NAMEFIX,budget,erinMin,best,expandedSet,focus,ch,knap,mixOf,importV1,fetchPrices,HOT_MIN,get feedHotMin(){return feedHotMin},verifyBadge,hotIcon,hotMetric};render();
+/*v1.7 알바노선 공유: 접기(avoid)·★·수동순서만 단축 코드로. 형식 "1.<접힘>.<즐찾>.<순서>" 각 목록=DATA 인덱스 base36 '-' 구분*/
+const RIDX=new Map(DATA.map((d,i)=>[d.id,i]));
+function routeCode(){const L=a=>a.map(id=>RIDX.get(id)).filter(i=>i!=null).map(i=>i.toString(36)).join('-');
+ return '1.'+L(S.jobs.filter(j=>j.avoid).map(j=>j.id))+'.'+L(S.jobs.filter(j=>j.fav).map(j=>j.id))+'.'+L(S.manualSeq||[])}
+function routeParse(code){const p=String(code||'').trim().replace(/^.*[#&]r=/,'').split('.');if(p[0]!=='1'||p.length!==4)return null;
+ const L=x=>x?x.split('-').map(v=>DATA[parseInt(v,36)]).filter(Boolean).map(d=>d.id):[];return {hid:L(p[1]),fav:L(p[2]),seq:L(p[3])}}
+function routeApply(r){const H=new Set(r.hid),F=new Set(r.fav);
+ change(()=>{S.jobs.forEach(j=>{if(!RIDX.has(j.id))return;const d=DATA.find(x=>x.id===j.id);j.avoid=H.has(j.id)?(j.avoid||(d&&d.avoid)||AVOID_DEF):'';j.fav=F.has(j.id)});S.manualSeq=r.seq.filter(id=>S.jobs.some(j=>j.id===id))},`나만의 알바 적용 · 접기 ${r.hid.length} · ★ ${r.fav.length} · 순서 ${r.seq.length} (Ctrl+Z 되돌리기)`)}
+const routeURL=()=>location.origin+'/a/#'+routeCode();
+function routeShare(){const u=routeURL();const done=()=>toast('나만의 알바 링크 복사됨');if(navigator.clipboard)navigator.clipboard.writeText(u).then(done,()=>prompt('나만의 알바 공유 링크',u));else prompt('나만의 알바 공유 링크',u)}
+function routeImport(){const v=prompt('받은 나만의 알바 링크 또는 코드를 붙여 넣으세요\n(접기·★·순서만 바뀜, 완료 체크·등급·설정은 그대로)');if(!v)return;const r=routeParse(v);if(!r)return toast('나만의 알바 코드를 읽을 수 없음');routeApply(r)}
+document.addEventListener('click',e=>{const t=e.target.closest('#bRShare,#bRImp');if(!t)return;t.id==='bRShare'?routeShare():routeImport()});
+(()=>{const m=location.hash.match(/[#&]r=([0-9a-z.\-]+)/);if(!m)return;const r=routeParse(m[1]);history.replaceState(null,'',location.pathname+location.search);if(!r)return toast('나만의 알바 코드를 읽을 수 없음');
+ if(confirm(`공유받은 나만의 알바를 적용할까요?\n접기 ${r.hid.length} · ★ ${r.fav.length} · 순서 ${r.seq.length}개\n(접기·즐겨찾기·순서만 바뀜 · Ctrl+Z로 되돌리기)`))routeApply(r)})();
+let feedReady=null;/*persist catalog migrate*/save();window.__alba={routeCode,routeParse,get S(){return S},get feedReady(){return feedReady},isUla,erinAbs,erinDay,gameDay,seqPlan,shopOf,NAMEFIX,budget,erinMin,best,expandedSet,focus,ch,knap,mixOf,importV1,fetchPrices,HOT_MIN,get feedHotMin(){return feedHotMin},verifyBadge,hotIcon,hotMetric};render();
 feedReady=fetchPrices({quiet:true});// 첫 화면은 SNAP/localStorage, 이어서 공유 시세

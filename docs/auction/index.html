@@ -59,7 +59,7 @@ td.eLoc{white-space:nowrap}.loc{display:inline-block;max-width:9em;overflow:hidd
 <link rel="stylesheet" href="/css/kit.css?v=16"><script src="/js/kit.js?v=12" defer></script></head>
 <body><div class="wrap">
 <nav class="siteNav" aria-label="도우미 이동"><a href="/">홈</a><a href="/alba/">알바</a><a href="/barter/">물교</a><a href="/dungeon/">던전</a><a href="/bunbae/">분배</a><a href="/craft/">제작</a><span class="on" aria-current="page">경매장</span><a href="/horn/">뿔피리</a></nav>
-<div class="subTab"><a href="#relic" id="tR" class="on">유물</a><a href="#enchant" id="tE">인챈트스크롤</a></div>
+<div class="subTab"><a href="#relic" id="tR" class="on">유물</a><a href="#enchant" id="tE">인챈트스크롤</a><a href="#echo" id="tC">에코스톤</a></div>
 <div id="pR"><div class="head"><h1>경매장 도우미</h1><p>무리아스의 유물 옵션 레벨별 경매장 최저가 · 매물 수</p></div>
 <div class="bar"><span>아르카나 선택</span><label><input type="checkbox" id="has" checked> 매물 있는 것만</label></div>
 <div class="chips" id="chips"></div>
@@ -76,13 +76,24 @@ td.eLoc{white-space:nowrap}.loc{display:inline-block;max-width:9em;overflow:hidd
 </div>
 <p class="eNote" id="eNote"></p><p class="info" id="eInfo"></p>
 <div class="eHot" id="eHot" hidden>🔥 <b>지금 핫한 인챈트</b> <small>최근 거래 많은 순 TOP 60 · 검색하거나 필터 고르면 전체 목록 나와요</small></div><table class="eT"><thead><tr><th>구분</th><th class="eLoc">위치</th><th>이름</th><th>랭크</th><th class="num">최저가</th><th class="num">매물</th><th class="num hm">거래 시세</th></tr></thead><tbody id="eList"></tbody></table></div>
+<div id="pC" hidden><div class="head"><h2>경매장 도우미 · 에코스톤</h2><p>에코스톤 색·각성 능력·각성 Lv별 경매장 최저가 · 매물 수 · 거래 시세</p></div>
+<div class="eBar eBox"><div class="eRow eSrch"><input id="cq" type="search" placeholder="각성 능력 검색 (예: 연속기, 힐링, 크래시)"><label class="eChk"><input type="checkbox" id="cHas" checked>매물 있는 것만</label></div>
+<div class="eRow"><span class="eLb">색 · 고유 능력</span><div class="eSeg" id="cCo"><button data-c="" class="on">색 전체</button></div></div>
+<div class="eRow"><span class="eLb">재능</span><div class="eSeg" id="cGrC"></div></div>
+<div class="eRow" id="cAbR" hidden><span class="eLb">세부 각성 능력</span><div class="eSeg eGrid" id="cAbC"></div></div>
+<div class="eRow"><span class="eLb">등급 · 고유</span><div class="eSeg" id="cGd"><button data-g="0" class="on">등급 전체</button><button data-g="30">30등급만</button><button data-g="-1" title="30등급 미만 (성장 중)">30 미만</button></div><select id="cSt" title="고유 능력 수치 하한"><option value="0">고유 능력 수치 전체</option><option value="90">90 이상</option><option value="95">95 이상</option><option value="100">100 이상</option><option value="103">103 이상</option><option value="105">105 이상</option></select></div>
+<div class="eRow"><span class="eLb">각성 Lv</span><div class="eSeg" id="cLv"><button data-l="0" class="on">전체</button><button data-l="20">20</button><button data-l="15">15+</button><button data-l="10">10+</button><button data-l="-1" title="각성 능력이 없는 에코스톤 (재료·각성용)">각성 없음</button></div><select id="cSo"><option value="min">최저가 낮은순</option><option value="minD">최저가 높은순</option><option value="n">매물 많은순</option><option value="h">최근체결 높은순</option><option value="lv">각성 Lv 높은순</option><option value="name">이름순</option></select></div>
+</div>
+<p class="info" id="cInfo"></p>
+<table class="eT"><thead><tr><th>색</th><th>각성 능력</th><th class="num">Lv</th><th class="num">최저가</th><th class="num">매물</th><th class="num hm">거래 시세</th></tr></thead><tbody id="cList"></tbody></table>
+<p class="eNote" style="margin-top:8px">· 같은 각성 능력·Lv라도 고유 능력 수치(최대 105 안팎)·등급에 따라 값이 다를 수 있어요. 「최저가 매물 고유」는 최저가 매물의 고유 능력 수치입니다.</p></div>
 <div id="tip"></div><div id="mod"><div class="box"><h5><span id="mt"></span><button id="mx" aria-label="닫기">×</button></h5><div id="mb"></div><div class="rz rzL" title="좌우로 드래그해 폭 조절 (더블클릭: 기본값)">⋮</div><div class="rz rzR" title="좌우로 드래그해 폭 조절 (더블클릭: 기본값)">⋮</div></div></div>
 </div>
-<section class="toolAbout" aria-label="경매장 도우미 안내"><h2>경매장 도우미 안내</h2><p>경매장 도우미는 <strong>유물</strong>과 <strong>인챈트스크롤</strong> 두 하부탭으로 나뉩니다. 유물 탭에서는 무리아스의 유물 옵션을 레벨 구간별 최저가·매물로 보고, 인챈트스크롤 탭에서는 일반·전용 스크롤을 검색·필터해 최저가·매물·거래 시세를 빠르게 확인합니다.</p><details><summary>자세한 사용법 · 예시 · 한계 · 자주 묻는 질문</summary><h3>언제 쓰면 좋나요?</h3><p>유물은 옵션 수치에 따라 호가가 크게 달라 게임 안 경매장만으로는 구간을 찾기 번거로울 때, 인챈트 스크롤은 이름·접두/접미·랭크·효과로 지금 시세를 한눈에 보고 싶을 때 씁니다.</p><h3>어떻게 쓰나요?</h3><p>위쪽 하부탭에서 유물(#relic)과 인챈트스크롤(#enchant)을 바꿉니다. 데이터는 넥슨 Open API 경매장 값을 약 10분마다 받아 옵니다.</p><p><strong>유물</strong> — 옵션 수치 ÷ 최대치 × 10을 반올림한 레벨로 묶어 최저가·매물 수를 보여 줍니다. 무리아스의 유물과 (이데아) 표기는 합산합니다.</p><p><strong>인챈트스크롤</strong> — 이름 검색, 접두/접미, 랭크·효과 필터로 목록을 줄입니다. 표에 구분·이름·랭크·최저가·매물·거래 시세가 나오고, 효과가 있으면 이름 아래에 표시됩니다.</p><h3>예시</h3><p>유물 옵션 최대 40에 내 수치가 34면 34÷40×10=8.5 → Lv 9입니다. Lv 9 최저가가 380만·매물 2개이고 Lv 8이 150만·매물 15개라면 Lv 9에 가깝게 호가하는 편이 낫습니다. 인챈트는 「놀라운」으로 검색한 뒤 접두만 고르면 해당 스크롤 시세가 정렬됩니다.</p><h3>한계</h3><ul><li>유물 레벨은 이해를 돕는 근사치라 같은 Lv 안에서도 수치·조합에 따라 가격이 다를 수 있습니다.</li><li>옵션 두 개가 동시에 좋은 조합 가치는 개별 최저가만으로 판단하기 어렵습니다.</li><li>인챈트 효과 필터는 준비된 효과 데이터를 쓰며, 비어 있으면 이름·접두/접미·랭크 위주로 동작합니다.</li><li>최저가는 이상치일 수 있고 API 지연·점검 중에는 갱신이 멈출 수 있습니다.</li></ul><h3>자주 묻는 질문</h3><dl><dt>유물과 인챈트를 한 화면에서 같이 보나요?</dt><dd>아니요. 상단 하부탭으로 나뉩니다.</dd><dt>Lv 10이 풀옵인가요?</dt><dd>반올림이라 최대치의 약 95% 이상이면 Lv 10으로 묶입니다. 진짜 풀옵인지는 매물에서 확인하세요.</dd><dt>이데아와 일반 유물을 따로 보나요?</dt><dd>지금은 합산합니다. 가치가 다르면 게임 안에서 따로 확인하세요.</dd><dt>인챈트 거래 시세는 무엇인가요?</dt><dd>수집된 거래·최저가 기록의 참고값입니다. 표본이 적으면 비거나 들쭉날쭉할 수 있어요.</dd><dt>검색이 안 나와요.</dt><dd>띄어쓰기·접두/접미를 바꿔 보거나 이름 일부만 넣어 보세요. 전용 스크롤은 「전용」으로 표시됩니다.</dd></dl></details></section>
+<section class="toolAbout" aria-label="경매장 도우미 안내"><h2>경매장 도우미 안내</h2><p>경매장 도우미는 <strong>유물</strong>·<strong>인챈트스크롤</strong>·<strong>에코스톤</strong> 세 하부탭으로 나뉩니다. 유물 탭에서는 무리아스의 유물 옵션을 레벨 구간별 최저가·매물로 보고, 인챈트스크롤 탭에서는 일반·전용 스크롤을 검색·필터해 최저가·매물·거래 시세를 빠르게 확인합니다. 에코스톤 탭은 색·각성 능력·각성 Lv별 최저가를 봅니다.</p><details><summary>자세한 사용법 · 예시 · 한계 · 자주 묻는 질문</summary><h3>언제 쓰면 좋나요?</h3><p>유물은 옵션 수치에 따라 호가가 크게 달라 게임 안 경매장만으로는 구간을 찾기 번거로울 때, 인챈트 스크롤은 이름·접두/접미·랭크·효과로 지금 시세를 한눈에 보고 싶을 때 씁니다.</p><h3>어떻게 쓰나요?</h3><p>위쪽 하부탭에서 유물(#relic)과 인챈트스크롤(#enchant)을 바꿉니다. 데이터는 넥슨 Open API 경매장 값을 약 10분마다 받아 옵니다.</p><p><strong>유물</strong> — 옵션 수치 ÷ 최대치 × 10을 반올림한 레벨로 묶어 최저가·매물 수를 보여 줍니다. 무리아스의 유물과 (이데아) 표기는 합산합니다.</p><p><strong>인챈트스크롤</strong> — 이름 검색, 접두/접미, 랭크·효과 필터로 목록을 줄입니다. 표에 구분·이름·랭크·최저가·매물·거래 시세가 나오고, 효과가 있으면 이름 아래에 표시됩니다.</p><h3>예시</h3><p>유물 옵션 최대 40에 내 수치가 34면 34÷40×10=8.5 → Lv 9입니다. Lv 9 최저가가 380만·매물 2개이고 Lv 8이 150만·매물 15개라면 Lv 9에 가깝게 호가하는 편이 낫습니다. 인챈트는 「놀라운」으로 검색한 뒤 접두만 고르면 해당 스크롤 시세가 정렬됩니다.</p><h3>한계</h3><ul><li>유물 레벨은 이해를 돕는 근사치라 같은 Lv 안에서도 수치·조합에 따라 가격이 다를 수 있습니다.</li><li>옵션 두 개가 동시에 좋은 조합 가치는 개별 최저가만으로 판단하기 어렵습니다.</li><li>인챈트 효과 필터는 준비된 효과 데이터를 쓰며, 비어 있으면 이름·접두/접미·랭크 위주로 동작합니다.</li><li>최저가는 이상치일 수 있고 API 지연·점검 중에는 갱신이 멈출 수 있습니다.</li></ul><h3>자주 묻는 질문</h3><dl><dt>유물과 인챈트를 한 화면에서 같이 보나요?</dt><dd>아니요. 상단 하부탭으로 나뉩니다.</dd><dt>Lv 10이 풀옵인가요?</dt><dd>반올림이라 최대치의 약 95% 이상이면 Lv 10으로 묶입니다. 진짜 풀옵인지는 매물에서 확인하세요.</dd><dt>이데아와 일반 유물을 따로 보나요?</dt><dd>지금은 합산합니다. 가치가 다르면 게임 안에서 따로 확인하세요.</dd><dt>인챈트 거래 시세는 무엇인가요?</dt><dd>수집된 거래·최저가 기록의 참고값입니다. 표본이 적으면 비거나 들쭉날쭉할 수 있어요.</dd><dt>검색이 안 나와요.</dt><dd>띄어쓰기·접두/접미를 바꿔 보거나 이름 일부만 넣어 보세요. 전용 스크롤은 「전용」으로 표시됩니다.</dd></dl></details></section>
 <footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br><span id="upd"></span><br>Lv = 옵션 수치 ÷ 최대치 × 10 (반올림) · 무리아스의 유물 + (이데아) 합산<br>마비노기 공식 서비스와 관련 없는 비공식 팬 도구입니다.<br>운영: 하프서버 위즈니 · 문의: <a href="mailto:forgetwulf@gmail.com">forgetwulf@gmail.com</a><br><a href="/about/">사이트 소개</a> · <a href="/terms/">이용약관</a> · <a href="/privacy/">개인정보처리방침</a></footer>
 <script>
 const $=id=>document.getElementById(id);
-function tab(){const e=location.hash==='#enchant';if(e)eLoad();$('pR').hidden=e;$('pE').hidden=!e;$('tR').className=e?'':'on';$('tE').className=e?'on':''}
+function tab(){const h=location.hash,e=h==='#enchant',c=h==='#echo';if(e)eLoad();if(c)cLoad();$('pR').hidden=e||c;$('pE').hidden=!e;$('pC').hidden=!c;$('tR').className=e||c?'':'on';$('tE').className=e?'on':'';$('tC').className=c?'on':''}
 onhashchange=tab;
 
 const man=p=>p>=1e8?(p/1e8).toFixed(p%1e8?1:0).replace(/\.0$/,'')+'억':p>=1e4?(+(p/1e4).toFixed(p>=1e5?0:1))+'만':p.toLocaleString();
@@ -209,6 +220,51 @@ $('eOn').onclick=e=>{const b=e.target.closest('button');if(!b)return;eOn=b.datas
 $('eDg').onclick=e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.d;eDg.has(k)?eDg.delete(k):eDg.add(k);b.classList.toggle('on',eDg.has(k));eDraw()};
 $('eAf').onclick=e=>{const b=e.target.closest('button');if(!b)return;eAf=b.dataset.a;[...$('eAf').children].forEach(x=>x.className=x===b?'on':'');eDraw()};
 $('eList').onclick=e=>{const t=e.target.closest('tr.r');if(!t)return;const r=E[+t.dataset.i];CW=0;popH(`${r.kind==='전용'?'전용 ':''}${r.name} (${r.affix} · 랭크 ${r.rank})`,EH[eK(r)]||[])};
+// ── 에코스톤 ──
+let C=null,CH={},CS={},cCo='',cLv=0;
+const CCL={레드:'#ff7b7b',블루:'#7cc8ff',옐로:'#ffd96b',실버:'#d8dbe6',블랙:'#9a93b8'};
+const cK=r=>r.c+'|'+r.a+'|'+r.l;
+function cLoad(){if(C)return;C=[];
+ Promise.all([fetch('echo_data.json?t='+Date.now()).then(r=>r.json()),fetch('echo_history.json?t='+Date.now()).then(r=>r.json()).catch(()=>({t:{}}))]).then(([d,h])=>{C=d.rows;CH=h.t||{};CS=d.stat||{};
+  const cn={};C.forEach(r=>cn[r.c]=(cn[r.c]||0)+r.n);
+  $('cCo').innerHTML='<button data-c="" class="on">색 전체</button>'+['레드','블루','옐로','실버','블랙'].map(c=>`<button data-c="${c}" title="고유 능력: ${CS[c]||''}"><span style="color:${CCL[c]}">●</span> ${c} <small>${(CS[c]||'').replace('생명력, 마나, 스태미나','생·마·스')} · ${cn[c]||0}</small></button>`).join('');
+  $('cInfo').innerHTML=`에코스톤 매물 <b>${d.listings.toLocaleString()}</b>건 · 각성 능력·Lv <b>${C.filter(r=>r.n).length}</b>종 · 갱신 ${new Date(d.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}`;cDraw()})}
+const CTL=[['전사',['스매시','윈드밀','카운터 어택','디펜스','소드 마스터리','블런트 마스터리','액스 마스터리','자이언트 풀 스윙','돌진','다운 어택','레이지 임팩트','컴뱃 마스터리','타운트','헤비 아머 마스터리','실드 마스터리','크로스 버스터']],
+['궁수',['보우 마스터리','크로스보우 마스터리','매그넘 샷','크래시 샷','파이널 샷','레인지 컴뱃 마스터리']],
+['기사',['랜스']],
+['마법사',['파이어','아이스','라이트닝','썬더','볼트','헤일스톰','마나실드','마나 리커버리','힐링','파티 힐링','캐스팅 속도','라이프 드레인','스파크','마법 공격력']],
+['연금술사',['물 ','불 ','바람 ','흙 ','하이드라','레인 캐스팅','워터 캐논','블레이즈','플레이머','윈드 블래스트','프렌지']],
+['격투가',['연속기','너클 마스터리']],
+['음유시인',['음악적 지식','악기 연주','멜로디 쇼크','비바체','자장가','행진곡','풍년가','전장의 서곡','1막','2막','4막','6막','7막']],
+['인형사',['마리오네트','와이어']],
+['듀얼거너',['듀얼건','불릿 스톰','슈팅 러쉬']],
+['닌자',['수리검','잿빛 연막술','그림자','벚꽃 비화술']],
+['체인 슬래셔',['체인','데스 마커']],
+['대장장이',['블랙스미스','제련','야금술']],['목수',['목공']],['재봉사',['방직','천옷만들기']],['요리사',['요리','페스티벌 푸드']],
+['채집·모험',['낚시','채집','실리엔 생태학','희귀 광물학','야생 동물 조련','핀즈 크래프트']],
+['공통 능력',['최대 공격력','최대마나','최대생명력','보호','근접 자동 방어','원거리 자동 방어','마법 자동 방어','유효 사거리','공격 속도 증가','폭발 저항','위기 탈출','전기 속성']]];
+const cTlM={};const cTl=a=>{if(!a)return '';if(a in cTlM)return cTlM[a];let best='',bl=0;CTL.forEach(([t,ps])=>ps.forEach(p=>{if(a.startsWith(p)&&p.length>bl){best=t;bl=p.length}}));return cTlM[a]=best||'미분류'};
+const CTLN=[...CTL.map(x=>x[0]),'미분류'];let cG='',cA='',cGd=0;
+// 등급·고유 수치 조건으로 매물 목록(L) 재계산
+const cEff=r=>{const st=+$('cSt').value;if(!cGd&&!st||!r.L)return r;const L=r.L.filter(([p,s,g])=>(cGd===30?g===30:cGd===-1?g<30:true)&&s>=st);return {...r,min:L.length?L[0][0]:null,n:L.length,st:L.length?L[0][1]:null,g30:L.filter(x=>x[2]===30).length}};
+function cChips(){const b=C.filter(r=>r.a&&(!cCo||r.c===cCo)).map(cEff).filter(r=>!$('cHas').checked||r.n),gn={};b.forEach(r=>{const t=cTl(r.a);gn[t]=(gn[t]||0)+1});
+ $('cGrC').innerHTML=`<button data-g=""${cG?'':' class="on"'}>재능 전체</button>`+CTLN.filter(t=>gn[t]||t===cG).map(t=>`<button data-g="${t}"${t===cG?' class="on"':''}>${t}<small>${gn[t]||0}</small></button>`).join('');
+ const ab=[...new Set(b.filter(r=>cTl(r.a)===cG).map(r=>r.a))].sort((x,y)=>x.localeCompare(y,'ko'));$('cAbR').hidden=!cG;
+ $('cAbC').innerHTML=`<button data-a=""${cA?'':' class="on"'}>${cG} 전체</button>`+ab.map(x=>`<button data-a="${x}"${x===cA?' class="on"':''}>${x}</button>`).join('')}
+$('cGrC').onclick=e=>{const b=e.target.closest('button');if(!b)return;cG=b.dataset.g;cA='';cDraw()};
+$('cAbC').onclick=e=>{const b=e.target.closest('button');if(!b)return;cA=b.dataset.a;cDraw()};
+$('cGd').onclick=e=>{const b=e.target.closest('button');if(!b)return;cGd=+b.dataset.g;[...$('cGd').children].forEach(x=>x.className=x===b?'on':'');cDraw()};
+$('cSt').addEventListener('input',()=>cDraw());
+function cDraw(){if(!C)return;cChips();const q=$('cq').value.trim().replace(/\s/g,''),has=$('cHas').checked,so=$('cSo').value,I=1e15,hv=r=>r.avg||r.last||0;
+ let a=C.map(cEff).filter(r=>(!q||r.a.replace(/\s/g,'').includes(q))&&(!cCo||r.c===cCo)&&(!has||r.n)&&(cLv===-1?!r.a:cLv?r.a&&r.l>=cLv:true)&&(!cG||r.a&&cTl(r.a)===cG)&&(!cA||r.a===cA));
+ a.sort(so==='min'?(x,y)=>(x.min??I)-(y.min??I):so==='minD'?(x,y)=>(y.min??-1)-(x.min??-1):so==='n'?(x,y)=>y.n-x.n:so==='h'?(x,y)=>hv(y)-hv(x):so==='lv'?(x,y)=>y.l-x.l||(x.min??I)-(y.min??I):(x,y)=>x.a.localeCompare(y.a,'ko')||y.l-x.l);
+ const sh=a.slice(0,400);
+ $('cList').innerHTML=sh.map(r=>`<tr class="r" data-i="${C.indexOf(r)}"><td style="white-space:nowrap"><span style="color:${CCL[r.c]}">●</span> ${r.c}</td><td>${r.a||'<span class="no">각성 없음</span>'}${r.a?`<span class="kd">${cTl(r.a)}</span>`:''}${r.v!=null?` <small class="no">(${+r.v})</small>`:''}${r.st?`<div class="eEff">최저가 매물 고유 ${CS[r.c]?CS[r.c].replace('생명력, 마나, 스태미나','생·마·스')+' ':''}${r.st}${r.g30<r.n?` <i>·</i> 30등급 ${r.g30}/${r.n}`:''}</div>`:''}</td><td class="num">${r.a&&r.l?r.l:'<span class="no">-</span>'}</td><td class="num p">${r.min?man(r.min):'<span class="no">-</span>'}</td><td class="num">${r.n||'<span class="no">0</span>'}</td><td class="num h hm">${r.avg?man(r.avg)+(r.t>1?` <small class="no">(${Math.min(r.t,10)}건 평균)</small>`:''):'<span class="no">-</span>'}</td></tr>`).join('')||'<tr><td colspan="6" class="no" style="text-align:center;padding:30px">검색 결과가 없습니다.</td></tr>';
+ if(a.length>sh.length)$('cList').innerHTML+=`<tr><td colspan="6" class="no" style="text-align:center">상위 ${sh.length}개만 표시 (총 ${a.length}개) — 검색으로 좁혀 보세요.</td></tr>`}
+['cq','cSo','cHas'].forEach(id=>$(id).addEventListener('input',cDraw));
+$('cCo').onclick=e=>{const b=e.target.closest('button');if(!b)return;cCo=b.dataset.c;[...$('cCo').children].forEach(x=>x.className=x===b?'on':'');cDraw()};
+$('cLv').onclick=e=>{const b=e.target.closest('button');if(!b)return;cLv=+b.dataset.l;[...$('cLv').children].forEach(x=>x.className=x===b?'on':'');cDraw()};
+$('cList').onclick=e=>{const t=e.target.closest('tr.r');if(!t)return;const r=C[+t.dataset.i];CW=0;popH(`${r.c} 에코스톤 · ${r.a||'각성 없음'}${r.a&&r.l?' Lv'+r.l:''}`,CH[cK(r)]||[])};
 tab();
 </script>
 </body></html>
