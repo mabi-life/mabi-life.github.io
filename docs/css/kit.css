@@ -9,7 +9,6 @@ nav.siteNav .on{background:#262a33!important;color:#fff!important}
 .kitHd{position:relative;display:flex;align-items:center;gap:12px;background:#1d2027;border:1px solid #333846;border-radius:12px;padding:12px 18px 12px 22px;margin:0 0 14px;text-align:left}
 .kitHd:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--kit,#f7d98b);border-radius:12px 0 0 12px}
 .kitHd .ki{font-size:24px}.kitHd b{font-size:19px;color:#e6e8ee}.kitHd .kp{font-size:13.5px;color:#8a90a0;margin-top:2px}
-.kitHd .kn{margin-left:auto;flex:none;font-size:11.5px;color:var(--kit);border:1px solid var(--kit);border-radius:4px;padding:0 6px}
 body.kit-hd .head:not(.coinHead),body.kit-hd .wrap>.hd{display:none!important}
 .card,.list,.blk,.totals{box-shadow:inset 4px 0 0 var(--kit,#f7d98b)!important;border-color:#333846!important;background:#1d2027!important;border-radius:12px!important}
 
