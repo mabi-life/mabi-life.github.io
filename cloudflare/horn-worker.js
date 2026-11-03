@@ -22,6 +22,7 @@ async function collect(env) {
   for (const r of prev.rows || []) map.set(r.id, r);
   const cut = Date.now() - KEEP_MS;
   let ok = 0;
+  const st = {};
   for (const s of SERVERS) {
     const u =
       'https://open.api.nexon.com/mabinogi/v1/horn-bugle-world/history?server_name=' +
@@ -30,7 +31,13 @@ async function collect(env) {
       const res = await fetch(u, {
         headers: { 'x-nxopen-api-key': env.NEXON_API_KEY },
       });
-      if (!res.ok) continue;
+      st[s] = res.status;
+      if (!res.ok) {
+        let t = '';
+        try { t = (await res.text()).slice(0, 200); } catch (_) {}
+        st[s] = res.status + ' ' + t;
+        continue;
+      }
       const d = await res.json();
       ok++;
       for (const x of d.horn_bugle_world_history || []) {
@@ -41,9 +48,16 @@ async function collect(env) {
         const rid = await sha12(`${s}|${n}|${t}|${m}`);
         if (!map.has(rid)) map.set(rid, { id: rid, s, t, n, m });
       }
-    } catch (_) {}
+    } catch (e) {
+      st[s] = 'exc ' + String((e && e.message) || e).slice(0, 200);
+    }
   }
-  if (!ok) throw new Error('no server ok');
+  const nowKst = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 19) + '+09:00';
+  if (!ok) {
+    await env.HORN.put('last_error', JSON.stringify({ at: nowKst, status: st }));
+    throw new Error('no server ok: ' + JSON.stringify(st));
+  }
+  await env.HORN.put('last_ok', JSON.stringify({ at: nowKst, status: st }));
   const all = [...map.values()]
     .filter((r) => {
       const ms = Date.parse(r.t);
@@ -62,7 +76,7 @@ async function collect(env) {
   const body = {
     updated: kst.slice(0, 19) + '+09:00',
     source:
-      'Cloudflare Worker + NEXON Open API horn-bugle-world/history (2분 cron, 48시간)',
+      'Cloudflare Worker + NEXON Open API horn-bugle-world/history (5분 cron, 48시간)',
     rows,
   };
   await env.HORN.put('history', JSON.stringify(body));
@@ -93,6 +107,14 @@ export default {
           { status: 500, headers: cors() }
         );
       }
+    }
+    if (url.pathname === '/health') {
+      const [h, le, lo] = await Promise.all([
+        env.HORN.get('history').then((r) => (r ? JSON.parse(r).updated : null)),
+        env.HORN.get('last_error').then((r) => (r ? JSON.parse(r) : null)),
+        env.HORN.get('last_ok').then((r) => (r ? JSON.parse(r) : null)),
+      ]);
+      return Response.json({ updated: h, last_ok: lo, last_error: le, key_present: !!env.NEXON_API_KEY }, { headers: cors({ 'Cache-Control': 'no-store' }) });
     }
     if (
       url.pathname === '/' ||
