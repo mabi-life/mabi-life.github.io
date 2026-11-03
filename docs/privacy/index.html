@@ -45,10 +45,10 @@ table{width:100%;border-collapse:collapse;font-size:16px;margin:10px 0}th,td{bor
 <ul><li>Google을 포함한 제3자 광고 사업자는 쿠키를 사용하여 이용자의 이 사이트 및 다른 사이트 방문 기록을 바탕으로 광고를 게재할 수 있습니다.</li><li>Google의 광고 쿠키를 통해 <strong>맞춤형 광고</strong>가 표시될 수 있습니다.</li><li>맞춤형 광고는 <a href="https://adssettings.google.com/" target="_blank" rel="noopener">Google 광고 설정</a>에서 해제할 수 있으며, 제3자 광고 쿠키는 <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">www.aboutads.info</a>에서 해제할 수 있습니다.</li><li>Google의 광고 관련 정책: <a href="https://policies.google.com/technologies/ads?hl=ko" target="_blank" rel="noopener">Google 광고 정책</a></li></ul>
 <p>브라우저 설정에서 쿠키 저장을 거부하거나 삭제할 수도 있습니다. 이 경우 일부 광고·통계 기능이 제한될 수 있으나 사이트 이용에는 지장이 없습니다.</p>
 
-<h2>5. 브라우저 저장소(localStorage) 이용</h2>
-<p>사이트의 편의 기능은 이용자 기기의 브라우저 저장소(localStorage)에만 데이터를 저장하며, <strong>운영자 서버로 전송되지 않습니다.</strong></p>
-<table><tr><th>저장 항목</th><th>용도</th></tr><tr><td>즐겨찾기, 직업 정렬 순서, 각종 설정</td><td>화면 구성 유지</td></tr><tr><td>던전 횟수 기록</td><td>던전 도우미 기록 유지</td></tr><tr><td>분배 파티 기록</td><td>분배 계산기 기록 유지</td></tr></table>
-<p>이 정보는 해당 브라우저에만 남으며, 브라우저의 사이트 데이터 삭제 기능으로 언제든 지울 수 있습니다.</p>
+<h2>5. 브라우저 저장소(localStorage·IndexedDB) 이용</h2>
+<p>사이트의 편의 기능은 이용자 기기의 브라우저 저장소(localStorage, 분배 원본 이미지는 IndexedDB)에만 데이터를 저장하며, <strong>운영자 서버로 전송되지 않습니다.</strong></p>
+<table><tr><th>저장 항목</th><th>용도</th></tr><tr><td>알바 도우미: 즐겨찾기·숨기기·순서 등 알바 설정</td><td>알바 목록 구성 유지</td></tr><tr><td>물교 도우미: 루트·회차 계획, 재료 수량, 화면 접기 상태, 재고 아이콘 인식 학습값</td><td>물교 계획·재료 점검 유지</td></tr><tr><td>던전 도우미: 캐릭터별 주간 클리어·전재산 기록, 자동 백업본, 접기 상태</td><td>던전 기록 유지</td></tr><tr><td>4관 헤일로 알람 설정</td><td>알람 설정 유지</td></tr><tr><td>분배 도우미: 파티·전리품 기록, 파티원 이름 목록</td><td>분배 계산 기록 유지</td></tr><tr><td>분배 원본 스크린샷 이미지 (IndexedDB)</td><td>분배 기록의 원본 확인</td></tr><tr><td>제작 도우미: 목표 아이템·수량·보유 재료</td><td>부족분 계산 유지</td></tr><tr><td>코인(구슬) 가성비: 직접 입력한 구슬가·탭 선택</td><td>가성비 비교 설정 유지</td></tr><tr><td>경매장 유물 탭 선택, 뿔피리 서버·분류 선택</td><td>마지막 선택 화면 유지</td></tr></table>
+<p>이 정보는 해당 브라우저에만 남으며, 브라우저의 사이트 데이터 삭제 기능으로 언제든 지울 수 있습니다. 홈의 「내 데이터 백업」 내보내기는 위 항목을 이용자 기기에 JSON 파일로 저장할 뿐이며, 가져오기도 브라우저 안에서만 처리되어 서버로 전송되지 않습니다. 분배 공유 링크는 기록 내용이 링크 주소 안에만 담기며 운영자 서버에 저장되지 않습니다.</p>
 <p>재고체크·어디에 팔까·분배 도우미에서 사용하는 스크린샷(이미지) 인식은 이용자 기기의 브라우저 안에서만 처리되며, <strong>이미지가 운영자 서버나 외부로 업로드되지 않습니다.</strong></p>
 
 <h2>6. 넥슨 Open API 데이터</h2>
