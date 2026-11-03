@@ -27,7 +27,24 @@ now = lambda: datetime.datetime.now(KST).isoformat(timespec='seconds')
 UTC = datetime.timezone.utc
 ROLL_HOURS = 24
 items = json.load(open(f'{H}/items.json', encoding='utf-8'))
-names = sorted({n for k, v in items.items() if not k.startswith('_') for n in v})
+def recipe_names(path):
+    """제작 도우미 레시피(완성품 + 중첩 재료 트리) 이름 전부 — recipes.json이 단일 출처"""
+    out = set()
+    def walk(node):
+        if isinstance(node, dict):
+            if isinstance(node.get('n'), str): out.add(node['n'])
+            for c in node.get('c') or []: walk(c)
+        elif isinstance(node, list) and node and isinstance(node[0], str):
+            out.add(node[0])  # [이름, 수량, {하위 레시피}?]
+            for x in node[2:]: walk(x)
+    try: data = json.load(open(path, encoding='utf-8'))
+    except Exception: return out
+    for r in data: walk(r)
+    return out
+base_names = {n for k, v in items.items() if not k.startswith('_') for n in v}
+craft_names = recipe_names(f'{H}/docs/craft/recipes.json')
+names = sorted(base_names | craft_names)
+print(f'names: items.json {len(base_names)} + craft {len(craft_names - base_names)} new = {len(names)}')
 out_p = f'{H}/docs/prices.json'
 roll_p = f'{H}/docs/history_roll.json'
 try: old = json.load(open(out_p, encoding='utf-8')).get('prices', {})
