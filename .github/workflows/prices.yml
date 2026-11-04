@@ -16,8 +16,6 @@ jobs:
         with: {python-version: '3.12'}
       - run: python fetch_prices.py
         env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
-      - run: python horn_beads.py || true
-        env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
       - run: python relics_pack.py || true
         env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
       - run: python enchant_pack.py || true
@@ -26,24 +24,26 @@ jobs:
         env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
       - run: python echo_pack.py || true
         env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
-      - name: Commit and push (retry on GitHub glitch)
+      - name: Commit and push (retry on conflict/glitch)
         run: |
+          # horn_*.json 은 horn.yml 전담 → 여기선 커밋하지 않음 (충돌 원인 제거)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/prices.json docs/history_roll.json docs/pyeollin_history.json docs/horn_beads.json docs/horn_history.json docs/auction/data.json docs/auction/history.json docs/auction/enchant_data.json docs/auction/enchant_history.json docs/auction/warranty_data.json docs/auction/warranty_history.json docs/auction/echo_data.json docs/auction/echo_history.json
-          if git diff --cached --quiet; then
-            echo "no price changes"
-            exit 0
-          fi
-          git commit -m "prices: $(date -u +%FT%TZ)"
-          for i in 1 2 3 4 5; do
-            git pull --rebase --autostash || true
-            if git push; then
-              echo "push ok (attempt $i)"
-              exit 0
-            fi
-            echo "push failed (attempt $i), sleep $((i*20))s"
-            sleep $((i * 20))
+          FILES="docs/prices.json docs/history_roll.json docs/pyeollin_history.json docs/auction/data.json docs/auction/history.json docs/auction/enchant_data.json docs/auction/enchant_history.json docs/auction/warranty_data.json docs/auction/warranty_history.json docs/auction/echo_data.json docs/auction/echo_history.json"
+          STASH=$(mktemp -d)
+          for f in $FILES; do [ -f "$f" ] && mkdir -p "$STASH/$(dirname $f)" && cp "$f" "$STASH/$f"; done
+          for i in 1 2 3 4 5 6; do
+            # 항상 깨끗한 상태에서 origin/main 위에 우리 파일만 다시 얹음
+            git rebase --abort 2>/dev/null || true
+            git merge --abort 2>/dev/null || true
+            git fetch origin main && git reset --hard origin/main
+            for f in $FILES; do [ -f "$STASH/$f" ] && mkdir -p "$(dirname $f)" && cp "$STASH/$f" "$f"; done
+            git add $FILES
+            if git diff --cached --quiet; then echo "no price changes"; exit 0; fi
+            git commit -q -m "prices: $(date -u +%FT%TZ)"
+            if git push origin HEAD:main; then echo "push ok (attempt $i)"; exit 0; fi
+            echo "push failed (attempt $i), sleep $((i*15))s"
+            sleep $((i * 15))
           done
           echo "push failed after retries"
           exit 1
