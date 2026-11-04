@@ -26,8 +26,24 @@ jobs:
         env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
       - run: python echo_pack.py || true
         env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
-      - run: |
+      - name: Commit and push (retry on GitHub glitch)
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/prices.json docs/history_roll.json docs/pyeollin_history.json docs/horn_beads.json docs/horn_history.json docs/auction/data.json docs/auction/history.json docs/auction/enchant_data.json docs/auction/enchant_history.json docs/auction/warranty_data.json docs/auction/warranty_history.json docs/auction/echo_data.json docs/auction/echo_history.json
-          git diff --cached --quiet || (git commit -m "prices: $(date -u +%FT%TZ)" && git pull --rebase && git push)
+          if git diff --cached --quiet; then
+            echo "no price changes"
+            exit 0
+          fi
+          git commit -m "prices: $(date -u +%FT%TZ)"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash || true
+            if git push; then
+              echo "push ok (attempt $i)"
+              exit 0
+            fi
+            echo "push failed (attempt $i), sleep $((i*20))s"
+            sleep $((i * 20))
+          done
+          echo "push failed after retries"
+          exit 1
