@@ -4,63 +4,73 @@
 "arcana": {
 "엘레멘탈 나이트": {
 "key": "a1",
-"w": 43,
-"h": 47,
-"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974455716.webp"
+"w": 44,
+"h": 44,
+"src": "awakening skill icon: 엘레멘탈 카타클리즘",
+"skill": "엘레멘탈 카타클리즘"
 },
 "세인트 바드": {
 "key": "a2",
-"w": 43,
-"h": 47,
-"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974506104.webp"
+"w": 44,
+"h": 44,
+"src": "awakening skill icon: 성광의 협주곡",
+"skill": "성광의 협주곡"
 },
 "다크 메이지": {
 "key": "a3",
-"w": 43,
-"h": 47,
-"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974539533.webp"
+"w": 44,
+"h": 44,
+"src": "awakening skill icon: 도르카 임펄스",
+"skill": "도르카 임펄스"
 },
 "알케믹 스팅어": {
 "key": "a4",
-"w": 43,
-"h": 47,
-"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974562311.webp"
+"w": 44,
+"h": 44,
+"src": "awakening skill icon: 알케믹 컨버전스",
+"skill": "알케믹 컨버전스"
 },
 "세이크리드 가드": {
 "key": "a5",
-"w": 43,
-"h": 47,
-"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974584004.webp"
+"w": 44,
+"h": 44,
+"src": "awakening skill icon: 참회",
+"skill": "참회"
 },
 "블래스트 랜서": {
 "key": "a6",
-"w": 43,
-"h": 47,
-"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974606466.webp"
+"w": 44,
+"h": 44,
+"src": "awakening skill icon: 캐스케이드 버스트",
+"skill": "캐스케이드 버스트"
 },
 "배리어블 거너": {
 "key": "a7",
-"w": 43,
-"h": 47,
-"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974664397.webp"
+"w": 44,
+"h": 44,
+"src": "awakening skill icon: 아머먼트 살보",
+"skill": "아머먼트 살보"
 },
 "포비든 알케미스트": {
 "key": "a8",
-"w": 43,
-"h": 47,
-"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1761974686850.webp"
+"w": 44,
+"h": 44,
+"src": "awakening skill icon: 마그눔 오푸스",
+"skill": "마그눔 오푸스"
 },
 "멜로딕 퍼피티어": {
 "key": "a9",
-"w": 43,
-"h": 47,
-"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1770440624569.webp"
+"w": 44,
+"h": 44,
+"src": "awakening skill icon: 커튼콜",
+"skill": "커튼콜"
 },
 "퓨리 파이터": {
 "key": "a10",
-"w": 43,
-"h": 47,
-"src": "https://tacask-cdn.com/mabi-labanyu/web-upload/img-1770440758409.webp"
+"w": 44,
+"h": 44,
+"src": "awakening skill icon: 퓨리어스 드라이브",
+"skill": "퓨리어스 드라이브"
 }
 },
 "skills": {
