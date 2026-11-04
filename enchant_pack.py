@@ -33,7 +33,7 @@ for n, kind in NAMES.items():
             if not p or not ks: bad += 1; continue
             total += 1
             for k in ks:
-                a = agg.setdefault(k, [p, 0]); a[0] = min(a[0], p); a[1] += 1
+                a = agg.setdefault(k, [p, 0, []]); a[0] = min(a[0], p); a[1] += 1; a[2].append(p)
         cur = d.get('next_cursor'); time.sleep(0.25)
         if not cur: break
 hp = f'{H}/docs/auction/enchant_history.json'
@@ -59,7 +59,7 @@ rows = []
 for k in sorted(set(agg) | set(tr)):
     kind, affix, name, rank = k.split('|', 3)
     r = {'kind': kind, 'affix': affix, 'name': name, 'rank': rank}
-    if k in agg: r['min'], r['n'] = agg[k]
+    if k in agg: r['min'], r['n'], r['top'] = agg[k][0], agg[k][1], sorted(agg[k][2])[:3]
     else: r['min'], r['n'] = None, 0
     h = tr.get(k)
     if h:

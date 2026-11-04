@@ -42,8 +42,8 @@ for x in rows:
         sk, opt = skill_of(head)
         key = (sk, opt or head, verb, u, mx)
         a = agg.setdefault(key, {})
-        c = a.setdefault(lv, {'p': p, 'n': 0, 'v': v})
-        c['n'] += 1; c['p'] = min(c['p'], p)
+        c = a.setdefault(lv, {'p': p, 'n': 0, 'v': v, 'L': []})
+        c['n'] += 1; c['p'] = min(c['p'], p); c['L'].append(p)
 fmt = lambda f: ('%g' % f)
 # 경매장 옵션엔 아르카나 필드가 없음 → 스킬명 접두어로 아르카나 매핑 (공식 공지/라바뉴 기준 아르카나당 3옵션)
 ARC = [('엘레멘탈 나이트', ['파이어 리프 어택', '아이스 윈드밀', '라이트닝 스매시']),
@@ -66,7 +66,7 @@ for (sk, opt, verb, u, mx), lvs in agg.items():
     arc, idx = arc_of(sk)
     skills[arc].append({'name': f'{sk} {opt}', 'i': idx, 'desc': f'{verb} · Lv당 +{fmt(mx / 10)}{u} (최대 {fmt(mx)}{u})',
                        'step': fmt(mx / 10) + u, 'max': fmt(mx) + u,
-                       'lv': {str(l): [c['p'], c['n']] for l, c in sorted(lvs.items())}})
+                       'lv': {str(l): [c['p'], c['n'], sorted(c['L'])[:3]] for l, c in sorted(lvs.items())}})
 out = {'updated': datetime.datetime.now(KST).isoformat(timespec='seconds'), 'listings': len(rows),
        'skills': [{'name': a, 'options': sorted(skills[a], key=lambda o: (o['i'], o['name']))} for a in [x for x, _ in ARC] + ['기타'] if skills.get(a)]}
 os.makedirs(f'{H}/docs/auction', exist_ok=True)
