@@ -5,6 +5,8 @@ const CAP = 3000;
 function cors(h = {}) {
   return {
     ...h,
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -33,9 +35,6 @@ async function collect(env) {
       });
       st[s] = res.status;
       if (!res.ok) {
-        let t = '';
-        try { t = (await res.text()).slice(0, 200); } catch (_) {}
-        st[s] = res.status + ' ' + t;
         continue;
       }
       const d = await res.json();
@@ -49,13 +48,13 @@ async function collect(env) {
         if (!map.has(rid)) map.set(rid, { id: rid, s, t, n, m });
       }
     } catch (e) {
-      st[s] = 'exc ' + String((e && e.message) || e).slice(0, 200);
+      st[s] = 'exc';
     }
   }
   const nowKst = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 19) + '+09:00';
   if (!ok) {
     await env.HORN.put('last_error', JSON.stringify({ at: nowKst, status: st }));
-    throw new Error('no server ok: ' + JSON.stringify(st));
+    throw new Error('no server ok');
   }
   await env.HORN.put('last_ok', JSON.stringify({ at: nowKst, status: st }));
   const all = [...map.values()]
@@ -92,18 +91,36 @@ async function sha12(s) {
     .slice(0, 12);
 }
 
+async function authed(request, env) {
+  const tok = env.COLLECT_TOKEN;
+  if (!tok) return false;
+  const h = request.headers.get('Authorization') || '';
+  const given = h.startsWith('Bearer ') ? h.slice(7) : (request.headers.get('X-Collect-Token') || '');
+  const enc = new TextEncoder();
+  const [a, b] = await Promise.all([
+    crypto.subtle.digest('SHA-256', enc.encode(given)),
+    crypto.subtle.digest('SHA-256', enc.encode(tok)),
+  ]);
+  const x = new Uint8Array(a), y = new Uint8Array(b);
+  let d = 0;
+  for (let i = 0; i < x.length; i++) d |= x[i] ^ y[i];
+  return d === 0;
+}
+
 export default {
   async fetch(request, env, ctx) {
     if (request.method === 'OPTIONS')
       return new Response(null, { status: 204, headers: cors() });
     const url = new URL(request.url);
-    if (url.pathname === '/collect' && request.method === 'POST') {
+    if (url.pathname === '/collect') {
+      if (request.method !== 'POST' || !(await authed(request, env)))
+        return Response.json({ error: 'unauthorized' }, { status: 401, headers: cors({ 'Cache-Control': 'no-store' }) });
       try {
         const r = await collect(env);
         return Response.json(r, { headers: cors() });
       } catch (e) {
         return Response.json(
-          { error: String(e.message || e) },
+          { error: 'collect failed' },
           { status: 500, headers: cors() }
         );
       }
@@ -114,14 +131,14 @@ export default {
         env.HORN.get('last_error').then((r) => (r ? JSON.parse(r) : null)),
         env.HORN.get('last_ok').then((r) => (r ? JSON.parse(r) : null)),
       ]);
-      return Response.json({ updated: h, last_ok: lo, last_error: le, key_present: !!env.NEXON_API_KEY }, { headers: cors({ 'Cache-Control': 'no-store' }) });
+      return Response.json({ updated: h, last_ok: lo ? { at: lo.at } : null, last_error: le ? { at: le.at } : null }, { headers: cors({ 'Cache-Control': 'no-store' }) });
     }
     if (
       url.pathname === '/' ||
       url.pathname === '/horn_history.json' ||
       url.pathname.endsWith('.json')
     ) {
-      if (url.searchParams.get('refresh') === '1') {
+      if (url.searchParams.get('refresh') === '1' && (await authed(request, env))) {
         ctx.waitUntil(collect(env).catch(() => {}));
       }
       const raw = await env.HORN.get('history');

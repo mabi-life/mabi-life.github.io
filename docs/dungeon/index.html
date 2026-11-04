@@ -1073,6 +1073,7 @@ function exportModal(){
       m.querySelector('#exDl').onclick=function(){ download(text); };
     });
 }
+function _sf(v){if(typeof v==='string'){if(/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]*$/.test(v))return v;return v.replace(/[<>"'`]/g,function(c){return{'<':'\uff1c','>':'\uff1e','"':'\uff02',"'":'\uff07','`':'\uff40'}[c]})}if(Array.isArray(v))return v.map(_sf);if(v&&typeof v==='object'){var o={};Object.keys(v).forEach(function(k){o[_sf(k)]=_sf(v[k])});return o}return v}
 function importModal(){
   openModal('<h3>⬇ 가져오기</h3><p class="note">내보낸 JSON을 붙여넣거나 파일을 선택하세요. <b>현재 기기의 데이터는 덮어써져요.</b> 지난 주 데이터면 캐릭터만 가져오고 진행 기록은 초기화돼요.</p>'+
     '<label for="imTa">데이터 (JSON)</label><textarea id="imTa" placeholder=\'{"app":"mabinogi-pass-tracker", ...}\'></textarea>'+
@@ -1088,7 +1089,7 @@ function importModal(){
       };
       m.querySelector('#imGo').onclick=function(){
         var obj;
-        try{ obj=JSON.parse(ta.value); }catch(e){ toast('JSON 형식이 올바르지 않아요'); return; }
+        try{ obj=_sf(JSON.parse(ta.value)); }catch(e){ toast('JSON 형식이 올바르지 않아요'); return; }
         if(!obj || !Array.isArray(obj.chars)){ toast('던전 도우미 데이터가 아니에요'); return; }
         if(!confirm('현재 데이터를 덮어쓰고 가져올까요? (캐릭터 '+obj.chars.length+'명)')) return;
         var before=snap(); state=normState(obj, state.settings);

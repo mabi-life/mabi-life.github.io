@@ -1,6 +1,7 @@
 /* 홈: 전체 저장 내역 내보내기/가져오기 (클라이언트 전용, 서버 전송 없음) */
 (function(){
 var KEYS=['albaHelper.v2','albaHelper.v1','mabiBarter.v1','mabiBarter.ui','mabiBarter.tq2','mabiBarter.invIconLearn.v1','mabiPassTracker.v1','mabiPassTracker.wealth.v1','mabiPassTracker.wealth.bak.v1','mabiPassTracker.wealth.fold','mabiPassTracker.wealth.mainImportAsked','halo4.cfg','mabi.bunbae.v1','mabi.bunbae.names','mabiCraft.v0','mabiCoin.v1','relicArc','hornSrv','hornCat'];
+function _sf(v){if(typeof v==='string'){if(/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]*$/.test(v))return v;return v.replace(/[<>"'`]/g,function(c){return{'<':'\uff1c','>':'\uff1e','"':'\uff02',"'":'\uff07','`':'\uff40'}[c]})}if(Array.isArray(v))return v.map(_sf);if(v&&typeof v==='object'){var o={};Object.keys(v).forEach(function(k){o[_sf(k)]=_sf(v[k])});return o}return v}
 var DB='mabi-bunbae',ST='img';
 var $=function(id){return document.getElementById(id)};
 function msg(t){var m=$('bkMsg');if(m)m.textContent=t}
@@ -18,7 +19,7 @@ function imp(file){var r=new FileReader();r.onload=function(){var o;try{o=JSON.p
  var ls=o.localStorage,ok=Object.keys(ls).filter(function(k){return KEYS.indexOf(k)>=0&&typeof ls[k]==='string'}),bad=Object.keys(ls).length-ok.length,imgs=(o.indexedDB&&o.indexedDB['mabi-bunbae/img'])||[];
  if(!ok.length&&!imgs.length)return msg('가져올 항목이 없어요.');
  if(!confirm('백업의 '+ok.length+'개 항목'+(imgs.length?'과 분배 이미지 '+imgs.length+'장':'')+'으로 이 브라우저의 기존 기록을 덮어쓸까요?'))return msg('취소했어요.');
- try{ok.forEach(function(k){localStorage.setItem(k,ls[k])})}catch(e){return msg('저장 공간이 부족해 일부만 반영됐을 수 있어요.')}
+ try{ok.forEach(function(k){var v=ls[k];try{v=JSON.stringify(_sf(JSON.parse(v)))}catch(e){v=_sf(v)}localStorage.setItem(k,v)})}catch(e){return msg('저장 공간이 부족해 일부만 반영됐을 수 있어요.')}
  idbPut(imgs.filter(function(i){return i&&typeof i.d==='string'&&/^data:/.test(i.d)})).then(function(c){msg(ok.length+'개 항목'+(c?' · 이미지 '+c+'장':'')+' 가져왔어요.'+(bad?' (알 수 없는 항목 '+bad+'개는 무시)':''))},function(){msg(ok.length+'개 항목을 가져왔어요. 분배 이미지는 이 브라우저에서 넣지 못했어요.')})};
  r.readAsText(file)}
 document.addEventListener('DOMContentLoaded',function(){var e=$('bkExp'),i=$('bkImp'),f=$('bkFile');if(!e)return;e.onclick=exp;i.onclick=function(){f.click()};f.onchange=function(){if(f.files[0])imp(f.files[0]);f.value=''}});

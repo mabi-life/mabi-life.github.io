@@ -121,8 +121,9 @@ function enc3(p){var s=pack3(p),u=new TextEncoder().encode(s),c=['J'+b64u(u),'U'
 function dec3(s){if(s[0]==='U')return Promise.resolve(s.slice(1).split('~').map(uUnesc).join('\0'));var u=unb64u(s.slice(1));
  return (s[0]==='Z'?pipe(u,new DecompressionStream('deflate-raw')):Promise.resolve(u)).then(function(b){return new TextDecoder().decode(b)})}
 function decAny(s){return /^[ZJU]/.test(s)?dec3(s).then(unpack3):dec(s).then(unpack)}
+function _sf(v){if(typeof v==='string'){if(/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]*$/.test(v))return v;return v.replace(/[<>"'`]/g,function(c){return{'<':'\uff1c','>':'\uff1e','"':'\uff02',"'":'\uff07','`':'\uff40'}[c]})}if(Array.isArray(v))return v.map(_sf);if(v&&typeof v==='object'){var o={};Object.keys(v).forEach(function(k){o[_sf(k)]=_sf(v[k])});return o}return v}
 var shared=null;
-function openShared(){var m=location.hash.match(/^#s=(.+)$/);if(!m)return;decAny(m[1]).then(function(o){if(!o.i||!o.i.length){var mm=(o.t||'').match(/^\d{4}\.\d\d\.\d\d\s*-\s*(.+)$/);o.i=mm?mm[1].split(' · '):[]}shared=o;
+function openShared(){var m=location.hash.match(/^#s=(.+)$/);if(!m)return;decAny(m[1]).then(function(o){o=_sf(o)||{};if(o.th&&!/^data:image\//.test(o.th))o.th='';if(!o.i||!o.i.length){var mm=(o.t||'').match(/^\d{4}\.\d\d\.\d\d\s*-\s*(.+)$/);o.i=mm?mm[1].split(' · '):[]}shared=o;
   $('simg').style.display=o.th?'':'none';$('simg').src=o.th||'';$('st').innerHTML='<span class="tag '+(o.o?'done':'open')+'">'+(o.o?'완료':'진행중')+'</span>'+esc(o.t||'');
   $('sm').innerHTML=(o.m&&o.m.length?'파티원 '+o.m.map(function(n){return '<span class="at">@'+esc(n)+'</span>'}).join(''):'')+'<br>👑 분배자 <span class="dist">'+(o.d?esc(o.d):'-')+'</span>';
   $('snote').textContent=o.th?'공유 링크에는 작은 미리보기 이미지만 들어 있어요.':'';
