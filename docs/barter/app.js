@@ -23,9 +23,9 @@ const gk=n=>{if(n==null||isNaN(n))return '-';const a=Math.abs(n),s=n<0?'-':'';if
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function weekKey(now=Date.now()){const k=new Date(now+9*3600e3);let d=k.getUTCDay(),h=k.getUTCHours();let back=(d-4+7)%7;if(back===0&&h<7)back=7;return new Date(Date.UTC(k.getUTCFullYear(),k.getUTCMonth(),k.getUTCDate()-back,7)-9*3600e3).toISOString()}
 function def(){const p={};const sp=SNAP&&SNAP.prices||{};for(const m of D.materials){if(sp[m]!=null)p[m]={p:sp[m],src:'snap'};else if(D.pricesFallback.prices[m]!=null)p[m]={p:D.pricesFallback.prices[m],src:'pril'}}
- const act={};for(const ps of D.posts){const c=D.goods.filter(g=>g.post===ps&&g.tier===6);if(c.length)act[ps]=c[0].id}
- return{v:2,chars:[{name:'캐릭터 1',done:{},owned:{}}],cur:0,route:'pk',routes:null,carrier:0,cw:1200,cs:11,drate:0,qty:{},active6:act,prices:p,sale:{},week:weekKey(),snapT:SNAP&&SNAP.t||null}}
-function migrate(o){const d=def();if(!o||!Array.isArray(o.chars))return d;o=Object.assign(d,o);for(const c of o.chars){c.done=c.done||{};c.owned=c.owned||{}}o.active6=Object.assign(d.active6,o.active6);if(!Array.isArray(o.routes)||!o.routes.length)o.routes=[o.route==='ko'?'ko':'pk'];o.v=2;if(o.cur>=o.chars.length)o.cur=0;return o}
+ const act={};for(const ps of D.posts){const c=D.goods.filter(g=>g.post===ps&&g.tier===6);if(c.length)act[ps]=(D.default6&&D.default6[ps]&&G[D.default6[ps]])?D.default6[ps]:c[0].id}
+ return{v:2,chars:[{name:'캐릭터 1',done:{},owned:{}}],cur:0,route:'pk',routes:['pk','ko'],act6v:D.version,carrier:0,cw:1200,cs:11,drate:0,qty:{},active6:act,prices:p,sale:{},week:weekKey(),snapT:SNAP&&SNAP.t||null}}
+function migrate(o){const d=def();if(!o||!Array.isArray(o.chars))return d;o=Object.assign(d,o);for(const c of o.chars){c.done=c.done||{};c.owned=c.owned||{}}o.active6=o.act6v===D.version?Object.assign(d.active6,o.active6):d.active6;o.act6v=D.version;if(!Array.isArray(o.routes)||!o.routes.length)o.routes=[o.route==='ko'?'ko':'pk'];o.v=2;if(o.cur>=o.chars.length)o.cur=0;return o}
 let S;try{S=JSON.parse(localStorage.getItem(LS))}catch(e){}S=migrate(S);
 if(SNAP&&SNAP.t&&S.snapT!==SNAP.t){for(const[m,v]of Object.entries(SNAP.prices))if(!S.prices[m]||S.prices[m].src!=='manual')S.prices[m]={p:v,src:'snap'};S.snapT=SNAP.t}
 let open=null,layer=null,dOpen=null;const hist=[];
@@ -161,8 +161,9 @@ function renderWeek(){const c=C(),pl=plan(D.routes[0]);
  let dn=0,tot=0,buy=0,unk=0,rv=0,cost=0,anySale=false;
  for(const g of all){tot+=qtyOf(g);dn+=Math.min(doneOf(g),qtyOf(g));cost+=unitCost(g).s*qtyOf(g);rv+=rev(g,qtyOf(g));if(hasSale(g))anySale=true}
  const nd=need(all,true);for(const[m,n]of Object.entries(nd)){const sh=Math.max(0,n-(c.owned[m]||0));if(sh){const p=price(m);if(p==null)unk++;else buy+=sh*p}}
- $('#week').innerHTML=`<span class="mut">주간</span><span>진행 <b>${dn}/${tot}</b></span><span>부족 구매비 <b class="neg">${gk(buy)}</b>${unk?'<span class="warn">+?</span>':''}</span><span>예상 수익 ${anySale?`<b class="${rv-cost>=0?'pos':'neg'}">${rv-cost>=0?'+':''}${gk(rv-cost)}</b>`:'<span class="mut">판매가 미입력</span>'}</span><span>운송 <b>${fmt(pl.W)} / ${pl.SL}</b> <span class="mut">${esc(CARRIERS[S.carrier]?.n||'')}</span></span>`;
+ $('#week').innerHTML=`<span class="mut">주간</span><span>진행 <b>${dn}/${tot}</b></span><span>부족 구매비 <b class="neg">${gk(buy)}</b>${unk?'<span class="warn">+?</span>':''}</span><span>예상 수익 ${anySale?`<b class="${rv-cost>=0?'pos':'neg'}">${rv-cost>=0?'+':''}${gk(rv-cost)}</b>`:'<span class="mut">판매가 미입력</span>'}</span><span>운송 <b>${fmt(pl.W)} / ${pl.SL}</b> <span class="mut">${esc(CARRIERS[S.carrier]?.n||'')}</span></span>`+t6Guide();
  }
+function t6Guide(){const d=D.default6||{};const L=Object.entries(d).filter(([p,id])=>G[id]).map(([p,id])=>`${p} <b>${G[id].name}</b>`);return L.length?`<span style="flex-basis:100%;font-size:13.5px"><span class="t t6">T6</span> <span class="mut">${D.seasonLabel||'이번 달'} 6티어:</span> ${L.join(' · ')} <span class="mut">(매달 첫 목요일 07:00 KST 품목 변경 · 카드의 「6티어 이번 시즌」에서 바꿀 수 있어요)</span></span>`:''}
 function renderDash(){const pv=$('#paste2')?$('#paste2').value:'';renderWeek();$('#dash').className='';$('#dash').innerHTML=`<div class="ecards">${D.routes.filter(x=>x.id!=='sk').map(cardHtml).join('')}</div>`+xMats();if($('#paste2'))$('#paste2').value=pv}
 function renderX(){const f={sk:xSk};
  $('#xtra').innerHTML=SECS.map(([k,n,d])=>`<div class="xs" id="x-${k}"><h3 data-a="sec" data-s="${k}">${UI[k]?'▾':'▸'} ${n} <span class="mut">${k==='sk'?skProg():d}</span></h3>${UI[k]?`<div class="xb">${f[k]()}</div>`:''}</div>`).join('')}
