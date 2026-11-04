@@ -1,0 +1,24 @@
+name: Discord update post
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: Forum thread title (e.g. 11.04 업데이트)
+        required: true
+        type: string
+      body:
+        description: Post body (no URLs)
+        required: true
+        type: string
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Post to Discord 업데이트 forum
+        env:
+          DISCORD_UPDATES_WEBHOOK: ${{ secrets.DISCORD_UPDATES_WEBHOOK }}
+        run: |
+          python3 tools/discord_forum_post.py \
+            --title "${{ inputs.title }}" \
+            --body "${{ inputs.body }}"
