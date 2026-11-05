@@ -99,3 +99,43 @@ tr = {k: v for k, v in tr.items() if v}
 json.dump({'updated': out['updated'], 'ids': sorted(seen)[-20000:], 't': tr}, open(hp, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 print('relics history:', sum(map(len, tr.values())), 'trades')
 print('relics:', len(rows), 'listings,', len(skills), 'skills')
+
+# ── 무리아스의 유물(이데아) 단일 시세 → idea_data.json ─────────────────────────
+# 이데아는 item_option이 없음. option|Lv history.json에는 쌓이지 않으므로 별도 스냅샷.
+# auction/history 창 ~1시간. 클라이언트 ideaParse는 KST wall(오프셋 없음)을 기대.
+IDEA = '무리아스의 유물(이데아)'
+idea_rows = [x for x in rows if x.get('item_name') == IDEA and x.get('auction_price_per_unit')]
+idea_prices = sorted(x['auction_price_per_unit'] for x in idea_rows)
+idea_seen, idea_tr = set(), []
+cur = None
+for _ in range(20):
+    d = get('item_name=' + urllib.parse.quote(IDEA) + ('&cursor=' + cur if cur else ''), 'history')
+    for x in d.get('auction_history') or []:
+        if x.get('item_name') != IDEA: continue
+        bid, price, ts = x.get('auction_buy_id'), x.get('auction_price_per_unit'), x.get('date_auction_buy')
+        if not bid or bid in idea_seen or not price or not ts: continue
+        idea_seen.add(str(bid))
+        # API는 UTC(...Z). KST wall YYYY-MM-DDTHH:MM 로 저장
+        try:
+            dt = datetime.datetime.fromisoformat(ts.replace('Z', '+00:00')).astimezone(KST)
+            wall = dt.strftime('%Y-%m-%dT%H:%M')
+        except Exception:
+            wall = ts[:16]
+        idea_tr.append([wall, price])
+    cur = d.get('next_cursor')
+    if not cur: break
+idea_tr.sort(key=lambda x: x[0])
+idea_out = {
+    'updated': out['updated'],
+    'item': IDEA,
+    'source': 'NEXON Open API auction/list + auction/history (item_name exact)',
+    'note': 'auction/history는 최근 ~1시간 창. 옵션 없는 단일 아이템 시세. 누적 history.json(option|lv)에는 이데아 체결이 기록되지 않음.',
+    'listings': len(idea_rows),
+    'floor': idea_prices[0] if idea_prices else None,
+    'ceiling': idea_prices[-1] if idea_prices else None,
+    'ids': [str(b) for b in sorted(idea_seen, key=lambda s: int(s) if str(s).isdigit() else 0)],
+    't': idea_tr,
+}
+json.dump(idea_out, open(f'{H}/docs/auction/idea_data.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+print('idea:', idea_out['listings'], 'listings, floor', idea_out['floor'], ',', len(idea_tr), 'trades')
+

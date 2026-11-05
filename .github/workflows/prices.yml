@@ -29,7 +29,7 @@ jobs:
           # horn_*.json 은 horn.yml 전담 → 여기선 커밋하지 않음 (충돌 원인 제거)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          FILES="docs/prices.json docs/history_roll.json docs/pyeollin_history.json docs/auction/data.json docs/auction/history.json docs/auction/enchant_data.json docs/auction/enchant_history.json docs/auction/warranty_data.json docs/auction/warranty_history.json docs/auction/echo_data.json docs/auction/echo_history.json"
+          FILES="docs/prices.json docs/history_roll.json docs/pyeollin_history.json docs/auction/data.json docs/auction/history.json docs/auction/enchant_data.json docs/auction/enchant_history.json docs/auction/warranty_data.json docs/auction/warranty_history.json docs/auction/echo_data.json docs/auction/echo_history.json docs/auction/idea_data.json"
           STASH=$(mktemp -d)
           for f in $FILES; do [ -f "$f" ] && mkdir -p "$STASH/$(dirname $f)" && cp "$f" "$STASH/$f"; done
           for i in 1 2 3 4 5 6; do

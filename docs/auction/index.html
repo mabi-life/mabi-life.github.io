@@ -57,6 +57,26 @@ td.eLoc{white-space:nowrap}.loc{display:inline-block;max-width:9em;overflow:hidd
 .eSrch{flex-wrap:nowrap;gap:10px}.eSrch #eq{flex:1 1 auto;min-width:0;width:auto;margin:0}.eChk{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:13px;color:#c9c4ea;padding:7px 12px;border:1px solid #2a2350;border-radius:8px;background:#15122a;cursor:pointer;user-select:none}.eChk input{margin:0;accent-color:#f7d98b}@media(max-width:380px){.eChk{padding:7px 8px;font-size:12px}}
 .eHot{margin:10px 0 6px;padding:8px 12px;border-left:3px solid #f7d98b;background:rgba(247,217,139,.08);color:#f7d98b;border-radius:6px}.eHot small{color:#8a85b0;margin-left:6px}
 .pg-lo1{color:#8fd6a6!important}.pg-lo2{color:#7fe59f!important;font-weight:600}.pg-lo3{color:#6cf08f!important;font-weight:800}.pg-hi1{color:#e6a3a3!important}.pg-hi2{color:#f08c8c!important;font-weight:600}.pg-hi3{color:#ff7a7a!important;font-weight:800}
+/* ── Murias Idea item price chart (collapsed by default) ── */
+.murSec{margin:22px auto 8px;padding:0;max-width:1440px;background:#1a1530;border:1px solid #3a2f66;border-radius:14px;box-shadow:0 6px 22px rgba(0,0,0,.25);overflow:hidden}
+.murSec>summary.murHead{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0;padding:14px 16px;user-select:none}
+.murSec>summary.murHead::-webkit-details-marker{display:none}
+.murSec>summary.murHead::after{content:"펼치기 ▾";margin-left:auto;font-size:12.5px;font-weight:600;color:#9aa0ad;border:1px solid #3a3f4c;border-radius:999px;padding:2px 10px;flex:0 0 auto}
+.murSec[open]>summary.murHead{padding-bottom:12px;border-bottom:1px solid #2a2350}
+.murSec[open]>summary.murHead::after{content:"접기 ▴";color:#e3c98a;border-color:#5a4c2a}
+.murSec>summary.murHead:hover{color:#f7d98b}
+.murSec .murHead h3{margin:0;font-size:18px;font-weight:800;color:#f7d98b;letter-spacing:-.02em}
+.murSec .murHead p,.murSec .murHead small{margin:0;font-size:13px;color:var(--mu);flex:1 1 180px;font-weight:500;min-width:0}
+.murSec .murBody{padding:12px 16px 14px}
+.murStats{display:flex;flex-wrap:wrap;gap:8px 10px;margin:0 0 12px}
+.murStat{flex:1 1 120px;min-width:110px;padding:10px 12px;background:#120e28;border:1px solid #2a2350;border-radius:10px}
+.murStat span{display:block;font-size:12px;color:#8a85b0;margin-bottom:4px}
+.murStat b{display:block;font-size:16px;font-weight:800;color:#f7d98b;letter-spacing:-.02em}
+.murChart{padding:8px 4px 2px;background:#120e28;border:1px solid #2a2350;border-radius:12px;min-height:180px}
+.murChart svg{width:100%;height:auto;display:block}
+.murChart .empty{font-size:14px;color:#6f6a90;padding:48px 12px;text-align:center}
+.murNote{margin:10px 0 0;font-size:12.5px;color:#8a85b0;line-height:1.5}
+@media(max-width:600px){.murSec .murHead p,.murSec .murHead small{display:none}}
 </style><script>function pg(m,a,t){if(!m||!a||!(t>=2))return'';const d=(m-a)/a,x=Math.abs(d);if(x<.1)return'';const l=x>=.3?3:x>=.2?2:1;return ` pg-${d<0?'lo':'hi'}${l}" title="시세 대비 ${d<0?'-':'+'}${Math.round(x*100)}%`}</script>
   <script type="text/javascript" src="https://openapi.nexon.com/js/analytics.js?app_id=355270" async></script>
 <link rel="stylesheet" href="/css/kit.css?v=17"><script src="/js/kit.js?v=12" defer></script></head>
@@ -70,6 +90,14 @@ td.eLoc{white-space:nowrap}.loc{display:inline-block;max-width:9em;overflow:hidd
 <div class="chips" id="chips"></div>
 <p class="info" id="info"></p>
 <div id="list" class="list3"></div>
+<details class="murSec" id="murSec" aria-label="무리아스의 유물(이데아) 시세">
+  <summary class="murHead"><h3>무리아스의 유물(이데아) 시세</h3><p id="murSub">아이템 단일 시세 · 옵션/아르카나 구분 없음</p></summary>
+  <div class="murBody">
+  <div class="murStats" id="murStats"></div>
+  <div class="murChart" id="murChart"></div>
+  <p class="murNote" id="murNote">NEXON auction/history는 최근 약 1시간 창입니다. 이데아는 옵션이 없어 기존 option|Lv history.json에 쌓이지 않습니다. 장기 누적은 별도 수집이 필요합니다.</p>
+  </div>
+</details>
 </div>
 <div id="pE" hidden><div class="head"><h2>경매장 도우미 · 인챈트 스크롤</h2><p>인챈트 스크롤 · 전용 인챈트 스크롤 경매장 최저가 · 매물 수 · 거래 시세</p></div>
 <div class="eBar eBox"><div class="eRow eSrch"><input id="eq" type="search" placeholder="인챈트 이름 검색 (예: 놀라운)"><label class="eChk"><input type="checkbox" id="eHas" checked>매물 있는 것만</label></div>
@@ -102,11 +130,13 @@ function tab(){const h=location.hash,e=h==='#enchant',c=h==='#echo';if(e)eLoad()
 onhashchange=tab;
 
 const man=p=>p>=1e8?(p/1e8).toFixed(p%1e8?1:0).replace(/\.0$/,'')+'억':p>=1e4?(+(p/1e4).toFixed(p>=1e5?0:1))+'만':p.toLocaleString();
+const ideaMan=p=>{if(p==null||p!==p)return'-';if(p>=1e8){const e=Math.floor(p/1e8),m=Math.round((p%1e8)/1e4);return m?e+'억 '+m.toLocaleString()+'만':e+'억'}return man(p)};
 let Hs={},D,I={arcana:{},skills:{}},cur=localStorage.relicArc||'';
 const ic=(o,n)=>o?`<img src="icons/2x/${o.key}.png?v=20261104" alt="" width="${o.w}" height="${o.h}" loading="lazy">`:'';
 const skIc=n=>ic(I.skills[Object.keys(I.skills).filter(k=>n.startsWith(k)).sort((a,b)=>b.length-a.length)[0]]);
-Promise.all([fetch('data.json?t='+Date.now()).then(r=>r.json()),fetch('icons/icons.json?v=20261104').then(r=>r.json()).catch(()=>I),fetch('history.json?t='+Date.now()).then(r=>r.json()).catch(()=>({t:{}}))]).then(([d,i,h])=>{D=d;I=i;Hs=h.t||{};
- $('upd').textContent='갱신 '+new Date(d.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' · 매물 '+d.listings+'건';draw();});
+let Idea={t:[],floor:null,listings:0,updated:null,note:''};
+Promise.all([fetch('data.json?t='+Date.now()).then(r=>r.json()),fetch('icons/icons.json?v=20261104').then(r=>r.json()).catch(()=>I),fetch('history.json?t='+Date.now()).then(r=>r.json()).catch(()=>({t:{}})),fetch('idea_data.json?t='+Date.now()).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([d,i,h,idea])=>{D=d;I=i;Hs=h.t||{};if(idea)Idea=idea;
+ $('upd').textContent='갱신 '+new Date(d.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' · 매물 '+d.listings+'건';draw();drawIdea();});
 function val(o,l){const m=String(o.step).match(/^([\d.]+)(.*)$/);return m?'+'+(+(m[1]*l).toFixed(2))+m[2]:''}
 let L,R;function lk(n,l){const h=Hs[n+'|'+l];return h&&h.length?h[h.length-1]:null}
 function rt(n,l){const h=Hs[n+'|'+l];if(!h||!h.length)return null;const k=h.slice(-10);return [Math.round(k.reduce((a,x)=>a+x[1],0)/k.length),k.length]}
@@ -124,6 +154,40 @@ function draw(){
   return `<div class="blk"><h4>${skIc(o.name)}<span>${o.name}</span>${t?`<b>Lv10 ${t[0].toLocaleString()}</b>`:(L=lk(o.name,10))?`<b class="no">매물 없음 · 최근 거래가 ${man(L[1])}</b>`:'<b class="no">Lv10 매물 없음</b>'}</h4><p>${o.desc}</p><div class="lv">${
    [10,9,8,7,6,5,4,3,2,1].map(l=>{const v=o.lv[l];return `<button data-o="${o.name}" data-l="${l}" class="${l==10?'top':''}${v?'':' x'}">Lv${l}<i>${val(o,l)}</i>${v?(R=rt(o.name,l),`<b class="${pg(v[0],R&&R[0],R&&R[1])}">${man(v[0])}</b>${v[1]}건`):(L=lk(o.name,l))?`<b class="ls">${man(L[1])}</b>최근 거래가`:`<b>-</b>없음`}</button>`}).join('')}</div></div>`}).join('');
 }
+
+function ideaParse(ts){// idea_data.json stores KST wall time without offset
+ const m=String(ts).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+ if(!m)return Date.parse(ts);
+ return Date.UTC(+m[1],+m[2]-1,+m[3],+m[4]-9,+m[5]); // treat as KST → UTC ms
+}
+function ideaChart(h){if(!h||!h.length)return'<div class="empty">최근 이데아 체결 기록 없음 (API ~1시간 창)</div>';
+ const W=Math.min(960,Math.max(520,h.length*28)),H=220,P=52,R=16,B=28,T=18,
+  ts=h.map(x=>ideaParse(x[0])),ps=h.map(x=>x[1]),t0=Math.min(...ts),t1=Math.max(...ts),
+  pMin=Math.min(...ps),pMax=Math.max(...ps),span=Math.max(pMax-pMin,1_500_000),pad=Math.max(span*0.25,300000),
+  lo=pMin-pad,hi=pMax+pad,
+  X=t=>t1>t0?P+(t-t0)/(t1-t0)*(W-P-R):W/2,Y=p=>H-B-(p-lo)/(hi-lo||1)*(H-B-T),
+  pts=h.map((x,i)=>[X(ts[i]),Y(ps[i])]),
+  ln=pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1)).join(''),
+  f=d=>{const x=new Date(d+9*3600*1000);return (x.getUTCMonth()+1)+'.'+x.getUTCDate()+' '+String(x.getUTCHours()).padStart(2,'0')+':'+String(x.getUTCMinutes()).padStart(2,'0')},
+  gid='ig'+Math.random().toString(36).slice(2,8),
+  labs=pts.map((q,i)=>{const n=pts.length,e=i==0||i==n-1,ex=i>0&&i<n-1&&((ps[i]>ps[i-1]&&ps[i]>=ps[i+1])||(ps[i]<ps[i-1]&&ps[i]<=ps[i+1]));if(!(n<=14||e||ex))return'';const up=i==0||i==n-1?q[1]>(T+30):!(i>0&&ps[i]<ps[i-1]);const y=up?q[1]-8:q[1]+14;const a=q[0]<P+24?'start':q[0]>W-R-24?'end':'middle';return`<text x="${q[0].toFixed(1)}" y="${y.toFixed(1)}" fill="#f7d98b" font-size="10" font-weight="700" text-anchor="${a}" stroke="#120e28" stroke-width="3" paint-order="stroke">${ideaMan(ps[i])}</text>`}).join('');
+ return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="무리아스의 유물(이데아) 시세 그래프"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7d98b" stop-opacity=".32"/><stop offset="1" stop-color="#f7d98b" stop-opacity="0"/></linearGradient></defs>
+ <line x1="${P}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="#3a2f66"/><line x1="${P}" y1="${T}" x2="${P}" y2="${H-B}" stroke="#2a2350"/>
+ <text x="4" y="${Y(pMax)+4}" fill="#8a85b0" font-size="10">${ideaMan(pMax)}</text><text x="4" y="${Y(pMin)+4}" fill="#8a85b0" font-size="10">${ideaMan(pMin)}</text>
+ ${pts.length>1?`<path d="${ln}L${pts.at(-1)[0]},${H-B}L${pts[0][0]},${H-B}Z" fill="url(#${gid})"/><path d="${ln}" fill="none" stroke="#f7d98b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`:''}
+ ${pts.map((q,i)=>`<circle cx="${q[0]}" cy="${q[1]}" r="3.2" fill="#f7d98b"><title>${f(ts[i])} (KST) · ${ps[i].toLocaleString()} G</title></circle>`).join('')}${labs}
+ <text x="${P}" y="${H-6}" fill="#8a85b0" font-size="11">${f(t0)}</text><text x="${W-R}" y="${H-6}" fill="#8a85b0" font-size="11" text-anchor="end">${f(t1)}</text></svg>`}
+function drawIdea(){const st=$('murStats'),ch=$('murChart'),sub=$('murSub'),note=$('murNote');if(!ch)return;
+ const h=Idea.t||[],ps=h.map(x=>x[1]),last=h.length?h[h.length-1]:null;
+ if(sub)sub.textContent=`아이템 단일 시세 · 매물 ${Idea.listings||0}건 · 갱신 ${Idea.updated?new Date(Idea.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'-'} (Asia/Seoul)`;
+ if(st)st.innerHTML=`<div class="murStat"><span>현재 최저가</span><b>${Idea.floor?ideaMan(Idea.floor):'-'}</b></div>
+ <div class="murStat"><span>최근 체결가</span><b>${last?ideaMan(last[1]):'-'}</b></div>
+ <div class="murStat"><span>창 내 최저·최고</span><b>${ps.length?ideaMan(Math.min(...ps))+' · '+ideaMan(Math.max(...ps)):'-'}</b></div>
+ <div class="murStat"><span>최근 체결</span><b>${h.length?h.length+'건':'-'}</b></div>`;
+ ch.innerHTML=ideaChart(h);
+ if(note&&Idea.note)note.textContent=Idea.note;
+}
+
 $('chips').onclick=e=>{const b=e.target.closest('.chip');if(b){cur=localStorage.relicArc=b.dataset.s;draw()}};
 $('has').onchange=draw;
 const HOV=matchMedia('(hover:hover) and (pointer:fine)').matches;let tT=0,tB=null;
