@@ -58,7 +58,7 @@ function drawShareCard(d){const W=640,H=560,S=2,cv=document.createElement('canva
  x.textAlign='center';x.fillStyle=GOLD;x.font='600 16px '+FF;x.fillText('1인당 분배금',W/2,420);
  x.font='900 46px '+FF;x.shadowColor='rgba(255,200,80,.55)';x.shadowBlur=14;x.fillText(f(d.per)+' G',W/2,474);x.shadowBlur=0;x.shadowColor='transparent';
  x.fillStyle=DIM;x.font='400 13px '+FF;x.fillText((d.exact!==d.per?'정확히 '+f(d.exact)+' G · 수표 단위 · ':'')+d.n+'명 기준',W/2,502);
- x.textAlign='right';x.fillStyle='rgba(169,162,200,.6)';x.font='400 11px '+FF;x.fillText('mabi 분배 도우미',W-36,H-20);x.textAlign='left';
+ x.textAlign='right';x.fillStyle='rgba(169,162,200,.6)';x.font='400 11px '+FF;x.fillText('mabi 분배 도우미',W-36,H-20);x.textAlign='left';{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(d.savedAt||new Date()).reduce((o,q)=>(o[q.type]=q.value,o),{});x.fillStyle='rgba(169,162,200,.6)';x.font='400 11px '+FF;x.fillText('이미지 저장시간 : '+p.year+'-'+p.month+'-'+p.day+' '+p.hour+':'+p.minute+':'+p.second,36,H-20);}
  return cv}
 window._drawShareCard=d=>drawShareCard(d||window._fee);
 async function captureFee(){const btn=$('#capBtn');if(btn){btn.disabled=true;btn.textContent='만드는 중…'}
