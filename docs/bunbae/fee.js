@@ -20,10 +20,23 @@ function calc(){const p=num($('#price').value),n=Math.max(1,num($('#n').value)),
  document.querySelectorAll('#cpBody tr').forEach(t=>t.onclick=()=>{const c=+t.dataset.c;force=(force===c||c===best.c)?null:c;calc()});
  $('#upd').textContent='시세 '+cpT.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+' 기준 · Open API 최저가';}
 function downloadPng(blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='분배결과_'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'')+'.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2e3)}
-async function copyOrSavePng(blob){let copied=false;
- try{if(navigator.clipboard&&window.ClipboardItem&&window.isSecureContext){await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);copied=true}}catch(e){copied=false}
- if(copied){feeToast('✅ 결과 이미지 복사됨 · 디스코드에 Ctrl+V');return}
- downloadPng(blob);feeToast(window.isSecureContext?'💾 PNG 저장됨 (클립보드 복사 실패)':'💾 PNG 저장됨 (HTTP에선 이미지 복사 제한)')}
+async function copyOrSavePng(blob){
+ const text=String(window._chk||0);let imgOk=false,txtOk=false;
+ if(navigator.clipboard&&window.isSecureContext){
+  if(window.ClipboardItem){
+   try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob,'text/plain':new Blob([text],{type:'text/plain'})})]);imgOk=txtOk=true}
+   catch(e){
+    try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);imgOk=true}catch(e2){imgOk=false}
+    if(!txtOk){try{await navigator.clipboard.writeText(text);txtOk=true}catch(e3){}}
+   }
+  }else{
+   try{await navigator.clipboard.writeText(text);txtOk=true}catch(e){}
+  }
+ }
+ if(imgOk){feeToast(txtOk?'✅ 결과 이미지+1인당 금액 복사됨 · 디스코드/수표에 Ctrl+V':'✅ 결과 이미지 복사됨 · 디스코드에 Ctrl+V');return}
+ if(!txtOk&&navigator.clipboard&&window.isSecureContext){try{await navigator.clipboard.writeText(text);txtOk=true}catch(e){}}
+ downloadPng(blob);feeToast(window.isSecureContext?(txtOk?'💾 PNG 저장됨 · 1인당 금액은 클립보드에 있음':'💾 PNG 저장됨 (클립보드 복사 실패)'):'💾 PNG 저장됨 (HTTP에선 이미지 복사 제한)')
+}
 function rr(x,X,Y,W,H,R){x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+W,Y,X+W,Y+H,R);x.arcTo(X+W,Y+H,X,Y+H,R);x.arcTo(X,Y+H,X,Y,R);x.arcTo(X,Y,X+W,Y,R);x.closePath()}
 function drawShareCard(d){const W=640,H=560,S=2,cv=document.createElement('canvas');cv.width=W*S;cv.height=H*S;const x=cv.getContext('2d');x.scale(S,S);
  const FF='"Pretendard","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif',GOLD='#f7d98b',DIM='#a9a2c8',TXT='#efeaff';
