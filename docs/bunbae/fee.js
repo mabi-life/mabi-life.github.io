@@ -24,7 +24,10 @@ async function copyOrSavePng(blob){
  const text=String(window._chk||0);let imgOk=false,txtOk=false;
  if(navigator.clipboard&&window.isSecureContext){
   if(window.ClipboardItem){
-   try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob,'text/plain':new Blob([text],{type:'text/plain'})})]);imgOk=txtOk=true}
+   const tp=()=>new Blob([text],{type:'text/plain'});let html=null;
+   try{const du=await new Promise((r,j)=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.onerror=j;fr.readAsDataURL(blob)});html=new Blob(['<img src="'+du+'" alt="">'],{type:'text/html'})}catch(_){}
+   try{if(!html)throw 0;await navigator.clipboard.write([new ClipboardItem({'image/png':blob,'text/html':html,'text/plain':tp()})]);imgOk=txtOk=true}catch(_){}
+   if(!imgOk)try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob,'text/plain':tp()})]);imgOk=txtOk=true}
    catch(e){
     try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);imgOk=true}catch(e2){imgOk=false}
     if(!txtOk){try{await navigator.clipboard.writeText(text);txtOk=true}catch(e3){}}
@@ -39,21 +42,21 @@ async function copyOrSavePng(blob){
 }
 function rr(x,X,Y,W,H,R){x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+W,Y,X+W,Y+H,R);x.arcTo(X+W,Y+H,X,Y+H,R);x.arcTo(X,Y+H,X,Y,R);x.arcTo(X,Y,X+W,Y,R);x.closePath()}
 function drawShareCard(d){const W=640,H=560,S=2,cv=document.createElement('canvas');cv.width=W*S;cv.height=H*S;const x=cv.getContext('2d');x.scale(S,S);
- const FF='"Pretendard","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif',GOLD='#f7d98b',DIM='#a9a2c8',TXT='#efeaff';
+ const FF='"Pretendard","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif',GOLD='#ffd76a',DIM='#bdb6dc',TXT='#ffffff';
  const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,'#211a44');g.addColorStop(1,'#120e26');x.fillStyle=g;x.fillRect(0,0,W,H);
- rr(x,12,12,W-24,H-24,18);x.strokeStyle='rgba(247,217,139,.55)';x.lineWidth=1.5;x.stroke();
+ rr(x,12,12,W-24,H-24,18);x.strokeStyle='rgba(247,217,139,.9)';x.lineWidth=2.5;x.stroke();
  x.textBaseline='alphabetic';x.fillStyle=GOLD;x.font='800 24px '+FF;x.fillText('💰 분배 정산',36,58);
  x.fillStyle=DIM;x.font='500 14px '+FF;x.textAlign='right';x.fillText(d.n+'명 · '+(d.rate==4?'멤버십 4%':'일반 5%'),W-36,58);x.textAlign='left';
- x.fillStyle='rgba(247,217,139,.25)';x.fillRect(36,76,W-72,1);
+ x.fillStyle='rgba(255,215,106,.5)';x.fillRect(36,76,W-72,2);
  const row=(y,l,v,sub,col)=>{x.fillStyle=DIM;x.font='500 16px '+FF;x.fillText(l,36,y);x.textAlign='right';x.fillStyle=col||TXT;x.font='700 20px '+FF;x.fillText(v,W-36,y);if(sub){x.fillStyle=DIM;x.font='400 12.5px '+FF;x.fillText(sub,W-36,y+20)}x.textAlign='left'};
  row(118,'총 판매금액',f(d.p)+' G',kor(d.p));
  row(176,'수수료 할인 쿠폰',d.c?d.c+'% 할인 쿠폰':'쿠폰 없음 (미사용)',d.c?'경매장 수수료 '+d.c+'% 할인 쿠폰':'기본 수수료 '+d.rate+'% 그대로 적용',d.c?GOLD:'#ffb3bd');
  row(234,'쿠폰 가격',d.c?f(d.cpPrice)+' G':'—',d.c?'최저가 '+d.t.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+' 기준':'');
  row(292,'빠진 수수료 (실제)',f(d.fee)+' G',d.c?'기본 '+f(d.base)+' − 할인 '+f(d.disc)+' + 쿠폰 '+f(d.cpPrice):'판매금액의 '+d.rate+'%','#ffb3bd');
  row(350,'실수령',f(d.net)+' G');
- rr(x,28,384,W-56,140,14);const g2=x.createLinearGradient(0,384,0,524);g2.addColorStop(0,'rgba(247,217,139,.18)');g2.addColorStop(1,'rgba(247,217,139,.06)');x.fillStyle=g2;x.fill();x.strokeStyle='rgba(247,217,139,.6)';x.lineWidth=1;x.stroke();
+ rr(x,28,384,W-56,140,14);const g2=x.createLinearGradient(0,384,0,524);g2.addColorStop(0,'rgba(255,215,106,.28)');g2.addColorStop(1,'rgba(255,215,106,.1)');x.fillStyle=g2;x.fill();x.strokeStyle='rgba(255,215,106,.95)';x.lineWidth=2;x.stroke();
  x.textAlign='center';x.fillStyle=GOLD;x.font='600 16px '+FF;x.fillText('1인당 분배금',W/2,420);
- x.font='900 44px '+FF;x.fillText(f(d.per)+' G',W/2,474);
+ x.font='900 46px '+FF;x.shadowColor='rgba(255,200,80,.55)';x.shadowBlur=14;x.fillText(f(d.per)+' G',W/2,474);x.shadowBlur=0;x.shadowColor='transparent';
  x.fillStyle=DIM;x.font='400 13px '+FF;x.fillText((d.exact!==d.per?'정확히 '+f(d.exact)+' G · 수표 단위 · ':'')+d.n+'명 기준',W/2,502);
  x.textAlign='right';x.fillStyle='rgba(169,162,200,.6)';x.font='400 11px '+FF;x.fillText('mabi 분배 도우미',W-36,H-20);x.textAlign='left';
  return cv}
