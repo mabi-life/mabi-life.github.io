@@ -76,7 +76,7 @@ td.eLoc{white-space:nowrap}.loc{display:inline-block;max-width:9em;overflow:hidd
 .murChart svg{width:100%;height:auto;display:block}
 .murChart svg text{font-family:inherit;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .murChart svg text[fill="#8a85b0"]{font-size:10.5px;font-weight:600;fill:#9a94c0}
-.murChart svg text[fill="#f7d98b"]{font-size:10.5px;font-weight:800;letter-spacing:-.02em}
+.murChart svg text[fill="#f7d98b"]{font-size:9px;font-weight:700;letter-spacing:-.02em}
 .murChart .empty{font-size:14px;color:#6f6a90;padding:48px 12px;text-align:center}
 .murNote{margin:10px 0 0;font-size:12.5px;color:#8a85b0;line-height:1.5}
 @media(max-width:600px){.murSec .murHead p,.murSec .murHead small{display:none}}
@@ -172,8 +172,10 @@ function ideaChart(h){if(!h||!h.length)return'<div class="empty">최근 이데�
   pts=h.map((x,i)=>[X(ts[i]),Y(ps[i])]),
   ln=pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1)).join(''),
   f=d=>{const x=new Date(d+9*3600*1000);return (x.getUTCMonth()+1)+'.'+x.getUTCDate()+' '+String(x.getUTCHours()).padStart(2,'0')+':'+String(x.getUTCMinutes()).padStart(2,'0')},
-  gid='ig'+Math.random().toString(36).slice(2,8),
-  labs=pts.map((q,i)=>{const n=pts.length,e=i==0||i==n-1,ex=i>0&&i<n-1&&((ps[i]>ps[i-1]&&ps[i]>=ps[i+1])||(ps[i]<ps[i-1]&&ps[i]<=ps[i+1]));if(!(n<=14||e||ex))return'';const up=i==0||i==n-1?q[1]>(T+30):!(i>0&&ps[i]<ps[i-1]);const y=up?q[1]-8:q[1]+14;const a=q[0]<P+24?'start':q[0]>W-R-24?'end':'middle';return`<text x="${q[0].toFixed(1)}" y="${y.toFixed(1)}" fill="#f7d98b" font-size="10" font-weight="700" text-anchor="${a}" stroke="#120e28" stroke-width="3" paint-order="stroke">${ideaMan(ps[i])}</text>`}).join('');
+  gid='ig'+Math.random().toString(36).slice(2,8);
+ // Label only last + window min + window max (dense trades otherwise pile gold text)
+ let iMin=0,iMax=0;for(let i=1;i<ps.length;i++){if(ps[i]<ps[iMin])iMin=i;if(ps[i]>ps[iMax])iMax=i}
+ const labs=[...new Set([ps.length-1,iMin,iMax])].sort((a,b)=>a-b).map(i=>{const q=pts[i];const up=i===iMax&&i!==iMin?true:i===iMin&&i!==iMax?false:q[1]>(T+30);const y=up?q[1]-7:q[1]+12;const a=q[0]<P+24?'start':q[0]>W-R-24?'end':'middle';return`<text x="${q[0].toFixed(1)}" y="${y.toFixed(1)}" fill="#f7d98b" font-size="9" font-weight="700" text-anchor="${a}" stroke="#120e28" stroke-width="2.5" paint-order="stroke">${ideaMan(ps[i])}</text>`}).join('');
  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="무리아스의 유물(이데아) 시세 그래프"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7d98b" stop-opacity=".32"/><stop offset="1" stop-color="#f7d98b" stop-opacity="0"/></linearGradient></defs>
  <line x1="${P}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="#3a2f66"/><line x1="${P}" y1="${T}" x2="${P}" y2="${H-B}" stroke="#2a2350"/>
  <text x="4" y="${Y(pMax)+4}" fill="#8a85b0" font-size="10">${ideaMan(pMax)}</text><text x="4" y="${Y(pMin)+4}" fill="#8a85b0" font-size="10">${ideaMan(pMin)}</text>
