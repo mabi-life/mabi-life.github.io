@@ -32,7 +32,7 @@ function chart(P,med,mean){if(!P.length)return'';var W=640,H=150,L=48,R=8,T=10,B
  var g='';[lo+pad,(lo+hi)/2,hi-pad].forEach(function(v){g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="#ffffff14"/><text x="'+(L-4)+'" y="'+(Y(v)+4)+'" text-anchor="end">'+man(v)+'</text>'});
  var tf=function(t){var d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+'시'};
  g+='<text x="'+L+'" y="'+(H-6)+'">'+tf(t0)+'</text><text x="'+(W-R)+'" y="'+(H-6)+'" text-anchor="end">'+tf(t1)+'</text>';
- g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(med)+'" y2="'+Y(med)+'" stroke="#f7d98b" stroke-dasharray="5 4"/><text x="'+(W-R)+'" y="'+(Y(med)-5)+'" text-anchor="end" fill="#f7d98b">중앙값 '+man(med)+'</text>';
+ g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(med)+'" y2="'+Y(med)+'" stroke="#f7d98b" stroke-dasharray="5 4"/><text x="'+(W-R)+'" y="'+(Y(med)-5)+'" text-anchor="end" fill="#f7d98b">최대값 '+man(med)+'</text>';
  if(mean!=null){var dy=Math.abs(Y(mean)-Y(med))<14?(Y(mean)>Y(med)?14:-5):(-5);g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(mean)+'" y2="'+Y(mean)+'" stroke="#7cc4ff" stroke-width="1.6" stroke-dasharray="2 3"/><text x="'+(L+4)+'" y="'+(Y(mean)+dy)+'" fill="#7cc4ff" font-weight="700">평균 '+man(mean)+'</text>'}
  P.forEach(function(x){g+='<circle cx="'+X(x.t).toFixed(1)+'" cy="'+Y(x.p).toFixed(1)+'" r="3.6" fill="'+(x.side==='buy'?'#7fd99a':'#ffa86b')+'" fill-opacity="'+(x.any?.45:.9)+'"/>'});
  return '<svg viewBox="0 0 '+W+' '+H+'" class="bchart">'+g+'</svg>'}
@@ -41,7 +41,7 @@ function renderBead(){var P=pts(st.tab),h=$('bead'),ps=P.map(function(x){return 
  var ov=+st.beadOv[st.tab]||0,IM=MabiCoin.IMPLIED[st.tab]?MabiCoin.impliedBead(P0,st.tab):null;BPN=ov>0?{p:ov,src:'직접 입력'}:(IM&&IM.p?IM:(med!=null?{p:med,src:'뿔피리 '+ps.length+'건 중앙값'}:null));
  var nb=P.filter(function(x){return x.side==='buy'}).length;
  h.innerHTML='🔮 구슬 시세(개당) <b>'+(BPN?fmt(BPN.p)+'골드':'—')+'</b> <small>'+(BPN?BPN.src:'최근 48시간 뿔피리에 '+SHOPS[st.tab].name+' 가격 글이 없습니다 (다른 구슬·미표기 시세는 쓰지 않음)')+(IM&&IM.p&&!ov?'</small><table class="imt"><thead><tr><th>재료</th><th>경매 최저가</th><th>교환 구슬</th><th>개당 환산</th></tr></thead><tbody>'+IM.list.map(function(x){return '<tr><td>'+esc(x.n)+'</td><td>'+fmt(x.p)+'</td><td>'+x.cost+'</td><td><b>'+fmt(x.u)+'</b></td></tr>'}).join('')+'</tbody></table><small>'+(IM.out?'이상치 '+IM.out+'종 제외 · ':'')+'가격 없는 도면·옷본 제외<br>참고 뿔피리':'')+(med!=null&&!ov?' · <b style="color:#7cc4ff">평균 '+fmt(mean)+'</b> · 구구 '+nb+'건 · ㅍㅍ '+(ps.length-nb)+'건':'')+'</small>'+
-  chart(P,med!=null?med:0,mean)+(P.length?'<div class="leg"><i style="background:#7fd99a"></i>구구(삽니다) <i style="background:#ffa86b"></i>ㅍㅍ(팝니다) <span>해당 상점 구슬로 명시된 글만 · 종류 미표기/거뿔 글 제외 · <b style="color:#f7d98b">노란 점선 = 중앙값</b>(이상치에 강해 기준으로 사용) · <b style="color:#7cc4ff;white-space:nowrap;display:inline-block">파란 점선 = 평균</b></span></div>':'');
+  chart(P,ps.length?Math.max.apply(0,ps):0,mean)+(P.length?'<div class="leg"><i style="background:#7fd99a"></i>구구(삽니다) <i style="background:#ffa86b"></i>ㅍㅍ(팝니다) <span>해당 상점 구슬로 명시된 글만 · 종류 미표기/거뿔 글 제외 · <b style="color:#f7d98b">노란 점선 = 최대값</b>(48시간 내 최고 시세) · <b style="color:#7cc4ff;white-space:nowrap;display:inline-block">파란 점선 = 평균</b></span></div>':'');
  $('beadOv').value=st.beadOv[st.tab]||''}
 function render(){
  beadStats();P0=P;renderBead();
