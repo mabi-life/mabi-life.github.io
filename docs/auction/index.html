@@ -65,15 +65,18 @@ td.eLoc{white-space:nowrap}.loc{display:inline-block;max-width:9em;overflow:hidd
 .murSec[open]>summary.murHead{padding-bottom:12px;border-bottom:1px solid #2a2350}
 .murSec[open]>summary.murHead::after{content:"접기 ▴";color:#e3c98a;border-color:#5a4c2a}
 .murSec>summary.murHead:hover{color:#f7d98b}
-.murSec .murHead h3{margin:0;font-size:18px;font-weight:800;color:#f7d98b;letter-spacing:-.02em}
-.murSec .murHead p,.murSec .murHead small{margin:0;font-size:13px;color:var(--mu);flex:1 1 180px;font-weight:500;min-width:0}
+.murSec .murHead h3{margin:0;font-size:17px;font-weight:800;color:#f7d98b;letter-spacing:-.025em;line-height:1.3;text-shadow:0 1px 0 rgba(0,0,0,.35)}
+.murSec .murHead p,.murSec .murHead small{margin:0;font-size:12.5px;color:#9a94c0;flex:1 1 180px;font-weight:500;letter-spacing:-.01em;min-width:0}
 .murSec .murBody{padding:12px 16px 14px}
 .murStats{display:flex;flex-wrap:wrap;gap:8px 10px;margin:0 0 12px}
 .murStat{flex:1 1 120px;min-width:110px;padding:10px 12px;background:#120e28;border:1px solid #2a2350;border-radius:10px}
-.murStat span{display:block;font-size:12px;color:#8a85b0;margin-bottom:4px}
-.murStat b{display:block;font-size:16px;font-weight:800;color:#f7d98b;letter-spacing:-.02em}
+.murStat span{display:block;font-size:11.5px;font-weight:600;color:#8a85b0;letter-spacing:.01em;margin-bottom:5px}
+.murStat b{display:block;font-size:16.5px;font-weight:800;color:#f7d98b;letter-spacing:-.03em;line-height:1.25;font-variant-numeric:tabular-nums}
 .murChart{padding:8px 4px 2px;background:#120e28;border:1px solid #2a2350;border-radius:12px;min-height:180px}
 .murChart svg{width:100%;height:auto;display:block}
+.murChart svg text{font-family:inherit;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.murChart svg text[fill="#8a85b0"]{font-size:10.5px;font-weight:600;fill:#9a94c0}
+.murChart svg text[fill="#f7d98b"]{font-size:10.5px;font-weight:800;letter-spacing:-.02em}
 .murChart .empty{font-size:14px;color:#6f6a90;padding:48px 12px;text-align:center}
 .murNote{margin:10px 0 0;font-size:12.5px;color:#8a85b0;line-height:1.5}
 @media(max-width:600px){.murSec .murHead p,.murSec .murHead small{display:none}}
