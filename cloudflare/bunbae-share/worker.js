@@ -24,8 +24,15 @@ export default{async fetch(req,env){
  if(same)return J({ok:false,error:'duplicate',thread:same},429,h);
  if(+n>=5)return J({ok:false,error:'rate'},429,h);
  const lines=[];if(members.length)lines.push('파티원  '+members.map(m=>'@'+m).join(' '));lines.push('분배자  '+(dist||'-'));if(url)lines.push('',url);
- const r=await fetch(hook+(hook.includes('?')?'&':'?')+'wait=true',{method:'POST',headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({thread_name:title,content:lines.join('\n').slice(0,1900),username:'마비라이프 분배',allowed_mentions:{parse:[]}})});
+ const payload={thread_name:title,content:lines.join('\n').slice(0,1900),username:'마비라이프 분배',allowed_mentions:{parse:[]}};
+ let init={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)};
+ const im=/^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+\/]+={0,2})$/.exec(typeof b.image==='string'&&b.image.length<=2.8e6?b.image:'');
+ if(im){let bin;try{bin=Uint8Array.from(atob(im[2]),c=>c.charCodeAt(0))}catch{bin=null}
+  const sig=bin&&bin.length>12&&(im[1]==='png'?bin[0]===0x89&&bin[1]===0x50:im[1]==='jpeg'?bin[0]===0xff&&bin[1]===0xd8:bin[8]===0x57&&bin[9]===0x45);
+  if(sig&&bin.length<=2e6){const ext=im[1]==='jpeg'?'jpg':im[1],fd=new FormData();
+   payload.attachments=[{id:0,filename:'bunbae.'+ext}];fd.append('payload_json',JSON.stringify(payload));
+   fd.append('files[0]',new Blob([bin],{type:'image/'+im[1]}),'bunbae.'+ext);init={method:'POST',body:fd}}}
+ const r=await fetch(hook+(hook.includes('?')?'&':'?')+'wait=true',init);
  if(!r.ok){return J({ok:false,error:'discord',status:r.status},502,h)}
  const m=await r.json();const thread=`https://discord.com/channels/${GUILD}/${m.channel_id}`;
  await Promise.all([env.KV.put(kIp,String((+n||0)+1),{expirationTtl:600}),env.KV.put(kSame,thread,{expirationTtl:600})]);

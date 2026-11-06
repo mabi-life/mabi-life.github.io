@@ -142,9 +142,11 @@ var DC_API='https://mabi-bunbae-share.mabilife.workers.dev',DC_SV=[['lute','류�
  $('dcSv').innerHTML=DC_SV.map(function(v){return '<button class="btn" data-sv="'+v[0]+'">'+v[1]+'</button>'}).join('');
  d.addEventListener('click',function(e){if(e.target===d||e.target.id==='dcClose'){d.style.display='none';return}var b=e.target.closest('[data-sv]');if(b)dcPost(b.dataset.sv)})})();
 function dcOpen(i){dcIdx=i;var last=localStorage.getItem('bunbae.dcServer');[].forEach.call($('dcSv').children,function(b){b.className='btn'+(b.dataset.sv===last?' gold':' ghost');b.disabled=false});$('dcMsg').textContent='';$('dcBox').style.display='flex'}
+function dcImg(p){var u='';return (p.imgId?imgGet(p.imgId).catch(function(){return null}):Promise.resolve(null)).then(function(b){var src=b?(u=URL.createObjectURL(b)):(p.big||p.thumb||'');if(!src)return '';
+ return shrink(src,1280,.85).then(function(d){return d.length>2.6e6?shrink(src,900,.7):d}).then(function(d){if(u)URL.revokeObjectURL(u);return /^data:image\/(webp|jpeg|png);base64,/.test(d)&&d.length<=2.6e6?d:''})})}
 function dcPost(sv){var p=posts[dcIdx];if(!p)return;localStorage.setItem('bunbae.dcServer',sv);var btns=$('dcSv').children;[].forEach.call(btns,function(b){b.disabled=true});$('dcMsg').textContent='올리는 중…';
  var title=(p.title||'').trim()||kstDay(p.ts||Date.now());
- enc3(p).then(function(c){return fetch(DC_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({server:sv,title:title.slice(0,100),members:p.members||[],dist:p.dist||'',url:location.origin.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,'https://mabi-life.com')+'/b/#'+c})})})
+ var img='';Promise.all([enc3(p),dcImg(p)]).then(function(a){var c=a[0];img=a[1];return fetch(DC_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({server:sv,image:img,title:title.slice(0,100),members:p.members||[],dist:p.dist||'',url:location.origin.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,'https://mabi-life.com')+'/b/#'+c})})})
  .then(function(r){return r.json()}).then(function(j){var m=$('dcMsg');
   if(j.ok||j.error==='duplicate'){m.innerHTML=(j.ok?'올렸어요. ':'방금 같은 글을 올렸어요. ')+'<a href="'+j.thread+'" target="_blank" rel="noopener">디스코드에서 보기</a>';toast(j.ok?'디스코드에 올렸어요':'이미 올린 글이에요');return}
   m.textContent=j.error==='rate'?'잠시 후 다시 시도해 주세요. (10분에 5건까지)':j.error==='not_configured'?'아직 이 서버 포럼은 연결 준비 중이에요.':'올리지 못했어요. 잠시 후 다시 시도해 주세요.';[].forEach.call(btns,function(b){b.disabled=false})})
