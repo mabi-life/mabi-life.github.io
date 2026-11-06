@@ -1,0 +1,8 @@
+name = "mabi-bunbae-share"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+account_id = "8802acc5ce8c71fa766df4bc76607d80"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "3fd3e6c51cea46359343042ef8afcf35"
