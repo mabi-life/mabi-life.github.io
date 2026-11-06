@@ -98,7 +98,7 @@ td.eLoc{white-space:nowrap}.loc{display:inline-block;max-width:9em;overflow:hidd
   <div class="murBody">
   <div class="murStats" id="murStats"></div>
   <div class="murChart" id="murChart"></div>
-  <p class="murNote" id="murNote">NEXON auction/history는 최근 약 1시간 창입니다. 이데아는 옵션이 없어 기존 option|Lv history.json에 쌓이지 않습니다. 장기 누적은 별도 수집이 필요합니다.</p>
+  <p class="murNote" id="murNote">이데아 체결은 별도 누적(Asia/Seoul 7일). API history 창(~1시간)을 주기적으로 병합합니다.</p>
   </div>
 </details>
 </div>
@@ -163,8 +163,8 @@ function ideaParse(ts){// idea_data.json stores KST wall time without offset
  if(!m)return Date.parse(ts);
  return Date.UTC(+m[1],+m[2]-1,+m[3],+m[4]-9,+m[5]); // treat as KST → UTC ms
 }
-function ideaChart(h){if(!h||!h.length)return'<div class="empty">최근 이데아 체결 기록 없음 (API ~1시간 창)</div>';
- const W=Math.min(960,Math.max(520,h.length*28)),H=220,P=52,R=16,B=28,T=18,
+function ideaChart(h){if(!h||!h.length)return'<div class="empty">이데아 체결 기록 없음 (7일 누적)</div>';
+ const W=Math.min(960,Math.max(520,h.length*(h.length>80?6:28))),H=220,P=52,R=16,B=28,T=18,
   ts=h.map(x=>ideaParse(x[0])),ps=h.map(x=>x[1]),t0=Math.min(...ts),t1=Math.max(...ts),
   pMin=Math.min(...ps),pMax=Math.max(...ps),span=Math.max(pMax-pMin,1_500_000),pad=Math.max(span*0.25,300000),
   lo=pMin-pad,hi=pMax+pad,
@@ -187,8 +187,8 @@ function drawIdea(){const st=$('murStats'),ch=$('murChart'),sub=$('murSub'),note
  if(sub)sub.textContent=`아이템 단일 시세 · 매물 ${Idea.listings||0}건 · 갱신 ${Idea.updated?new Date(Idea.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'-'} (Asia/Seoul)`;
  if(st)st.innerHTML=`<div class="murStat"><span>현재 최저가</span><b>${Idea.floor?ideaMan(Idea.floor):'-'}</b></div>
  <div class="murStat"><span>최근 체결가</span><b>${last?ideaMan(last[1]):'-'}</b></div>
- <div class="murStat"><span>창 내 최저·최고</span><b>${ps.length?ideaMan(Math.min(...ps))+' · '+ideaMan(Math.max(...ps)):'-'}</b></div>
- <div class="murStat"><span>최근 체결</span><b>${h.length?h.length+'건':'-'}</b></div>`;
+ <div class="murStat"><span>7일 최저·최고</span><b>${ps.length?ideaMan(Math.min(...ps))+' · '+ideaMan(Math.max(...ps)):'-'}</b></div>
+ <div class="murStat"><span>7일 체결</span><b>${h.length?h.length+'건':'-'}</b></div>`;
  ch.innerHTML=ideaChart(h);
  if(note&&Idea.note)note.textContent=Idea.note;
 }

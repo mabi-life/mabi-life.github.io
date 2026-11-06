@@ -100,42 +100,85 @@ json.dump({'updated': out['updated'], 'ids': sorted(seen)[-20000:], 't': tr}, op
 print('relics history:', sum(map(len, tr.values())), 'trades')
 print('relics:', len(rows), 'listings,', len(skills), 'skills')
 
-# ── 무리아스의 유물(이데아) 단일 시세 → idea_data.json ─────────────────────────
-# 이데아는 item_option이 없음. option|Lv history.json에는 쌓이지 않으므로 별도 스냅샷.
-# auction/history 창 ~1시간. 클라이언트 ideaParse는 KST wall(오프셋 없음)을 기대.
+# ── 무리아스의 유물(이데아) 단일 시세 → idea_history.json(7일 누적) + idea_data.json ─
+# 이데아는 item_option이 없음. option|Lv history.json에는 쌓이지 않으므로 별도 누적.
+# auction/history API 창 ~1시간 → auction_buy_id로 중복 제거하며 7일(Asia/Seoul) 보관.
+# 클라이언트 ideaParse는 KST wall(오프셋 없음)을 기대.
 IDEA = '무리아스의 유물(이데아)'
+IDEA_KEEP_DAYS = 7
 idea_rows = [x for x in rows if x.get('item_name') == IDEA and x.get('auction_price_per_unit')]
 idea_prices = sorted(x['auction_price_per_unit'] for x in idea_rows)
-idea_seen, idea_tr = set(), []
+ihp = f'{H}/docs/auction/idea_history.json'
+try:
+    ih = json.load(open(ihp, encoding='utf-8'))
+except Exception:
+    ih = {}
+# trades: {auction_buy_id: [KST_wall, price]}
+idea_tr_map = {}
+raw = ih.get('trades')
+if isinstance(raw, dict):
+    for bid, v in raw.items():
+        if isinstance(v, (list, tuple)) and len(v) >= 2 and v[1]:
+            idea_tr_map[str(bid)] = [str(v[0])[:16], v[1]]
+# seed from prior idea_data snapshot (ids aligned with t) if history empty
+if not idea_tr_map:
+    try:
+        seed = json.load(open(f'{H}/docs/auction/idea_data.json', encoding='utf-8'))
+        ids0, t0 = seed.get('ids') or [], seed.get('t') or []
+        if ids0 and len(ids0) == len(t0):
+            for bid, pair in zip(ids0, t0):
+                if pair and len(pair) >= 2 and pair[1]:
+                    idea_tr_map[str(bid)] = [str(pair[0])[:16], pair[1]]
+        elif t0:
+            for i, pair in enumerate(t0):
+                if pair and len(pair) >= 2 and pair[1]:
+                    idea_tr_map[f'seed-{pair[0]}-{i}'] = [str(pair[0])[:16], pair[1]]
+    except Exception:
+        pass
+# also accept legacy flat ids+t on idea_history
+if not idea_tr_map and (ih.get('ids') and ih.get('t')):
+    ids0, t0 = ih.get('ids') or [], ih.get('t') or []
+    if len(ids0) == len(t0):
+        for bid, pair in zip(ids0, t0):
+            if pair and len(pair) >= 2 and pair[1]:
+                idea_tr_map[str(bid)] = [str(pair[0])[:16], pair[1]]
 cur = None
 for _ in range(20):
     d = get('item_name=' + urllib.parse.quote(IDEA) + ('&cursor=' + cur if cur else ''), 'history')
     for x in d.get('auction_history') or []:
         if x.get('item_name') != IDEA: continue
         bid, price, ts = x.get('auction_buy_id'), x.get('auction_price_per_unit'), x.get('date_auction_buy')
-        if not bid or bid in idea_seen or not price or not ts: continue
-        idea_seen.add(str(bid))
-        # API는 UTC(...Z). KST wall YYYY-MM-DDTHH:MM 로 저장
+        if not bid or not price or not ts: continue
+        bid = str(bid)
+        if bid in idea_tr_map: continue
         try:
             dt = datetime.datetime.fromisoformat(ts.replace('Z', '+00:00')).astimezone(KST)
             wall = dt.strftime('%Y-%m-%dT%H:%M')
         except Exception:
             wall = ts[:16]
-        idea_tr.append([wall, price])
+        idea_tr_map[bid] = [wall, price]
     cur = d.get('next_cursor')
     if not cur: break
-idea_tr.sort(key=lambda x: x[0])
+# prune older than 7 days (Asia/Seoul wall clock)
+cut = (datetime.datetime.now(KST) - datetime.timedelta(days=IDEA_KEEP_DAYS)).strftime('%Y-%m-%dT%H:%M')
+idea_tr_map = {b: v for b, v in idea_tr_map.items() if v[0] >= cut}
+idea_tr = sorted(idea_tr_map.values(), key=lambda x: x[0])
+idea_ids = sorted(idea_tr_map.keys(), key=lambda s: int(s) if str(s).isdigit() else 0)
+json.dump({'updated': out['updated'], 'item': IDEA, 'retention_days': IDEA_KEEP_DAYS,
+           'cut': cut, 'trades': {b: idea_tr_map[b] for b in idea_ids}},
+          open(ihp, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 idea_out = {
     'updated': out['updated'],
     'item': IDEA,
     'source': 'NEXON Open API auction/list + auction/history (item_name exact)',
-    'note': 'auction/history는 최근 ~1시간 창. 옵션 없는 단일 아이템 시세. 누적 history.json(option|lv)에는 이데아 체결이 기록되지 않음.',
+    'note': f'이데아 체결은 idea_history.json에 auction_buy_id로 누적 · Asia/Seoul 기준 {IDEA_KEEP_DAYS}일 보관. API history 창(~1시간)만 매번 병합.',
+    'retention_days': IDEA_KEEP_DAYS,
     'listings': len(idea_rows),
     'floor': idea_prices[0] if idea_prices else None,
     'ceiling': idea_prices[-1] if idea_prices else None,
-    'ids': [str(b) for b in sorted(idea_seen, key=lambda s: int(s) if str(s).isdigit() else 0)],
+    'ids': idea_ids,
     't': idea_tr,
 }
 json.dump(idea_out, open(f'{H}/docs/auction/idea_data.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
-print('idea:', idea_out['listings'], 'listings, floor', idea_out['floor'], ',', len(idea_tr), 'trades')
+print('idea:', idea_out['listings'], 'listings, floor', idea_out['floor'], ',', len(idea_tr), 'trades (', IDEA_KEEP_DAYS, 'd)')
 
