@@ -49,8 +49,8 @@ function ocr(data){if(typeof Tesseract==='undefined'){status('인식 실패 · �
 // events
 document.addEventListener('click',function(e){var t=e.target,a;
  if(t.closest('[data-f]')){filt=t.closest('[data-f]').dataset.f;document.querySelectorAll('[data-f]').forEach(function(b){b.classList.toggle('on',b.dataset.f===filt)});render();return}
- if((a=t.closest('[data-fin]'))){posts[+a.dataset.fin].done=true;persist();render();return}
- if((a=t.closest('[data-re]'))){posts[+a.dataset.re].done=false;persist();render();return}
+ if((a=t.closest('[data-fin]'))){posts[+a.dataset.fin].done=true;persist();render();dcSync(+a.dataset.fin);return}
+ if((a=t.closest('[data-re]'))){posts[+a.dataset.re].done=false;persist();render();dcSync(+a.dataset.re);return}
  if((a=t.closest('[data-sh]'))){share(+a.dataset.sh);return}
  if((a=t.closest('[data-dc]'))){dcOpen(+a.dataset.dc);return}
  if((a=t.closest('[data-ed]'))){openModal(+a.dataset.ed);return}
@@ -144,11 +144,14 @@ var DC_API='https://mabi-bunbae-share.mabilife.workers.dev',DC_SV=[['lute','류�
 function dcOpen(i){dcIdx=i;var last=localStorage.getItem('bunbae.dcServer');[].forEach.call($('dcSv').children,function(b){b.className='btn'+(b.dataset.sv===last?' gold':' ghost');b.disabled=false});$('dcMsg').textContent='';$('dcBox').style.display='flex'}
 function dcImg(p){var u='';return (p.imgId?imgGet(p.imgId).catch(function(){return null}):Promise.resolve(null)).then(function(b){var src=b?(u=URL.createObjectURL(b)):(p.big||p.thumb||'');if(!src)return '';
  return shrink(src,1280,.85).then(function(d){return d.length>2.6e6?shrink(src,900,.7):d}).then(function(d){if(u)URL.revokeObjectURL(u);return /^data:image\/(webp|jpeg|png);base64,/.test(d)&&d.length<=2.6e6?d:''})})}
+function dcBody(p){return {title:((p.title||'').trim()||kstDay(p.ts||Date.now())).slice(0,100),members:p.members||[],dist:p.dist||''}}
+function dcSync(i){var p=posts[i];if(!p||!p.dc||!p.dc.mid)return;var d=p.dc,o=dcBody(p);enc3(p).then(function(c){o.server=d.sv;o.thread=d.th;o.mid=d.mid;o.key=d.k;o.done=!!p.done;o.url='https://mabi-life.com/b/#'+c;
+ return fetch(DC_API+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o)})}).then(function(r){return r.json()}).then(function(j){toast(j.ok?'디스코드 글도 '+(p.done?'완료':'진행중')+'로 바꿨어요':'디스코드 글 상태는 못 바꿨어요')}).catch(function(){toast('디스코드 글 상태는 못 바꿨어요')})}
 function dcPost(sv){var p=posts[dcIdx];if(!p)return;localStorage.setItem('bunbae.dcServer',sv);var btns=$('dcSv').children;[].forEach.call(btns,function(b){b.disabled=true});$('dcMsg').textContent='올리는 중…';
  var title=(p.title||'').trim()||kstDay(p.ts||Date.now());
- var img='';Promise.all([enc3(p),dcImg(p)]).then(function(a){var c=a[0];img=a[1];return fetch(DC_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({server:sv,image:img,title:title.slice(0,100),members:p.members||[],dist:p.dist||'',url:location.origin.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,'https://mabi-life.com')+'/b/#'+c})})})
+ var img='';Promise.all([enc3(p),dcImg(p)]).then(function(a){var c=a[0];img=a[1];return fetch(DC_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({server:sv,image:img,done:!!p.done,title:title.slice(0,100),members:p.members||[],dist:p.dist||'',url:location.origin.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,'https://mabi-life.com')+'/b/#'+c})})})
  .then(function(r){return r.json()}).then(function(j){var m=$('dcMsg');
-  if(j.ok||j.error==='duplicate'){m.innerHTML=(j.ok?'올렸어요. ':'방금 같은 글을 올렸어요. ')+'<a href="'+j.thread+'" target="_blank" rel="noopener">디스코드에서 보기</a>';toast(j.ok?'디스코드에 올렸어요':'이미 올린 글이에요');return}
+  if(j.ok&&j.mid){p.dc={sv:sv,th:j.thread,mid:j.mid,k:j.key};persist()}if(j.ok||j.error==='duplicate'){m.innerHTML=(j.ok?'올렸어요. ':'방금 같은 글을 올렸어요. ')+'<a href="'+j.thread+'" target="_blank" rel="noopener">디스코드에서 보기</a>';toast(j.ok?'디스코드에 올렸어요':'이미 올린 글이에요');return}
   m.textContent=j.error==='rate'?'잠시 후 다시 시도해 주세요. (10분에 5건까지)':j.error==='not_configured'?'아직 이 서버 포럼은 연결 준비 중이에요.':'올리지 못했어요. 잠시 후 다시 시도해 주세요.';[].forEach.call(btns,function(b){b.disabled=false})})
  .catch(function(){$('dcMsg').textContent='연결에 실패했어요. 잠시 후 다시 시도해 주세요.';[].forEach.call(btns,function(b){b.disabled=false})})}
 })();

@@ -18,12 +18,21 @@ export default{async fetch(req,env){
  const members=(Array.isArray(b.members)?b.members:[]).slice(0,12).map(m=>clean(m,30)).filter(Boolean);
  if(!title)return J({ok:false,error:'title'},400,h);
  if(url&&!/^https:\/\/mabi-life\.com\/b\/#[A-Za-z0-9~%._\-\u0080-\uffff]{1,1500}$/.test(url))return J({ok:false,error:'url'},400,h);
+ if(new URL(req.url).pathname==='/status'){
+  const tid=String(b.thread||'').match(/^https:\/\/discord\.com\/channels\/1421225395004641394\/(\d{5,25})$/),mid=String(b.mid||'');
+  if(!tid||!/^\d{5,25}$/.test(mid))return J({ok:false,error:'ids'},400,h);
+  if(b.key!==await sha(hook+'|'+tid[1]+'|'+mid))return J({ok:false,error:'key'},403,h);
+  const kS='bs:st:'+tid[1],c=+(await env.KV.get(kS))||0;if(c>=20)return J({ok:false,error:'rate'},429,h);
+  const ls=['상태  '+(b.done?'완료':'진행중')];if(members.length)ls.push('파티원  '+members.map(m=>'@'+m).join(' '));ls.push('분배자  '+(dist||'-'));if(url)ls.push('',url);
+  const r=await fetch(hook.split('?')[0]+'/messages/'+mid+'?thread_id='+tid[1],{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:ls.join('\n').slice(0,1900),allowed_mentions:{parse:[]}})});
+  await env.KV.put(kS,String(c+1),{expirationTtl:600});
+  return r.ok?J({ok:true},200,h):J({ok:false,error:'discord',status:r.status},502,h)}
  const ip=req.headers.get('CF-Connecting-IP')||'0';
  const kIp='bs:ip:'+await sha(ip),kSame='bs:same:'+await sha(b.server+'|'+title+'|'+members.join(',')+'|'+dist);
  const [n,same]=await Promise.all([env.KV.get(kIp),env.KV.get(kSame)]);
  if(same)return J({ok:false,error:'duplicate',thread:same},429,h);
  if(+n>=5)return J({ok:false,error:'rate'},429,h);
- const lines=[];if(members.length)lines.push('파티원  '+members.map(m=>'@'+m).join(' '));lines.push('분배자  '+(dist||'-'));if(url)lines.push('',url);
+ const lines=['상태  '+(b.done?'완료':'진행중')];if(members.length)lines.push('파티원  '+members.map(m=>'@'+m).join(' '));lines.push('분배자  '+(dist||'-'));if(url)lines.push('',url);
  const payload={thread_name:title,content:lines.join('\n').slice(0,1900),username:'마비라이프 분배',allowed_mentions:{parse:[]}};
  let init={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)};
  const im=/^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+\/]+={0,2})$/.exec(typeof b.image==='string'&&b.image.length<=2.8e6?b.image:'');
@@ -36,4 +45,4 @@ export default{async fetch(req,env){
  if(!r.ok){return J({ok:false,error:'discord',status:r.status},502,h)}
  const m=await r.json();const thread=`https://discord.com/channels/${GUILD}/${m.channel_id}`;
  await Promise.all([env.KV.put(kIp,String((+n||0)+1),{expirationTtl:600}),env.KV.put(kSame,thread,{expirationTtl:600})]);
- return J({ok:true,thread,forum:f[1]},200,h)}};
+ return J({ok:true,thread,forum:f[1],mid:m.id,key:await sha(hook+'|'+m.channel_id+'|'+m.id)},200,h)}};
