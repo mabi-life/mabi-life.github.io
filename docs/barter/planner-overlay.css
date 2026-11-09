@@ -28,19 +28,19 @@
 .pvEd,.pvRec{font-size:11.5px;padding:1px 7px;border-radius:9px;font-weight:600}
 .pvEd{background:#24405a;color:#9fd2ff}.pvRec{background:#2c3a2a;color:#9fe0a4}
 .pvT{width:100%;margin-top:8px;font-size:14px}.pvT td,.pvT th{padding:3px 6px}
-.pvT .gnm{max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pvT .gnm{max-width:none;overflow:visible;text-overflow:clip;white-space:normal;overflow-wrap:anywhere;word-break:keep-all;line-height:1.3}
 .pvT input.pvQ{width:54px;text-align:right}
 .pvAdd{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}.pvAdd select{max-width:250px}.pvAdd input.n{width:60px}
 .pvWarn{margin-top:8px;color:#ff9b9b;font-size:13.5px;background:rgba(224,107,107,.1);border-radius:6px;padding:4px 8px}.pvWarn small{color:#d9a8a8}
 .pvStale{margin-top:8px;color:#ffd58a;font-size:13.5px;background:rgba(255,200,90,.08);border-radius:6px;padding:5px 8px}
 .pvMats{margin-top:8px;font-size:13.5px;color:#a9a2d6}.pvMats summary{cursor:pointer}
 .pvMl{margin-top:4px}.pvMr{display:grid;grid-template-columns:minmax(0,1fr) 54px 84px 64px;gap:6px;padding:2px 4px;border-bottom:1px solid rgba(255,255,255,.05)}
-.pvMr>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pvMr>span:first-child{overflow:visible;text-overflow:clip;white-space:normal;overflow-wrap:anywhere;word-break:keep-all;min-width:0}
 .pvNew{border:1px dashed rgba(247,217,139,.35);background:transparent;color:#f7d98b;border-radius:12px;min-height:80px;font-size:15px;cursor:pointer}
 .pvUn{margin-top:12px;font-size:13.5px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .pvChip{background:#24203f;border-radius:8px;padding:2px 8px;display:inline-flex;gap:4px;align-items:center}
 .pvFoot{font-size:12.5px;margin-top:8px}
-.pvTh>span{white-space:nowrap;flex:0 0 auto}.pvT th,.pvT td{white-space:nowrap}.pvT .gnm{max-width:170px}
+.pvTh>span{white-space:nowrap;flex:0 0 auto}.pvT th,.pvT td{white-space:nowrap}.pvT .gnm{max-width:none;white-space:normal}
 /* v2: 접이식 · 드래그 · 회차 버튼 */
 details.pvEdit>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;flex-wrap:wrap;user-select:none;padding:2px 0}
 details.pvEdit>summary::-webkit-details-marker{display:none}

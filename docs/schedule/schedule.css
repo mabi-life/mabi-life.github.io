@@ -84,3 +84,16 @@ input[type=checkbox],input[type=radio]{accent-color:var(--ac)}
 @media(max-width:560px){.scMDay{min-height:64px}.scMDay .scEv{font-size:10.5px;padding:2px 4px}}
 @media(max-width:900px){.scCols{grid-template-columns:1fr}.scGrid{grid-template-columns:1fr 1fr}.scDays{grid-column:1/-1}.scWeek{grid-template-columns:repeat(2,1fr)}.scDay{min-height:auto}}
 .scUp li.more{display:block;text-align:center;border:0;background:none;padding:2px}
+
+
+/* B: native date/time picker icons visible in dark + light */
+input[type="time"],input[type="date"]{color-scheme:dark}
+html[data-theme="light"] input[type="time"],html[data-theme="light"] input[type="date"]{color-scheme:light}
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="date"]::-webkit-calendar-picker-indicator{
+  cursor:pointer;opacity:1;filter:invert(1) brightness(1.35);width:1.1em;height:1.1em
+}
+html[data-theme="light"] input[type="time"]::-webkit-calendar-picker-indicator,
+html[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator{
+  filter:none;opacity:.85
+}
