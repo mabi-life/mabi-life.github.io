@@ -1,6 +1,6 @@
-(function(){var C={"홈":"#f7d98b","알바":"#d98bb8","물교":"#c8b46a","던전":"#e0a458","분배":"#6fb7ff","제작":"#7cc49a","경매장":"#9a8cf0","뿔피리":"#e8b86a"},
-I={"홈":"<img src=\"/img/logo.svg?v=5\" alt=\"\" style=\"width:1.2em;height:1.2em;vertical-align:-.25em\">","알바":"⏱","물교":"⚖","던전":"🗡","분배":"🧮","제작":"🔨","경매장":"🔍","뿔피리":"📯"},
-P={"/":["홈","00",""],"/alba/":["알바","01"],"/barter/":["물교","02"],"/dungeon/":["던전","03","캐릭터별 던전 보상·전재산 기록"],"/bunbae/":["분배","04"],"/craft/":["제작","05"],"/auction/":["경매장","06"],"/horn/":["뿔피리","07"]};
+(function(){var C={"홈":"#f7d98b","알바":"#d98bb8","물교":"#c8b46a","던전":"#e0a458","스케줄":"#5fc9b9","분배":"#6fb7ff","제작":"#7cc49a","경매장":"#9a8cf0","뿔피리":"#e8b86a"},
+I={"홈":"<img src=\"/img/logo.svg?v=5\" alt=\"\" style=\"width:1.2em;height:1.2em;vertical-align:-.25em\">","알바":"⏱","물교":"⚖","던전":"🗡","스케줄":"📅","분배":"🧮","제작":"🔨","경매장":"🔍","뿔피리":"📯"},
+P={"/":["홈","00",""],"/alba/":["알바","01"],"/barter/":["물교","02"],"/dungeon/":["던전","03","캐릭터별 던전 보상·전재산 기록"],"/schedule/":["스케줄","03b","파티 약속·고정 일정 체크"],"/bunbae/":["분배","04"],"/craft/":["제작","05"],"/auction/":["경매장","06"],"/horn/":["뿔피리","07"]};
 function go(){var path=location.pathname.replace(/index\.html$/,"");var pg=P[path]||P["/"];var b=document.body;
 b.style.setProperty("--kit",C[pg[0]]);
 document.querySelectorAll("nav.siteNav a,nav.siteNav span").forEach(function(e){var t=e.textContent.trim();if(!C[t])return;e.style.setProperty("--c",C[t]);e.innerHTML=I[t]+" "+t});

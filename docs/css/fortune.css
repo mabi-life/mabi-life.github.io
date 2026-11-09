@@ -1,0 +1,25 @@
+.fortune{max-width:960px;margin:22px auto 8px;padding:16px 18px;background:#1d2027;border:1px solid #333846;border-radius:12px;box-shadow:inset 4px 0 0 #b59cf0;font-family:"Noto Sans KR","Malgun Gothic",sans-serif;color:#e6e8ee;text-align:left}
+.fortune .ftHd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.fortune h2{margin:0;font-size:1.15em;color:#e3c98a}.fortune .ftDate{font-size:13px;color:#9aa1b0;font-weight:500;margin-left:4px}
+.fortune .ftNote{font-size:11.5px;color:#7d8394}
+.fortune .ftBody{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start}
+.fortune .ftRank{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:column;grid-template-rows:repeat(6,auto);gap:4px 10px}
+.fortune .ftRank li{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:6px;padding:4px 8px;border-radius:8px;background:#262a33;font-size:13.5px;border:1px solid transparent}
+.fortune .ftRank .no{font-variant-numeric:tabular-nums;color:#9aa1b0;text-align:center;font-size:12.5px}
+.fortune .ftRank .sg i{font-style:normal;margin-right:5px;color:#b59cf0}
+.fortune .ftRank .it{font-size:12px;color:#9aa1b0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.fortune .ftRank li.r3 .no{color:#e3c98a;font-weight:700}
+.fortune .ftRank li.r1{background:rgba(247,217,139,.12);border-color:#6b5a33}.fortune .ftRank li.r1 .no{color:#f7d98b;font-size:14px}
+.fortune .ftRank li.me{border-color:#b59cf0}
+.fortune .ftSide{display:flex;flex-direction:column;gap:9px;font-size:13.5px}
+.fortune .ftMy{display:flex;align-items:center;gap:8px;color:#9aa1b0}
+.fortune select{font:inherit;font-size:13px;color:#e6e8ee;background:#14161b;border:1px solid #333846;border-radius:8px;padding:5px 8px;flex:1;min-width:0}
+.fortune .ftMsg,.fortune .ftCh{margin:0;line-height:1.6}.fortune .ftMsg span{color:#9aa1b0;font-size:12.5px}
+.fortune .mu{color:#9aa1b0}
+.fortune .ftMsg b{color:#e3c98a}
+.fortune .ftSrv{display:flex;gap:6px;flex-wrap:wrap}
+.fortune .ftSrv button{font:inherit;font-size:13px;padding:4px 12px;border-radius:999px;border:1px solid #333846;background:#262a33;color:#c9cdd8;cursor:pointer}
+.fortune .ftSrv button:hover{border-color:#b59cf0}
+.fortune .ftSrv button.on{background:rgba(181,156,240,.18);border-color:#b59cf0;color:#fff;font-weight:700}
+.fortune .ftCh b{color:#e6e8ee}.fortune .ftCh b.n{color:#b59cf0;font-size:15px}
+@media(max-width:760px){.fortune .ftBody{grid-template-columns:1fr}.fortune .ftRank{grid-template-columns:1fr;grid-auto-flow:row;grid-template-rows:none}}
