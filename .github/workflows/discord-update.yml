@@ -10,15 +10,24 @@ on:
         description: Post body (no URLs)
         required: true
         type: string
+      edit_message_id:
+        description: (선택) 기존 글 본문 수정 — 포럼 글 ID(첫 메시지 ID). 비우면 새 글 작성
+        required: false
+        type: string
+        default: ""
 jobs:
   post:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Post to Discord 업데이트 forum
+      - name: Post or edit Discord 업데이트 forum
         env:
           DISCORD_UPDATES_WEBHOOK: ${{ secrets.DISCORD_UPDATES_WEBHOOK }}
+          IN_TITLE: ${{ inputs.title }}
+          IN_BODY: ${{ inputs.body }}
+          IN_EDIT: ${{ inputs.edit_message_id }}
         run: |
           python3 tools/discord_forum_post.py \
-            --title "${{ inputs.title }}" \
-            --body "${{ inputs.body }}"
+            --title "$IN_TITLE" \
+            --body "$IN_BODY" \
+            --edit-message-id "$IN_EDIT"

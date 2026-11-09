@@ -34,6 +34,7 @@ def main() -> int:
     p.add_argument("--body", required=True, help="Post content (no site URLs)")
     p.add_argument("--allow-urls", action="store_true")
     p.add_argument("--dry-run", action="store_true")
+    p.add_argument("--edit-message-id", default="", help="Edit an existing webhook message (forum starter message id = thread id) instead of posting")
     args = p.parse_args()
 
     webhook = os.environ.get("DISCORD_UPDATES_WEBHOOK", "").strip()
@@ -51,20 +52,33 @@ def main() -> int:
     if len(body) > 1900:
         body = body[:1890] + "…"
 
+    edit_id = (args.edit_message_id or "").strip()
+    if edit_id and not edit_id.isdigit():
+        print("edit-message-id must be numeric", file=sys.stderr)
+        return 2
     payload = {
         "content": body,
-        "thread_name": title,
         "allowed_mentions": {"parse": []},
     }
+    if not edit_id:
+        payload["thread_name"] = title
     if args.dry_run:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return 0
 
+    base = webhook.split("?", 1)[0]
+    if edit_id:
+        # forum post starter message: message id == thread id
+        url = f"{base}/messages/{edit_id}?thread_id={edit_id}"
+        method = "PATCH"
+    else:
+        url = webhook + ("&" if "?" in webhook else "?") + "wait=true"
+        method = "POST"
     req = urllib.request.Request(
-        webhook + ("&" if "?" in webhook else "?") + "wait=true",
+        url,
         data=json.dumps(payload).encode("utf-8"),
         headers={"Content-Type": "application/json", "User-Agent": "mabi-life-updates/1"},
-        method="POST",
+        method=method,
     )
     try:
         with urllib.request.urlopen(req, timeout=30) as res:
