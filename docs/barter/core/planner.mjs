@@ -227,3 +227,103 @@ export function moveItem(trips, { from, goodsId, to, index }) {
   src.customized = true; dst.customized = true;
   return out;
 }
+
+/* ---------- 회차 수량 편집: 자동 나누기(넘김) · 당겨오기 · 주간수량 상한 · 낮은 티어 밀어내기 ---------- */
+const sumQty = (trip, id) => (trip.items || []).filter(x => String(x.goodsId) === String(id)).reduce((a, x) => a + (+x.qty || 0), 0);
+function addTo(trip, id, q) {
+  const ex = trip.items.find(x => String(x.goodsId) === String(id));
+  if (ex) ex.qty = (+ex.qty || 0) + q; else trip.items.push({ goodsId: +id, qty: q });
+}
+function takeFrom(trip, id, q) {
+  const ex = trip.items.find(x => String(x.goodsId) === String(id)); if (!ex) return 0;
+  const t = Math.min(q, +ex.qty || 0); ex.qty -= t;
+  if (ex.qty <= 0) trip.items.splice(trip.items.indexOf(ex), 1);
+  return t;
+}
+function loadOf(trip, G) { let w = 0, s = 0; for (const x of trip.items) { const g = G[x.goodsId]; if (!g) continue; w += x.qty * (g.weight || 0); s += Math.ceil(x.qty / (g.perSlot || 1)); } return { w, s }; }
+
+/**
+ * 밀어낼 품목 고르기 규칙(문서화):
+ *  1) 티어가 가장 낮은 품목부터 (티어 없음 = 0)
+ *  2) 같은 티어면 개당 무게가 무거운 품목부터 (적게 빼고 자리를 크게 확보)
+ *  3) 그래도 같으면 목록 아래쪽(나중에 담긴) 품목부터
+ *  pinned(사용자가 방금 수량을 정한 품목)는 그 회차에서 밀어내지 않음.
+ */
+function pickBump(trip, G, pinned) {
+  let best = null, bi = -1;
+  trip.items.forEach((x, i) => {
+    if (pinned && String(x.goodsId) === String(pinned)) return;
+    const g = G[x.goodsId]; if (!g || !(+x.qty > 0)) return;
+    const k = [g.tier || 0, -(g.weight || 0), -i];
+    if (!best || k[0] < best[0] || (k[0] === best[0] && (k[1] < best[1] || (k[1] === best[1] && k[2] < best[2])))) { best = k; bi = i; }
+  });
+  return bi < 0 ? null : trip.items[bi];
+}
+/** 넘친 무게·슬롯을 없애는 최소 개수 */
+function minBump(item, g, ex) {
+  const Q = +item.qty, ps = g.perSlot || 1, wt = g.weight || 0;
+  for (let b = 1; b <= Q; b++) {
+    const dw = b * wt, ds = Math.ceil(Q / ps) - Math.ceil((Q - b) / ps);
+    if (dw >= ex.w && ds >= ex.s) return b;
+  }
+  return Q;
+}
+/** k회차가 용량을 넘으면 낮은 티어부터 다음 회차로 밀어냄(연쇄). 마지막이면 새 회차. */
+function settle(trips, k, G, cap, moves, pinned, guard) {
+  if (guard.n++ > 400) return;
+  const t = trips[k]; if (!t) return;
+  for (let loop = 0; loop < 50; loop++) {
+    const L = loadOf(t, G), ex = { w: Math.max(0, L.w - cap.weight), s: Math.max(0, L.s - cap.slots) };
+    if (!ex.w && !ex.s) return;
+    const cand = pickBump(t, G, k === pinned.trip ? pinned.goodsId : null);
+    if (!cand) return; // 더 뺄 게 없음(고정 품목만 남음) → 경고로 남김
+    // 혼자서도 못 들어가는 품목만 남은 새 회차가 끝없이 생기지 않게
+    if (t.items.length === 1 && k >= trips.length - 1 && trips.length >= 20) return;
+    const g = G[cand.goodsId], b = minBump(cand, g, ex), id = cand.goodsId;
+    takeFrom(t, id, b); t.customized = true;
+    moves.push({ goodsId: +id, qty: b, from: k, to: k + 1, bumped: true });
+    place(trips, k + 1, id, b, G, cap, moves, pinned, guard);
+  }
+}
+function place(trips, k, id, q, G, cap, moves, pinned, guard) {
+  if (q <= 0) return;
+  if (k >= trips.length) trips.push({ items: [], customized: true });
+  addTo(trips[k], id, q); trips[k].customized = true;
+  settle(trips, k, G, cap, moves, pinned, guard);
+}
+
+/**
+ * i회차의 goodsId 수량을 qty로 정함.
+ *  - 줄이면: 줄인 만큼 다음 회차로 넘김(같은 품목이면 합침). 다음 회차가 넘치면 그 회차의 낮은 티어부터 그다음으로 밀어냄(연쇄, 필요하면 새 회차).
+ *  - 늘리면: 뒤 회차의 같은 품목에서 먼저 당겨오고, 모자라면 미배정분에서 채움. 상한 = 주간수량 − 앞 회차들에 담긴 수량.
+ *    늘린 회차가 넘치면 그 회차의 다른 품목(낮은 티어부터)을 다음 회차로 밀어냄. 방금 고친 품목은 고정.
+ *  - 회차 전체 합계는 주간수량을 넘지 않음.
+ * 반환 { trips, moves, pulled:[{from,qty}], clamped, max, qty }
+ */
+export function setTripQty(trips, { trip: i, goodsId, qty, goodsById: G, capacity: cap, weeklyMax }) {
+  const out = trips.map(t => ({ ...t, items: (t.items || []).map(x => ({ ...x })) }));
+  const T = out[i]; if (!T) return { trips, moves: [], pulled: [], clamped: false };
+  const g = G[goodsId]; if (!g) return { trips, moves: [], pulled: [], clamped: false };
+  const wmax = Math.max(0, +weeklyMax || 0);
+  const before = out.slice(0, i).reduce((a, t) => a + sumQty(t, goodsId), 0);
+  const max = Math.max(0, wmax - before);
+  let want = Math.max(0, Math.floor(+qty || 0)); const clamped = want > max; if (clamped) want = max;
+  const cur = sumQty(T, goodsId), moves = [], pulled = [], guard = { n: 0 };
+  const pinned = { trip: i, goodsId };
+  if (want === cur) return { trips: clamped ? out : trips, moves, pulled, clamped, max, qty: want };
+  if (want < cur) {
+    takeFrom(T, goodsId, cur - want); T.customized = true;
+    moves.push({ goodsId: +goodsId, qty: cur - want, from: i, to: i + 1, bumped: false });
+    place(out, i + 1, goodsId, cur - want, G, cap, moves, { trip: -1 }, guard);
+  } else {
+    let need = want - cur;
+    for (let k = i + 1; k < out.length && need > 0; k++) {
+      const t = takeFrom(out[k], goodsId, need);
+      if (t) { pulled.push({ from: k, qty: t }); need -= t; out[k].customized = true; }
+    }
+    addTo(T, goodsId, want - cur); T.customized = true;
+    settle(out, i, G, cap, moves, pinned, guard);
+  }
+  // 비어 버린 '추가' 회차는 정리하지 않음(사용자가 만든 회차일 수 있음) — 화면에서 삭제 가능
+  return { trips: out, moves, pulled, clamped, max, qty: want };
+}

@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   capacity, recommendTrips, capacityWarnings, weeklyWarnings,
-  applyTripEdit, resetTripToRecommendation, materialsForTrips, tripTotals, CARRIERS, unassigned, moveItem
+  applyTripEdit, resetTripToRecommendation, materialsForTrips, tripTotals, CARRIERS, unassigned, moveItem, setTripQty
 } from '../docs/barter/core/planner.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -216,6 +216,95 @@ t('invalid move returns original', () => {
   assert.equal(moveItem(src, { from: 5, goodsId: 1, to: 0 }), src);
   assert.equal(moveItem(src, { from: 0, goodsId: 99, to: 1 }), src);
   assert.equal(moveItem(src, { from: 0, goodsId: 1, to: 7 }), src);
+});
+
+// ---- 수량 자동 나누기 / 낮은 티어 밀어내기 / 당겨오기 / 주간수량 상한 ----
+const SG = {
+  1: { id: 1, name: '저티어A', tier: 1, weight: 15, perSlot: 10 },
+  2: { id: 2, name: '저티어B(무거움)', tier: 1, weight: 20, perSlot: 10 },
+  4: { id: 4, name: '중티어', tier: 4, weight: 25, perSlot: 7 },
+  6: { id: 6, name: '고티어', tier: 6, weight: 35, perSlot: 2 }
+};
+const capS = { weight: 300, slots: 6 };
+const load = tr => tr.items.reduce((a, x) => ({ w: a.w + x.qty * SG[x.goodsId].weight, s: a.s + Math.ceil(x.qty / SG[x.goodsId].perSlot) }), { w: 0, s: 0 });
+const q = (tr, id) => (tr.items.find(x => x.goodsId === id) || { qty: 0 }).qty;
+const tot = (trs, id) => trs.reduce((a, t) => a + q(t, id), 0);
+t('lower spills remainder into next round (merge)', () => {
+  const trips = [{ items: [{ goodsId: 4, qty: 8 }] }, { items: [{ goodsId: 4, qty: 1 }] }];
+  const r = setTripQty(trips, { trip: 0, goodsId: 4, qty: 5, goodsById: SG, capacity: capS, weeklyMax: 9 });
+  assert.equal(q(r.trips[0], 4), 5); assert.equal(q(r.trips[1], 4), 4); assert.equal(r.trips[1].items.length, 1);
+  assert.equal(tot(r.trips, 4), 9); assert.equal(q(trips[0], 4), 8, 'input untouched');
+});
+t('lower with no next round creates one', () => {
+  const r = setTripQty([{ items: [{ goodsId: 6, qty: 3 }] }], { trip: 0, goodsId: 6, qty: 1, goodsById: SG, capacity: capS, weeklyMax: 3 });
+  assert.equal(r.trips.length, 2); assert.equal(q(r.trips[1], 6), 2);
+});
+t('spill into full round bumps that round\'s LOWEST tier to the following round', () => {
+  // 2회차: T1 10개(150, 1칸) + T4 5개(125, 1칸) = 275 / 300 → T6 2개(70) 들어오면 345 → T1부터 밀려남
+  const trips = [{ items: [{ goodsId: 6, qty: 4 }] }, { items: [{ goodsId: 1, qty: 10 }, { goodsId: 4, qty: 5 }] }];
+  const r = setTripQty(trips, { trip: 0, goodsId: 6, qty: 2, goodsById: SG, capacity: capS, weeklyMax: 4 });
+  assert.equal(q(r.trips[1], 6), 2, 'spilled T6 stays in round 2');
+  assert.equal(q(r.trips[1], 4), 5, 'T4 not bumped');
+  assert.ok(q(r.trips[1], 1) < 10 && q(r.trips[2], 1) > 0, 'T1 bumped to round 3');
+  assert.equal(q(r.trips[1], 1) + q(r.trips[2], 1), 10);
+  assert.equal(q(r.trips[2], 1), 3, 'minimal bump: 45 weight needed → 3 × 15');
+  assert.ok(load(r.trips[1]).w <= 300 && load(r.trips[1]).s <= 6);
+  assert.ok(r.moves.some(m => m.bumped && m.goodsId === 1 && m.from === 1 && m.to === 2));
+});
+t('if spilled item is itself the lowest tier, it continues to the next round', () => {
+  const trips = [{ items: [{ goodsId: 1, qty: 20 }] }, { items: [{ goodsId: 6, qty: 8 }] }, { items: [] }];
+  // 2회차: T6 8개 = 280, 4칸 → T1 10개(150) 넘어오면 T1이 가장 낮아 다시 3회차로
+  const r = setTripQty(trips, { trip: 0, goodsId: 1, qty: 10, goodsById: SG, capacity: capS, weeklyMax: 20 });
+  assert.equal(q(r.trips[1], 6), 8, 'higher tier never bumped for lower');
+  assert.equal(q(r.trips[1], 1) + q(r.trips[2], 1), 10);
+  assert.equal(q(r.trips[2], 1), 9, 'only 1 fits (280+15=295)'); assert.equal(q(r.trips[1], 1), 1);
+});
+t('cascade creates new round at the end when needed', () => {
+  const trips = [{ items: [{ goodsId: 6, qty: 8 }] }, { items: [{ goodsId: 4, qty: 7 }, { goodsId: 1, qty: 10 }] }];
+  const r = setTripQty(trips, { trip: 0, goodsId: 6, qty: 4, goodsById: SG, capacity: capS, weeklyMax: 8 });
+  assert.equal(r.trips.length, 3); assert.equal(q(r.trips[1], 6), 4);
+  for (const tr of r.trips) { const L = load(tr); assert.ok(L.w <= 300 && L.s <= 6, JSON.stringify(tr)); }
+  assert.equal(tot(r.trips, 1), 10); assert.equal(tot(r.trips, 4), 7); assert.equal(tot(r.trips, 6), 8);
+});
+t('tie-break: same tier → heavier per unit bumped first', () => {
+  const trips = [{ items: [{ goodsId: 6, qty: 2 }] }, { items: [{ goodsId: 2, qty: 5 }, { goodsId: 1, qty: 10 }] }];
+  // 2회차 100+150=250 → T6 2개(70) 들어오면 320 → T1 동률 중 무거운 B(20)부터 1개
+  const r = setTripQty(trips, { trip: 0, goodsId: 6, qty: 0, goodsById: SG, capacity: capS, weeklyMax: 2 });
+  assert.equal(q(r.trips[2], 2), 1); assert.equal(q(r.trips[1], 1), 10);
+});
+t('raise pulls back from later rounds first (nearest first), then unplaced', () => {
+  const trips = [{ items: [{ goodsId: 4, qty: 2 }] }, { items: [{ goodsId: 4, qty: 2 }] }, { items: [{ goodsId: 4, qty: 3 }] }];
+  const r = setTripQty(trips, { trip: 0, goodsId: 4, qty: 5, goodsById: SG, capacity: capS, weeklyMax: 8 });
+  assert.equal(q(r.trips[0], 4), 5); assert.equal(q(r.trips[1], 4), 0); assert.equal(q(r.trips[2], 4), 2);
+  assert.deepEqual(r.pulled, [{ from: 1, qty: 2 }, { from: 2, qty: 1 }]);
+  const r2 = setTripQty(r.trips, { trip: 0, goodsId: 4, qty: 8, goodsById: SG, capacity: capS, weeklyMax: 8 });
+  assert.equal(q(r2.trips[0], 4), 8); assert.equal(tot(r2.trips, 4), 8, 'took 1 more from unplaced');
+});
+t('raise clamps at weekly max minus earlier rounds', () => {
+  const trips = [{ items: [{ goodsId: 4, qty: 3 }] }, { items: [{ goodsId: 4, qty: 2 }] }];
+  const r = setTripQty(trips, { trip: 1, goodsId: 4, qty: 99, goodsById: SG, capacity: capS, weeklyMax: 8 });
+  assert.ok(r.clamped); assert.equal(r.max, 5); assert.equal(q(r.trips[1], 4), 5); assert.equal(tot(r.trips, 4), 8);
+});
+t('raise that overflows bumps other lowest-tier items, edited item pinned', () => {
+  const trips = [{ items: [{ goodsId: 1, qty: 10 }, { goodsId: 4, qty: 4 }] }];
+  const r = setTripQty(trips, { trip: 0, goodsId: 4, qty: 7, goodsById: SG, capacity: capS, weeklyMax: 8 });
+  assert.equal(q(r.trips[0], 4), 7); assert.ok(load(r.trips[0]).w <= 300); assert.equal(tot(r.trips, 1), 10);
+});
+t('fuzz: totals never exceed weekly max, never negative, no lost quantity', () => {
+  let seed = 7; const rnd = n => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed % n; };
+  const W = { 1: 25, 2: 15, 4: 8, 6: 3 };
+  let trips = [{ items: [{ goodsId: 6, qty: 3 }, { goodsId: 4, qty: 4 }] }, { items: [{ goodsId: 1, qty: 10 }, { goodsId: 4, qty: 4 }] }, { items: [{ goodsId: 2, qty: 15 }, { goodsId: 1, qty: 15 }] }];
+  for (let n = 0; n < 400; n++) {
+    const i = rnd(trips.length), id = [1, 2, 4, 6][rnd(4)], before = tot(trips, id);
+    const r = setTripQty(trips, { trip: i, goodsId: id, qty: rnd(30), goodsById: SG, capacity: capS, weeklyMax: W[id] });
+    for (const k of [1, 2, 4, 6]) {
+      assert.ok(tot(r.trips, k) <= W[k], 'over weekly');
+      if (k !== id) assert.equal(tot(r.trips, k), tot(trips, k), 'other items conserved');
+    }
+    const cur = q(trips[i], id); if (r.qty < cur) assert.equal(tot(r.trips, id), before, 'lowering conserves total'); else assert.ok(tot(r.trips, id) >= before);
+    for (const tr of r.trips) for (const x of tr.items) assert.ok(x.qty > 0);
+    trips = r.trips;
+  }
 });
 
 console.log(`\n${passed} tests passed`);
