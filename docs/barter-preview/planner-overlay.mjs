@@ -1,6 +1,6 @@
 /* 물교 플래너 확장 — 기존 app.js는 그대로 두고 그 위에
    운송수단 선택·그랜마/덮개·추천 방식·회차 버튼·회차별 편집(드래그 포함)을 얹는다. */
-import { CARRIERS as PC, capacity, recommendTrips, tripTotals, weeklyWarnings, applyTripEdit, unassigned, moveItem, setTripQty } from './core/planner.mjs?v=4';
+import { CARRIERS as PC, capacity, recommendTrips, tripTotals, weeklyWarnings, applyTripEdit, unassigned, moveItem, setTripQty } from './core/planner.mjs?v=5';
 
 const ALLR = { id: 'all', name: '페라 → 칼리다 → 카루숲 → 오아시스 → 셀라·콘누스 항구', posts: ['페라', '칼리다', '카루숲', '오아시스'] };
 const ROUTE_IDS = ['pk', 'ko'];
@@ -60,7 +60,7 @@ function cfgHtml() {
   const kst = t => new Date(t).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' KST';
   const feedTs = Object.values(S.prices || {}).filter(x => x && x.src === 'feed' && x.t).map(x => +x.t || Date.parse(x.t)).filter(Boolean);
   const priceLine = feedTs.length ? `공유 시세 ${kst(Math.max(...feedTs))} 기준` : (SNAP && SNAP.t ? `기본 시세 ${kst(SNAP.t)} 기준 · ⚙에서 「💹 시세 불러오기」로 최신화` : '시세 없음 · ⚙에서 「💹 시세 불러오기」');
-  return `<div class="pvPrevBan" style="margin:0 0 10px;padding:8px 12px;border-radius:8px;background:#3a3220;border:1px solid #6b5a33;color:#f7d98b;font-size:13.5px">⚠ 프리뷰 페이지입니다 · 라이브 <a href="/barter/" style="color:#9fd3f7">/barter/</a>와 별도 · 완료↔회차 적재 동기화 · 「고등급 먼저 · 저티어 모아서」 실험</div><section class="pvCfg" aria-label="운송·추천 설정">
+  return `<div class="pvPrevBan" style="margin:0 0 10px;padding:8px 12px;border-radius:8px;background:#3a3220;border:1px solid #6b5a33;color:#f7d98b;font-size:13.5px">프리뷰 빌드 <b>v5</b> · 추천에 「고등급 먼저 · 저티어 모아서」가 보이면 새 스크립트 로드됨 · 회차별 적재에 ✔완료/완료배지 동기화</div><section class="pvCfg" aria-label="운송·추천 설정">
   <div class="pvRow"><b class="pvH">🚚 운송</b>
     <select data-pv="carrier" title="운송 수단">${opt}</select>
     ${car.id === 'custom' ? `<label class="pvSub">슬롯 <input class="n" data-pv="cs" value="${p.customSlots}" inputmode="numeric"></label><label class="pvSub">무게 <input class="n" data-pv="cw" value="${p.customWeight}" inputmode="numeric"></label>` : ''}

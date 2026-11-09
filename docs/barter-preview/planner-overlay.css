@@ -85,3 +85,9 @@ body.pvDragging #toast,body.pvDragging #toast *{pointer-events:none!important}
 .pvT tr.pvItem.done td{opacity:.72}
 .pvT tr.pvItem.done .pvQ{opacity:.6}
 .pvPrevBan a:hover{text-decoration:underline}
+
+/* preview done sync — match face-card strikethrough on item name */
+.pvT tr.pvItem.done td,.pvT tr.pvItem.fin td{opacity:.72}
+.pvT tr.pvItem.done td.gnm,.pvT tr.pvItem.fin td.gnm,
+.pvT tr.pvItem.done .gnm,.pvT tr.pvItem.fin .gnm{text-decoration:line-through}
+.pvT tr.pvItem.done td:last-child,.pvT tr.pvItem.fin td:last-child{opacity:1}
