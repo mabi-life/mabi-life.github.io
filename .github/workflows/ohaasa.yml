@@ -1,0 +1,40 @@
+name: update-ohaasa
+# ABC おはよう朝日です 12星座 ranking → docs/fortune/ohaasa.json
+# Broadcast weekday mornings (JST). Cron is UTC: Sun–Thu 20:xx–23:xx = Mon–Fri 05–08 KST.
+on:
+  schedule:
+    - cron: '5,35 20,21,22 * * 0-4'   # 05:05·05:35 … 07:35 KST Mon–Fri
+    - cron: '5 23 * * 0-4'            # 08:05 KST Mon–Fri (late retry)
+  workflow_dispatch:
+permissions: {contents: write}
+concurrency: {group: ohaasa, cancel-in-progress: false}
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python fetch_ohaasa.py
+      - name: Commit and push (retry on conflict)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          FILES="docs/fortune/ohaasa.json"
+          STASH=$(mktemp -d)
+          for f in $FILES; do [ -f "$f" ] && mkdir -p "$STASH/$(dirname $f)" && cp "$f" "$STASH/$f"; done
+          for i in 1 2 3 4 5 6; do
+            git rebase --abort 2>/dev/null || true
+            git merge --abort 2>/dev/null || true
+            git fetch origin main && git reset --hard origin/main
+            for f in $FILES; do [ -f "$STASH/$f" ] && mkdir -p "$(dirname $f)" && cp "$STASH/$f" "$f"; done
+            git add $FILES
+            if git diff --cached --quiet; then echo "no ohaasa changes"; exit 0; fi
+            git commit -q -m "ohaasa: $(date -u +%FT%TZ)"
+            if git push origin HEAD:main; then echo "push ok (attempt $i)"; exit 0; fi
+            echo "push failed (attempt $i), sleep $((i*15))s"
+            sleep $((i * 15))
+          done
+          echo "push failed after retries"
+          exit 1
