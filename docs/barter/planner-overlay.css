@@ -80,3 +80,8 @@ body.pvDragging #toast,body.pvDragging #toast *{pointer-events:none!important}
 #pvConfirm .pvDanger .pvCok:hover{background:#c9302c;border-color:#ffb4b4}
 #pvConfirm .pvDanger .pvCbtn button:focus-visible{outline-color:#ff8a8a}
 @keyframes pvCin{from{opacity:0;transform:translate(-50%,-46%)}to{opacity:1;transform:translate(-50%,-50%)}}
+
+/* done sync with round popup — strike item name like face cards */
+.pvT tr.pvItem.done td,.pvT tr.pvItem.fin td{opacity:.72}
+.pvT tr.pvItem.done .gnm,.pvT tr.pvItem.fin .gnm{text-decoration:line-through}
+.pvT tr.pvItem.done td:last-child,.pvT tr.pvItem.fin td:last-child{opacity:1}

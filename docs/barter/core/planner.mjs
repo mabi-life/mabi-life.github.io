@@ -100,25 +100,45 @@ function packPass(order, state, W, SL, filter, trim) {
 
 /** Heuristic recommendations — not proven optimal. */
 export function recommendTrips({ routePosts, goods, mode = 'high_tier', capacity: cap, qtyMap = {}, minTier = 0, maxRuns = 8 }) {
-  const tierOk = g => mode !== 'high_tier' || !minTier || (g.tier || 0) >= minTier;
+  // high_then_low: include all tiers; other modes keep previous filters
+  const tierOk = g => {
+    if (mode === 'high_then_low') return true;
+    if (mode === 'high_tier' && minTier) return (g.tier || 0) >= minTier;
+    return true;
+  };
   const selected = goods.filter(g => routePosts.includes(g.post) && tierOk(g)).map(g => ({
     ...g, _planQty: qtyMap[g.id] != null ? Math.min(qtyMap[g.id], g.limit) : g.limit
   }));
   const left = cloneLeft(selected);
   const trips = [];
   const W = +cap.weight || 0, SL = +cap.slots || 0;
+  const HIGH = 3; // T3+ = high, T2 and below (incl. null as low for skaha-less routes) = low leftovers
 
   const byHighTier = [...left].sort((a, b) => (b.g.tier || 0) - (a.g.tier || 0) || routePosts.indexOf(a.g.post) - routePosts.indexOf(b.g.post));
   const byTravel = [...left].sort((a, b) => routePosts.indexOf(a.g.post) - routePosts.indexOf(b.g.post) || (b.g.tier || 0) - (a.g.tier || 0));
+  // low leftovers: denser pack — prefer heavier/higher slot use among T<=2, still prefer earlier posts lightly
+  const byLowPack = [...left].sort((a, b) => (a.g.tier || 0) - (b.g.tier || 0) || (b.g.weight || 0) - (a.g.weight || 0) || routePosts.indexOf(a.g.post) - routePosts.indexOf(b.g.post));
+
+  const hasHigh = () => left.some(x => x.left && (x.g.tier || 0) >= HIGH);
+  const hasLow = () => left.some(x => x.left && (x.g.tier || 0) < HIGH);
 
   for (let run = 0; run < maxRuns && left.some(x => x.left); run++) {
     const state = { w: 0, s: 0 };
     let L = [];
     if (mode === 'min_travel') {
-      // Fill earlier towns before later ones; within town prefer higher tier.
       for (const post of routePosts) {
         const more = packPass(byTravel, state, W, SL, g => g.post === post, run === 0);
         L = L.concat(more);
+      }
+    } else if (mode === 'high_then_low') {
+      // Early rounds: only T3+ (same multi-post mix as high_tier). Never fill with low yet.
+      if (hasHigh()) {
+        L = L.concat(packPass(byHighTier, state, W, SL, g => (g.tier || 0) >= HIGH, run === 0));
+        // if still room but no more high fits, leave room empty — low waits for leftover rounds
+      } else if (hasLow()) {
+        // Leftover rounds: pack T2 and below into as few trips as possible; mix trading posts OK
+        L = L.concat(packPass(byLowPack, state, W, SL, g => (g.tier || 0) < HIGH, false));
+        L = L.concat(packPass(byLowPack, state, W, SL, g => (g.tier || 0) < HIGH, false));
       }
     } else {
       // high_tier: allow multiple towns' higher tiers in the same trip.
@@ -142,9 +162,12 @@ export function recommendTrips({ routePosts, goods, mode = 'high_tier', capacity
       slots: state.s
     });
   }
-  return { mode, minTier, trips, note: mode === 'high_tier'
-    ? `고등급 우선 추천(휴리스틱): 여러 교역소의 고티어를 같은 회차에 섞을 수 있습니다.${minTier ? ` T${minTier} 미만은 추천에서 빼고 직접 추가할 수 있게 두었습니다.` : ''} 최단·최적해를 보장하지 않습니다.`
-    : '이동 최소화 추천(휴리스틱): 루트 앞 교역소를 먼저 채웁니다. 이동 거리 실측·최적해를 보장하지 않습니다.' };
+  const note = mode === 'high_then_low'
+    ? '고등급 먼저 · 저티어 모아서(휴리스틱): 앞 회차에 T3+만 싣고, 남은 T2 이하는 교역소를 섞어 최소한의 뒷 회차로 몰아 담습니다. 최단·최적해를 보장하지 않습니다.'
+    : mode === 'high_tier'
+      ? `고등급 우선 추천(휴리스틱): 여러 교역소의 고티어를 같은 회차에 섞을 수 있습니다.${minTier ? ` T${minTier} 미만은 추천에서 빼고 직접 추가할 수 있게 두었습니다.` : ''} 최단·최적해를 보장하지 않습니다.`
+      : '이동 최소화 추천(휴리스틱): 루트 앞 교역소를 먼저 채웁니다. 이동 거리 실측·최적해를 보장하지 않습니다.';
+  return { mode, minTier, trips, note };
 }
 
 export function materialsForTrips(trips, goodsById) {

@@ -1,6 +1,6 @@
 /* 물교 플래너 확장 — 기존 app.js는 그대로 두고 그 위에
    운송수단 선택·그랜마/덮개·추천 방식·회차 버튼·회차별 편집(드래그 포함)을 얹는다. */
-import { CARRIERS as PC, capacity, recommendTrips, tripTotals, weeklyWarnings, applyTripEdit, unassigned, moveItem, setTripQty } from './core/planner.mjs?v=3';
+import { CARRIERS as PC, capacity, recommendTrips, tripTotals, weeklyWarnings, applyTripEdit, unassigned, moveItem, setTripQty } from './core/planner.mjs?v=4';
 
 const ALLR = { id: 'all', name: '페라 → 칼리다 → 카루숲 → 오아시스 → 셀라·콘누스 항구', posts: ['페라', '칼리다', '카루숲', '오아시스'] };
 const ROUTE_IDS = ['pk', 'ko'];
@@ -17,7 +17,7 @@ const cap = () => { const p = pv(); return capacity({ carrierId: p.carrierId, cu
 const syncCap = () => { const c = cap(); S.cw = c.weight; S.cs = c.slots; };
 const scopeRoutes = () => pv().scope === 'all' ? [ALLR] : D.routes.filter(r => ROUTE_IDS.includes(r.id));
 const routeById = id => id === 'all' ? ALLR : D.routes.find(r => r.id === id);
-const minTierNow = () => pv().mode === 'high_tier' ? (+pv().minTier || 0) : 0;
+const minTierNow = () => pv().mode === 'high_tier' ? (+pv().minTier || 0) : 0; // high_then_low ignores minTier
 const qtyMapOf = r => Object.fromEntries(routeGoods(r).map(g => [g.id, qtyOf(g)]));
 const fpOf = r => { const c = cap(); return JSON.stringify({ c: [c.slots, c.weight], m: pv().mode, t: minTierNow(), g: routeGoods(r).map(g => [g.id, qtyOf(g)]) }); };
 const copyItems = items => (items || []).map(x => ({ goodsId: +x.goodsId, qty: +x.qty }));
@@ -71,6 +71,7 @@ function cfgHtml() {
   <div class="pvRow"><b class="pvH">🧭 추천</b>
     <label class="pvRad"><input type="radio" name="pvMode" data-pv="mode" value="min_travel" ${p.mode === 'min_travel' ? 'checked' : ''}> 이동 최소화 <small>지역(교역소) 순서대로 채움</small></label>
     <label class="pvRad"><input type="radio" name="pvMode" data-pv="mode" value="high_tier" ${p.mode === 'high_tier' ? 'checked' : ''}> 고등급 우선 <small>여러 교역소를 돌며 고티어만 섞어 싣기</small></label>
+    <label class="pvRad"><input type="radio" name="pvMode" data-pv="mode" value="high_then_low" ${p.mode === 'high_then_low' ? 'checked' : ''}> 고등급 먼저 · 저티어 모아서 <small>앞 회차 T3+ · 남은 T2 이하는 최소 회차로</small></label>
     ${tierSel}
     <span class="pvSep"></span>
     <label class="pvRad"><input type="radio" name="pvScope" data-pv="scope" value="route" ${p.scope !== 'all' ? 'checked' : ''}> 루트별</label>
@@ -87,15 +88,26 @@ function tripCard(r, P, t, i, c, cum) {
   const tot = tripTotals(t.items, G), owned = C().owned;
   const ow = tot.weight - c.weight, os = tot.slots - c.slots;
   let cost = 0, unk = 0; const need = {};
+  // Shared done state with round popup (C().done / mabiBarter.v1) — prior trips consume offset
+  const doneOff = {};
+  for (let ti = 0; ti < i; ti++) for (const it of (P.trips[ti].items || [])) doneOff[it.goodsId] = (doneOff[it.goodsId] || 0) + (+it.qty || 0);
   const rows = tot.lines.map(l => {
     const g = G[l.goodsId], u = unitCost(g); cost += u.s * l.qty; unk += u.u;
     for (const [m, k] of g.mats) need[m] = (need[m] || 0) + k * l.qty;
     const off6 = g.tier === 6 && S.active6[g.post] !== g.id;
-    return `<tr class="pvItem" data-r="${r.id}" data-i="${i}" data-g="${g.id}" title="끌어서 다른 회차로 옮기거나 순서를 바꿀 수 있어요"><td class="pvHd" aria-label="끌어서 옮기기">⠿</td><td><span class="t t${g.tier || 0}">${g.tier ? 'T' + g.tier : '—'}</span></td><td>${esc(g.post)}</td><td class="gnm" title="${esc(g.name)}">${iconHtml(g.name)}${esc(g.name)}${off6 ? ' <span class="warn" title="이번 시즌 선택된 6티어가 아님">비활성</span>' : ''}</td>
-      <td class="r pvQc" title="${esc(`전체 회차 합계 ${allOf(P, g.id)} / 주간수량 ${qtyOf(g)}`)}"><input class="n pvQ" data-pv="qty" data-r="${r.id}" data-i="${i}" data-g="${g.id}" value="${l.qty}" inputmode="numeric" aria-label="${esc(g.name)} 이번 회차 수량 (주간수량 ${qtyOf(g)})"><span class="pvMax">/ ${qtyOf(g)}</span></td>
-      <td class="r">${fmt(l.weight)}</td><td class="r">${l.slots}</td>
-      <td><button class="ghost sm" data-pv="del" data-r="${r.id}" data-i="${i}" data-g="${g.id}" title="이 회차에서 빼기" aria-label="${esc(g.name)} 빼기">✕</button></td></tr>`;
+    const off = doneOff[g.id] || 0;
+    const dn = Math.max(0, Math.min(l.qty, doneOf(g) - off));
+    const fin = dn >= l.qty ? 1 : 0;
+    doneOff[g.id] = off + l.qty;
+    const exBtn = fin
+      ? `<button class="sm dong" data-a="unex" data-g="${g.id}" data-n="${off}" title="완료 해제 · 재료 복원">✔ 완료</button>`
+      : `<button class="sm" data-a="ex" data-g="${g.id}" data-n="${off + l.qty}" title="이 회차 수량 교환완료 + 재료 차감">✔ 완료</button>`;
+    return `<tr class="pvItem${fin ? ' done fin' : ''}" data-r="${r.id}" data-i="${i}" data-g="${g.id}" title="끌어서 다른 회차로 옮기거나 순서를 바꿀 수 있어요"><td class="pvHd" aria-label="끌어서 옮기기">⠿</td><td><span class="t t${g.tier || 0}">${g.tier ? 'T' + g.tier : '—'}</span></td><td>${esc(g.post)}</td><td class="gnm" title="${esc(g.name)}">${iconHtml(g.name)}${esc(g.name)}${fin ? ' <span class="dbadge">완료</span>' : ''}${off6 ? ' <span class="warn" title="이번 시즌 선택된 6티어가 아님">비활성</span>' : ''}</td>
+      <td class="r pvQc" title="${esc(`전체 회차 합계 ${allOf(P, g.id)} / 주간수량 ${qtyOf(g)}`)}"><input class="n pvQ" data-pv="qty" data-r="${r.id}" data-i="${i}" data-g="${g.id}" value="${l.qty}" inputmode="numeric" aria-label="${esc(g.name)} 이번 회차 수량 (주간수량 ${qtyOf(g)})"${fin ? ' disabled' : ''}><span class="pvMax">/ ${qtyOf(g)}</span></td>
+      <td class="r${fin ? ' mut' : ''}">${fmt(l.weight)}</td><td class="r${fin ? ' mut' : ''}">${l.slots}</td>
+      <td style="white-space:nowrap">${exBtn} <button class="ghost sm" data-pv="del" data-r="${r.id}" data-i="${i}" data-g="${g.id}" title="이 회차에서 빼기" aria-label="${esc(g.name)} 빼기">✕</button></td></tr>`;
   }).join('');
+
   const inTrip = new Set(t.items.map(x => +x.goodsId));
   const left = Object.fromEntries(unassigned(P.trips, routeGoods(r), qtyMapOf(r)).map(x => [x.goodsId, x.left]));
   const cands = routeGoods(r).filter(g => !inTrip.has(g.id)).sort((a, b) => (left[b.id] ? 1 : 0) - (left[a.id] ? 1 : 0) || (b.tier || 0) - (a.tier || 0));
@@ -112,7 +124,7 @@ function tripCard(r, P, t, i, c, cum) {
   return `<article class="pvTrip${warns.length ? ' over' : ''}${t.customized ? ' edited' : ''}" data-trip="${i}" data-r="${r.id}">
     <div class="pvTh"><h4>${i + 1}회차 <span class="pvPosts">${posts.length ? esc(posts.join(' → ')) : '비어 있음'}</span>${t.customized ? '<span class="pvEd">✏️ 편집됨</span>' : '<span class="pvRec">추천</span>'}</h4>
       <span>${t.customized && hasRec ? `<button class="ghost sm" data-pv="reset" data-r="${r.id}" data-i="${i}">↺ 추천으로 되돌리기</button>` : ''}${!hasRec ? `<button class="ghost sm" data-pv="dropTrip" data-r="${r.id}" data-i="${i}">회차 삭제</button>` : ''}</span></div>
-    ${rows ? `<table class="rt pvT"><tr><th></th><th>티어</th><th>교역소</th><th>품목</th><th class="r pvQh">이번회차 / 주간수량</th><th class="r">무게</th><th class="r">슬롯</th><th></th></tr>${rows}</table>` : '<div class="mut" style="margin:8px 0">담긴 품목이 없어요. 아래에서 추가하세요.</div>'}
+    ${rows ? `<table class="rt pvT"><tr><th></th><th>티어</th><th>교역소</th><th>품목</th><th class="r pvQh">이번회차 / 주간수량</th><th class="r">무게</th><th class="r">슬롯</th><th>교환</th></tr>${rows}</table>` : '<div class="mut" style="margin:8px 0">담긴 품목이 없어요. 아래에서 추가하세요.</div>'}
     <div class="pvAdd">${cands.length ? `${addSel}<input class="n" id="pvAddQ_${r.id}_${i}" placeholder="수량" inputmode="numeric" aria-label="추가 수량"><button class="sm" data-pv="add" data-r="${r.id}" data-i="${i}">＋ 추가</button>` : '<span class="mut">추가할 품목 없음</span>'}</div>
     <div class="esum"><span>무게 <b class="${ow > 0 ? 'neg' : ''}">${fmt(tot.weight)} / ${fmt(c.weight)}</b></span><span>슬롯 <b class="${os > 0 ? 'neg' : ''}">${tot.slots} / ${c.slots}</b></span><span>재료비 <b class="neg">${gk(cost)}</b>${unk ? '<span class="warn">+?</span>' : ''}</span></div>
     ${warns.length ? `<div class="pvWarn">${warns.join(' · ')} <small>— 편집한 수량은 그대로 두었어요. 직접 줄이거나 다른 회차로 옮겨 주세요.</small></div>` : ''}
@@ -232,7 +244,7 @@ document.addEventListener('change', e => {
   if (k === 'carrier') return mut(() => { p.carrierId = t.value; syncCap(); }, '운송: ' + (PC.find(x => x.id === t.value) || {}).name);
   if (k === 'cs' || k === 'cw') return mut(() => { p[k === 'cs' ? 'customSlots' : 'customWeight'] = int(t.value); syncCap(); });
   if (k === 'gm' || k === 'cover') return mut(() => { p[k] = t.checked; syncCap(); }, `${k === 'gm' ? '그랜마 상인' : '교역 확장 덮개'} ${t.checked ? '켬' : '끔'}`);
-  if (k === 'mode') return mut(() => { p.mode = t.value; }, t.value === 'high_tier' ? '고등급 우선 추천' : '이동 최소화 추천');
+  if (k === 'mode') return mut(() => { p.mode = t.value; }, t.value === 'high_tier' ? '고등급 우선 추천' : t.value === 'high_then_low' ? '고등급 먼저 · 저티어 모아서' : '이동 최소화 추천');
   if (k === 'minTier') return mut(() => { p.minTier = +t.value || 0; });
   if (k === 'scope') return mut(() => { p.scope = t.value; });
   if (k === 'qty') {
