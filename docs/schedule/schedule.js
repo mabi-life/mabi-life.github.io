@@ -25,7 +25,14 @@ function occ(dn0,dn1){var out=[];S.items.forEach(function(it){
 function mk(it,dn){var k=it.id+"|"+ymd(dn);return{it:it,dn:dn,t:at(dn,it.time||"00:00"),k:k,st:S.st[k]||""}}
 function tags(it){return '<span class="tag '+(it.kind==="once"?"one\">일회성":"fix\">고정")+'</span>'+(it.server?'<span class="tag s-'+esc(it.server)+'">'+esc(it.server)+'</span>':"")}
 /* ---------- render ---------- */
-var wOff=0,upAll=false;
+var wOff=0,mOff=0,upAll=false,VIEW_KEY="mabi-schedule-view",MAX_M=3;
+var viewMode=(function(){try{return localStorage.getItem(VIEW_KEY)==="month"?"month":"week"}catch(e){return"week"}})();
+function setView(m){viewMode=m==="month"?"month":"week";try{localStorage.setItem(VIEW_KEY,viewMode)}catch(e){}syncView();render()}
+function syncView(){var week=viewMode==="week";$("vWeek").classList.toggle("on",week);$("vMonth").classList.toggle("on",!week);$("vWeek").setAttribute("aria-pressed",week?"true":"false");$("vMonth").setAttribute("aria-pressed",week?"false":"true");$("scWeekWrap").hidden=!week;$("scMonthWrap").hidden=week}
+function moStart(dn){var d=new Date(dn*DAY);return Math.floor(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),1)/DAY)}
+function addMo(dn,n){var d=new Date(dn*DAY);return Math.floor(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+n,1)/DAY)}
+function moLabel(dn){var d=new Date(dn*DAY);return d.getUTCFullYear()+"년 "+(d.getUTCMonth()+1)+"월"}
+
 function render(){var now=Date.now(),td=kday(now);
  /* upcoming 14 days (현재 진행 중 2시간 이내도 포함) */
  var up=occ(td-1,td+15).filter(function(o){return o.t>=now-2*3600e3});
@@ -42,6 +49,16 @@ function render(){var now=Date.now(),td=kday(now);
  var h="";for(var i=0;i<7;i++){var dn=mon+i,evs=wk.filter(function(o){return o.dn===dn});
   h+='<div class="scDay'+(dn===td?" today":dn<td?" past":"")+'"><h3><b>'+WD[wdOf(dn)]+'</b><span>'+md(dn)+'</span></h3>'+evs.map(function(o){return '<div class="scEv '+(o.it.kind==="once"?"one ":"")+o.st+'" data-id="'+o.it.id+'" title="'+esc(o.it.memo||"")+'"><i>'+esc(o.it.time)+(o.it.server?" · "+esc(o.it.server):"")+'</i>'+esc(o.it.title)+'</div>'}).join("")+'</div>'}
  $("scWeek").innerHTML=h;
+ /* month */
+ var m0=addMo(moStart(td),mOff),m1=addMo(m0,1),g0=m0-wdOf(m0),g1=g0+42,mevs=occ(g0,g1);
+ $("scMoT").textContent=mOff===0?"이번 달 · "+moLabel(m0):moLabel(m0);
+ var mh="";for(var mi=0;mi<42;mi++){var mdn=g0+mi,out=mdn<m0||mdn>=m1,wd=wdOf(mdn),evs=mevs.filter(function(o){return o.dn===mdn}),show=evs.slice(0,MAX_M),more=evs.length-show.length;
+  var dcls=wd===0?"sun":wd===6?"sat":"";
+  mh+='<div class="scMDay'+(mdn===td?" today":"")+(out?" out":"")+'" data-dn="'+mdn+'" role="button" tabindex="0" aria-label="'+ymd(mdn)+'"><div class="d"><span class="'+dcls+'">'+new Date(mdn*DAY).getUTCDate()+'</span>'+(mdn===td?'<span class="badge">오늘</span>':"")+'</div>';
+  mh+=show.map(function(o){return '<div class="scEv '+(o.it.kind==="once"?"one ":"")+o.st+'" data-id="'+o.it.id+'" title="'+esc(o.it.memo||"")+'"><i>'+esc(o.it.time)+'</i>'+esc(o.it.title)+'</div>'}).join("");
+  if(more>0)mh+='<div class="scMore">+'+more+'</div>';
+  mh+='</div>'}
+ $("scMonth").innerHTML=mh;
  /* all */
  $("scCnt").textContent=S.items.length?S.items.length+"개":"";
  $("scAll").innerHTML=S.items.length?S.items.slice().sort(function(a,b){return(a.kind>b.kind?-1:a.kind<b.kind?1:0)||(a.time>b.time?1:-1)}).map(function(it){
@@ -53,12 +70,14 @@ var editId=null;
 $("fDays").innerHTML=[1,2,3,4,5,6,0].map(function(d){return '<label><input type="checkbox" value="'+d+'"> '+WD[d]+'</label>'}).join("");
 function kindSync(){var once=document.querySelector('input[name=fKind]:checked').value==="once";$("fDaysBox").hidden=once;$("fDateBox").hidden=!once}
 document.querySelectorAll("input[name=fKind]").forEach(function(r){r.addEventListener("change",kindSync)});
-function openForm(it){editId=it?it.id:null;$("scForm").hidden=false;$("scFormT").textContent=it?"일정 수정":"일정 추가";$("fDel").hidden=!it;
+function openForm(it,prefDn){editId=it?it.id:null;$("scForm").hidden=false;$("scFormT").textContent=it?"일정 수정":"일정 추가";$("fDel").hidden=!it;
  $("fTitle").value=it?it.title:"";$("fSrv").value=it?it.server||"":(localStorage.getItem("mabi-schedule-srv")||"");$("fTime").value=it?it.time:"21:00";$("fMemo").value=it?it.memo||"":"";
- var kind=it?it.kind:"weekly";document.querySelector('input[name=fKind][value='+kind+']').checked=true;
- var td=kday(Date.now());$("fDate").value=it&&it.date?it.date:ymd(td);
- var days=it&&it.days?it.days:[wdOf(td)];$("fDays").querySelectorAll("input").forEach(function(c){c.checked=days.indexOf(+c.value)>=0});
+ var td=kday(Date.now()),useDn=prefDn!=null?prefDn:td;
+ var kind=it?it.kind:(prefDn!=null?"once":"weekly");document.querySelector('input[name=fKind][value='+kind+']').checked=true;
+ $("fDate").value=it&&it.date?it.date:ymd(useDn);
+ var days=it&&it.days?it.days:[wdOf(useDn)];$("fDays").querySelectorAll("input").forEach(function(c){c.checked=days.indexOf(+c.value)>=0});
  kindSync();$("scForm").scrollIntoView({block:"nearest",behavior:"smooth"});$("fTitle").focus()}
+function openForDate(dn){openForm(null,dn)}
 function closeForm(){$("scForm").hidden=true;editId=null}
 $("scAdd").onclick=function(){openForm(null)};$("fCancel").onclick=closeForm;
 $("scForm").addEventListener("submit",function(e){e.preventDefault();
@@ -76,13 +95,18 @@ $("fDel").onclick=function(){if(!editId)return;var it=S.items.filter(function(x)
  if(!confirm("「"+(it?it.title:"")+"」 일정을 삭제할까요?"+(it&&it.kind==="weekly"?"\n(고정 일정은 모든 회차가 함께 지워져요)":"")))return;
  S.items=S.items.filter(function(x){return x.id!==editId});Object.keys(S.st).forEach(function(k){if(k.indexOf(editId+"|")===0)delete S.st[k]});save();closeForm();render();toast("삭제했어요")};
 function byId(id){return S.items.filter(function(x){return x.id===id})[0]}
-document.addEventListener("click",function(e){if(e.target.id==="upMore"){upAll=!upAll;render();return}var b=e.target.closest("[data-act],[data-edit],.scEv");if(!b)return;
+document.addEventListener("click",function(e){if(e.target.id==="upMore"){upAll=!upAll;render();return}
+ var day=e.target.closest(".scMDay");if(day&&!e.target.closest(".scEv")){openForDate(+day.dataset.dn);return}
+ var b=e.target.closest("[data-act],[data-edit],.scEv");if(!b)return;
  if(b.dataset.edit){openForm(byId(b.dataset.edit));return}
  if(b.classList.contains("scEv")){openForm(byId(b.dataset.id));return}
  var li=b.closest("li[data-k]");if(!li)return;var k=li.dataset.k,a=b.dataset.act;
  if(a==="edit"){openForm(byId(li.dataset.id));return}
  if(S.st[k]===a)delete S.st[k];else S.st[k]=a;save();render()});
+document.addEventListener("keydown",function(e){if(e.key!=="Enter"&&e.key!==" ")return;var day=e.target.closest&&e.target.closest(".scMDay");if(!day)return;e.preventDefault();openForDate(+day.dataset.dn)});
 $("wPrev").onclick=function(){wOff--;render()};$("wNext").onclick=function(){wOff++;render()};$("wNow").onclick=function(){wOff=0;render()};
+$("mPrev").onclick=function(){mOff--;render()};$("mNext").onclick=function(){mOff++;render()};$("mNow").onclick=function(){mOff=0;render()};
+$("vWeek").onclick=function(){setView("week")};$("vMonth").onclick=function(){setView("month")};
 /* ---------- backup ---------- */
 $("scExport").onclick=function(){var blob=new Blob([JSON.stringify({app:"mabi-life-schedule",v:1,at:new Date().toISOString(),items:S.items,st:S.st},null,1)],{type:"application/json"});
  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="mabi-schedule-"+ymd(kday(Date.now()))+".json";document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500)};
@@ -103,5 +127,5 @@ function tick(){render();if(!S.noti.on||!("Notification"in window)||Notification
   try{new Notification("마비노기 스케줄 · "+o.it.title,{body:o.it.time+" 시작 ("+left(d)+")"+(o.it.server?" · "+o.it.server:"")+(o.it.memo?"\n"+o.it.memo:""),tag:o.k})}catch(e){}}});
  Object.keys(sent).forEach(function(k){if(now-sent[k]>3*DAY)delete sent[k]});try{localStorage.setItem("mabi-schedule-sent",JSON.stringify(sent))}catch(e){}}
 var tt;function toast(m){var t=$("scToast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(function(){t.classList.remove("on")},1800)}
-render();setInterval(tick,30e3);document.addEventListener("visibilitychange",function(){if(!document.hidden)render()});
+syncView();render();setInterval(tick,30e3);document.addEventListener("visibilitychange",function(){if(!document.hidden)render()});
 })();
