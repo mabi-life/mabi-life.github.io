@@ -12,6 +12,9 @@ last:["오늘은 조금 아쉬운 날. 하지만 럭키 아이템이 지켜 줄 
 /* 최근 거뿔 수집 기록(11.07~11.09)에서 실제로 언급된 채널 번호 */
 var CH={"류트":[1,3,4,5,6,8,9,10,12,13,14,15,16,17,18,19,22,23,24,25,26,27,28,30,31,32,33,34,35,36,37,38],"하프":[1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,17,18,19,20,21,22],"만돌린":[1,2,3,4,5,6,7,8,9,10,12,13,14],"울프":[1,2,3,4,5,6,7,8,9,10,12,13,14]};
 var SRV=["류트","하프","만돌린","울프"];
+/* 하우징 채널: 모든 서버의 11채널은 하우징 채널이라 추천에서 항상 제외 (위 데이터와 무관한 고정 규칙) */
+var HOUSING_CHANNEL=11;
+Object.keys(CH).forEach(function(k){CH[k]=CH[k].filter(function(n){return n!==HOUSING_CHANNEL})});
 function h32(s){var h=2166136261>>>0;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h>>>0}
 function rng(seed){var a=seed>>>0;return function(){a=(a+0x6D2B79F5)>>>0;var t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
 function kst(){var d=new Date(Date.now()+9*3600e3);return{y:d.getUTCFullYear(),m:d.getUTCMonth()+1,d:d.getUTCDate(),w:d.getUTCDay(),key:d.toISOString().slice(0,10)}}
@@ -22,7 +25,9 @@ function compute(){today=kst();var r=rng(h32("mabi-fortune|"+today.key)),idx=SIG
  for(var i=idx.length-1;i>0;i--){var j=Math.floor(r()*(i+1)),t=idx[i];idx[i]=idx[j];idx[j]=t}
  var items=ITEMS.slice();for(i=items.length-1;i>0;i--){j=Math.floor(r()*(i+1));t=items[i];items[i]=items[j];items[j]=t}
  rank=idx.map(function(si,k){var band=k===0?"top":k<=3?"hi":k<=7?"mid":k<=10?"lo":"last",pool=MSG[band];return{si:si,rank:k+1,item:items[k],msg:pool[Math.floor(r()*pool.length)]}})}
-function channel(srv){var list=CH[srv],r=rng(h32("mabi-channel|"+today.key+"|"+srv));return list[Math.floor(r()*list.length)]}
+function channelFor(srv,key){var list=CH[srv].filter(function(n){return n!==HOUSING_CHANNEL}),r=rng(h32("mabi-channel|"+key+"|"+srv));return list[Math.floor(r()*list.length)]}
+function channel(srv){return channelFor(srv,today.key)}
+window.mabiFortune={channelFor:channelFor,HOUSING_CHANNEL:HOUSING_CHANNEL};
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function render(){compute();var my=ls("mabi-fortune-sign"),srv=ls("mabi-fortune-server");if(SRV.indexOf(srv)<0)srv="";
  var mine=my!=null&&my!==""?rank.filter(function(x){return x.si===+my})[0]:null;
