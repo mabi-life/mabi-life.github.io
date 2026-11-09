@@ -1,4 +1,4 @@
-/* 홈 「오늘의 운세」 — KST 날짜로 순위 시드, 채널은 날짜+서버+별자리 (재미용) */
+/* 홈 「오늘의 운세」 — 평일 오하아사 순위(있으면) / 없으면 KST 시드 셔플, 채널은 날짜+서버+별자리 (재미용) */
 (function(){
 "use strict";
 var root=document.getElementById("fortune");if(!root)return;
@@ -20,10 +20,17 @@ function rng(seed){var a=seed>>>0;return function(){a=(a+0x6D2B79F5)>>>0;var t=a
 function kst(){var d=new Date(Date.now()+9*3600e3);return{y:d.getUTCFullYear(),m:d.getUTCMonth()+1,d:d.getUTCDate(),w:d.getUTCDay(),key:d.toISOString().slice(0,10)}}
 var WD=["일","월","화","수","목","금","토"];
 function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
-var today,rank;
-function compute(){today=kst();var r=rng(h32("mabi-fortune|"+today.key)),idx=SIGNS.map(function(_,i){return i});
- for(var i=idx.length-1;i>0;i--){var j=Math.floor(r()*(i+1)),t=idx[i];idx[i]=idx[j];idx[j]=t}
- var items=ITEMS.slice();for(i=items.length-1;i>0;i--){j=Math.floor(r()*(i+1));t=items[i];items[i]=items[j];items[j]=t}
+var today,rank,ohaasa=null,rankSrc="fallback";
+function signIndex(name){for(var i=0;i<SIGNS.length;i++)if(SIGNS[i][0]===name)return i;return -1}
+function orderFromOhaasa(data){
+ if(!data||data.date!==today.key||!Array.isArray(data.signs)||data.signs.length!==12)return null;
+ var idx=[],seen={};
+ for(var i=0;i<data.signs.length;i++){var si=signIndex(data.signs[i]);if(si<0||seen[si])return null;seen[si]=1;idx.push(si)}
+ return idx.length===12?idx:null}
+function compute(){today=kst();var r=rng(h32("mabi-fortune|"+today.key)),idx=orderFromOhaasa(ohaasa);
+ rankSrc=idx?"ohaasa":"fallback";
+ if(!idx){idx=SIGNS.map(function(_,i){return i});for(var i=idx.length-1;i>0;i--){var j=Math.floor(r()*(i+1)),t=idx[i];idx[i]=idx[j];idx[j]=t}}
+ var items=ITEMS.slice();for(var i=items.length-1;i>0;i--){var j=Math.floor(r()*(i+1)),t=items[i];items[i]=items[j];items[j]=t}
  rank=idx.map(function(si,k){var band=k===0?"top":k<=3?"hi":k<=7?"mid":k<=10?"lo":"last",pool=MSG[band];return{si:si,rank:k+1,item:items[k],msg:pool[Math.floor(r()*pool.length)]}})}
 function channelFor(srv,key,sign){var list=CH[srv].filter(function(n){return n!==HOUSING_CHANNEL});if(!list.length)return null;
  var seed="mabi-channel|"+key+"|"+srv+(sign!=null&&sign!==""?"|"+sign:"");
@@ -37,7 +44,8 @@ function render(){compute();var my=ls("mabi-fortune-sign"),srv=ls("mabi-fortune-
  if(!srv){chMsg='<p class="ftCh mu">서버를 고르면 오늘의 추천 채널을 알려 드려요.</p>'}
  else if(!mine){chMsg='<p class="ftCh mu">별자리를 고르면 <b>'+srv+'</b> 서버의 오늘 추천 채널을 알려 드려요.</p>'}
  else{chMsg='<p class="ftCh">오늘 <b>'+SIGNS[mine.si][0]+'</b> · <b>'+srv+'</b> 서버는 <b class="n">'+channel(srv,mine.si)+'채널</b>에서 득템하실 수 있어 보여요!</p>'}
- var html='<div class="ftHd"><h2>🔮 오늘의 운세 <span class="ftDate">'+today.m+'월 '+today.d+'일 ('+WD[today.w]+')</span></h2><small class="ftNote">재미로 보는 운세예요 · 실제 드롭 확률과 무관</small></div>'+
+ var srcNote=rankSrc==='ohaasa'?'순위 출처: 오하아사(ABC おはよう朝日です)':'오늘은 오하아사 발표가 없어 사이트 자체 순위예요';
+ var html='<div class="ftHd"><h2>🔮 오늘의 운세 <span class="ftDate">'+today.m+'월 '+today.d+'일 ('+WD[today.w]+')</span></h2><small class="ftNote">재미로 보는 운세예요 · 실제 드롭 확률과 무관</small><small class="ftSrc">'+srcNote+'</small></div>'+
  '<div class="ftBody"><ol class="ftRank">'+rank.map(function(x){var s=SIGNS[x.si];return '<li role="button" tabindex="0" data-sign="'+x.si+'" class="'+(x.rank===1?"r1 ":x.rank<=3?"r3 ":"")+(mine&&mine.si===x.si?"me":"")+'" aria-pressed="'+(mine&&mine.si===x.si?"true":"false")+'"><b class="no">'+x.rank+'</b><span class="sg"><i aria-hidden="true">'+s[1]+'</i>'+s[0]+'</span><span class="it">'+esc(x.item)+'</span></li>'}).join("")+'</ol>'+
  '<div class="ftSide"><label class="ftMy">내 별자리 <select id="ftSign"><option value="">선택</option>'+SIGNS.map(function(s,i){return '<option value="'+i+'"'+(mine&&mine.si===i?" selected":"")+'>'+s[1]+" "+s[0]+" ("+s[2]+")</option>"}).join("")+'</select></label>'+
  (mine?'<p class="ftMsg"><b>'+SIGNS[mine.si][0]+' '+mine.rank+'위</b> '+esc(mine.msg)+'<br><span>럭키 아이템 · '+esc(mine.item)+'</span></p>':'<p class="ftMsg mu">별자리를 고르면 오늘의 한마디를 알려 드려요. 1위는 <b>'+SIGNS[rank[0].si][0]+'</b>!</p>')+
@@ -48,7 +56,10 @@ function render(){compute();var my=ls("mabi-fortune-sign"),srv=ls("mabi-fortune-
  root.querySelectorAll("[data-srv]").forEach(function(b){b.addEventListener("click",function(){ls("mabi-fortune-server",b.dataset.srv);render()})});
  root.querySelectorAll("[data-sign]").forEach(function(li){function pick(){ls("mabi-fortune-sign",li.dataset.sign);render()}
   li.addEventListener("click",pick);li.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();pick()}})})}
-render();
-/* 자정(KST) 넘어가면 새로 */
-setInterval(function(){if(kst().key!==today.key)render()},60e3);
+function boot(){
+ fetch("/fortune/ohaasa.json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){ohaasa=d;render()}).catch(function(){ohaasa=null;render()});
+}
+boot();
+/* 자정(KST) 넘어가면 새로 · 오하아사 JSON도 다시 받음 */
+setInterval(function(){if(kst().key!==today.key)boot()},60e3);
 })();

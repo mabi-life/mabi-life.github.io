@@ -2,6 +2,7 @@
 .fortune .ftHd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .fortune h2{margin:0;font-size:1.15em;color:#e3c98a}.fortune .ftDate{font-size:13px;color:#9aa1b0;font-weight:500;margin-left:4px}
 .fortune .ftNote{font-size:11.5px;color:#7d8394}
+.fortune .ftSrc{display:block;margin-top:4px;font-size:11.5px;color:#9aa1b0;font-weight:500}
 .fortune .ftBody{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start}
 .fortune .ftRank{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:column;grid-template-rows:repeat(6,auto);gap:4px 10px}
 .fortune .ftRank li{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:6px;padding:4px 8px;border-radius:8px;background:#262a33;font-size:13.5px;border:1px solid transparent}
