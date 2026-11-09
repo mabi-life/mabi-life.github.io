@@ -62,5 +62,25 @@ input[type=checkbox],input[type=radio]{accent-color:var(--ac)}
 .scAll li .w{color:var(--mu);font-size:12.5px}
 #scToast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--ac);color:#0d2a26;font-weight:700;padding:8px 16px;border-radius:999px;opacity:0;transition:.2s;pointer-events:none;z-index:99}
 #scToast.on{opacity:1;transform:translate(-50%,0)}
+
+.scViewToggle{display:inline-flex;gap:0;border:1px solid var(--ln);border-radius:999px;overflow:hidden;padding:0;background:var(--p2)}
+.scViewToggle .scBtn{border:0;border-radius:0;padding:5px 14px;background:transparent}
+.scViewToggle .scBtn.on{background:#1f4a45;color:#dff7f3;font-weight:700}
+.scSubHd{margin:4px 0 8px}.scSubHd h3{margin:0;font-size:14.5px;font-weight:700;color:var(--tx)}
+.scMHead{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:0 0 6px;text-align:center;font-size:12.5px;color:var(--mu);font-weight:600}
+.scMHead .sun{color:#f08a8a}.scMHead .sat{color:#7eb6ff}
+.scMonth{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.scMDay{border:1px solid var(--ln);border-radius:10px;min-height:108px;padding:6px;background:var(--p2);display:flex;flex-direction:column;gap:3px;cursor:pointer;position:relative}
+.scMDay:hover{border-color:var(--ac)}
+.scMDay.out{opacity:.42}
+.scMDay.today{border-color:var(--ac);box-shadow:inset 0 3px 0 var(--ac)}
+.scMDay .d{display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:12.5px;font-weight:700;color:var(--tx);font-variant-numeric:tabular-nums}
+.scMDay .d .sun{color:#f08a8a}.scMDay .d .sat{color:#7eb6ff}
+.scMDay.today .d{color:var(--ac)}
+.scMDay .badge{font-size:10.5px;font-weight:700;color:#0d2a26;background:var(--ac);border-radius:999px;padding:0 6px;line-height:1.6}
+.scMDay .scEv{font-size:11.5px;padding:3px 5px}
+.scMDay .scMore{font-size:11.5px;color:var(--mu);padding:1px 4px;font-weight:600}
+@media(max-width:900px){.scMonth{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.scMDay{min-height:78px;padding:4px}.scMDay .scEv i{display:inline;margin-right:3px}.scViewToggle .scBtn{padding:5px 12px}}
+@media(max-width:560px){.scMDay{min-height:64px}.scMDay .scEv{font-size:10.5px;padding:2px 4px}}
 @media(max-width:900px){.scCols{grid-template-columns:1fr}.scGrid{grid-template-columns:1fr 1fr}.scDays{grid-column:1/-1}.scWeek{grid-template-columns:repeat(2,1fr)}.scDay{min-height:auto}}
 .scUp li.more{display:block;text-align:center;border:0;background:none;padding:2px}
