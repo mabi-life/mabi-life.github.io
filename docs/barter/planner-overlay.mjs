@@ -1,6 +1,6 @@
 /* 물교 플래너 확장 — 기존 app.js는 그대로 두고 그 위에
    운송수단 선택·그랜마/덮개·추천 방식·회차 버튼·회차별 편집(드래그 포함)을 얹는다. */
-import { CARRIERS as PC, capacity, recommendTrips, tripTotals, weeklyWarnings, applyTripEdit, unassigned, moveItem, setTripQty } from './core/planner.mjs?v=2';
+import { CARRIERS as PC, capacity, recommendTrips, tripTotals, weeklyWarnings, applyTripEdit, unassigned, moveItem, setTripQty } from './core/planner.mjs?v=3';
 
 const ALLR = { id: 'all', name: '페라 → 칼리다 → 카루숲 → 오아시스 → 셀라·콘누스 항구', posts: ['페라', '칼리다', '카루숲', '오아시스'] };
 const ROUTE_IDS = ['pk', 'ko'];
@@ -68,7 +68,6 @@ function cfgHtml() {
     <label class="pvTg"><input type="checkbox" data-pv="cover" ${p.cover ? 'checked' : ''}> 교역 확장 덮개 <small>+1칸 · +100</small></label>
     <span class="pvCap" title="${esc((car.note ? '출처: ' + car.note + ' · ' : '') + '기본 ' + c.base.slots + '칸·' + c.base.weight + bon)}">적재 한도 <b>${c.slots}칸 · ${fmt(c.weight)}</b> <small>(기본 ${c.base.slots}칸·${fmt(c.base.weight)}${c.bonuses.length ? ' +' + (c.slots - c.base.slots) + '칸·+' + (c.weight - c.base.weight) : ''})</small></span>
   </div>
-  ${c.stackingNote ? `<div class="pvNote">ⓘ 그랜마 상인 + 교역 확장 덮개를 함께 켜면 단순 합산(+2칸·+200)으로 계산해요. 동시 적용은 공식 확인 전이라, 실제와 다르면 「직접 입력」으로 맞춰 주세요.</div>` : ''}
   <div class="pvRow"><b class="pvH">🧭 추천</b>
     <label class="pvRad"><input type="radio" name="pvMode" data-pv="mode" value="min_travel" ${p.mode === 'min_travel' ? 'checked' : ''}> 이동 최소화 <small>지역(교역소) 순서대로 채움</small></label>
     <label class="pvRad"><input type="radio" name="pvMode" data-pv="mode" value="high_tier" ${p.mode === 'high_tier' ? 'checked' : ''}> 고등급 우선 <small>여러 교역소를 돌며 고티어만 섞어 싣기</small></label>
@@ -260,19 +259,64 @@ document.addEventListener('click', e => {
     return longToast(q0 > left ? `${G[gid].name}: 주간수량 안에서 남은 ${left}개만 추가했어요` : `${G[gid].name} ×${q} 추가`);
   }
   if (k === 'addTrip') { const P = P_(rid); return mut(() => { P.trips.push({ items: [], customized: true }); }, '회차 추가'); }
-  if (k === 'dropTrip') { const P = P_(rid); if (P.trips[i].items.length && !confirm(`${i + 1}회차를 삭제할까요?`)) return; return mut(() => { P.trips.splice(i, 1); }, '회차 삭제'); }
+  if (k === 'dropTrip') {
+    const P = P_(rid), go = () => mut(() => { P.trips.splice(i, 1); }, '회차 삭제');
+    if (!P.trips[i].items.length) return go();
+    return pvConfirm(`담긴 품목 ${P.trips[i].items.length}종은 「회차에 안 담긴 교환」으로 돌아가요.`, { title: `${i + 1}회차를 삭제할까요?`, ok: '삭제', danger: true }).then(y => { if (y && P.trips[i]) go(); });
+  }
   if (k === 'reset') {
-    const P = P_(rid); if (!confirm(`${i + 1}회차를 추천 내용으로 되돌릴까요? 이 회차의 편집이 사라집니다.`)) return;
-    const fresh = freshRec(routeById(rid)).trips[i];
-    return mut(() => { P.trips[i] = { items: copyItems(fresh ? fresh.items : P.rec[i].items), customized: false }; }, `${i + 1}회차 추천으로 되돌림`);
+    const P = P_(rid);
+    return pvConfirm('이 회차에서 편집한 내용이 사라져요.', { title: `${i + 1}회차를 추천 내용으로 되돌릴까요?`, ok: '되돌리기', danger: true }).then(y => {
+      if (!y || !P.trips[i]) return;
+      const fresh = freshRec(routeById(rid)).trips[i];
+      mut(() => { P.trips[i] = { items: copyItems(fresh ? fresh.items : P.rec[i].items), customized: false }; }, `${i + 1}회차 추천으로 되돌림`);
+    });
   }
   if (k === 'regen' || k === 'regenAll') {
     const ids = k === 'regen' ? [rid] : scopeRoutes().map(x => x.id);
     const edited = ids.some(id => (pv().plans[id] || { trips: [] }).trips.some(t => t.customized));
-    if (edited && !confirm('편집한 회차가 있어요. 현재 설정으로 추천을 다시 만들면 편집 내용이 사라집니다. 계속할까요?')) return;
-    return mut(() => { for (const id of ids) delete pv().plans[id]; for (const id of ids) ensurePlan(routeById(id)); }, '추천을 다시 만들었어요');
+    const go = () => mut(() => { for (const id of ids) delete pv().plans[id]; for (const id of ids) ensurePlan(routeById(id)); }, '추천을 다시 만들었어요');
+    if (!edited) return go();
+    return pvConfirm('현재 설정으로 추천을 다시 만들면 편집한 회차의 내용이 사라져요.', { title: '추천을 다시 만들까요?', ok: '다시 만들기', danger: true }).then(y => { if (y) go(); });
   }
 });
+
+/* ---- 확인 창 (브라우저 confirm 대신, 사이트 팝업 스타일) ---- */
+let pvDlg = null;
+function pvConfirm(msg, { title = '확인', ok = '확인', cancel = '취소', danger = false } = {}) {
+  if (pvDlg) pvDlg.close(false);
+  return new Promise(resolve => {
+    const prev = document.activeElement, root = document.createElement('div');
+    root.id = 'pvConfirm';
+    root.innerHTML = `<div class="pvCbk"></div><div class="pvCbox${danger ? ' pvDanger' : ''}" role="alertdialog" aria-modal="true" aria-labelledby="pvCt" aria-describedby="pvCm">
+<h3 id="pvCt">${esc(title)}</h3>${msg ? `<p id="pvCm">${esc(msg)}</p>` : ''}
+<div class="pvCbtn"><button type="button" data-c="0">${esc(cancel)}</button><button type="button" data-c="1" class="pvCok">${esc(ok)}</button></div></div>`;
+    const btns = [...root.querySelectorAll('button')];
+    const close = v => {
+      if (!pvDlg) return; pvDlg = null;
+      document.removeEventListener('keydown', onKey, true); root.remove();
+      try { prev && prev.focus && prev.focus({ preventScroll: true }); } catch (x) {}
+      resolve(v);
+    };
+    const onKey = e => {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); close(false); }
+      else if (e.key === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); close(document.activeElement === btns[0] ? false : true); }
+      else if (e.key === 'Tab') {
+        e.preventDefault(); e.stopImmediatePropagation();
+        const j = btns.indexOf(document.activeElement); btns[(j + (e.shiftKey ? btns.length - 1 : 1)) % btns.length].focus();
+      } else if (e.key === ' ') { /* 포커스된 버튼 기본 동작 */ }
+      else { e.stopImmediatePropagation(); if (e.ctrlKey || e.metaKey) e.preventDefault(); } /* 창이 떠 있는 동안 되돌리기 단축키 등 차단 */
+    };
+    root.addEventListener('click', e => {
+      e.stopPropagation();
+      if (e.target.classList.contains('pvCbk')) return close(false);
+      const b = e.target.closest('button[data-c]'); if (b) close(b.dataset.c === '1');
+    });
+    document.addEventListener('keydown', onKey, true);
+    document.body.appendChild(root); pvDlg = { close };
+    btns[1].focus({ preventScroll: true });
+  });
+}
 
 document.addEventListener('toggle', e => { if (e.target && e.target.id === 'pvEdit') { UI.pvOpen = e.target.open; try { localStorage.setItem(UIK, JSON.stringify(UI)); } catch (x) {} } }, true);
 
