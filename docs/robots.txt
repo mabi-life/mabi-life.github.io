@@ -3,6 +3,3 @@ Disallow: /_mock/
 Allow: /
 Sitemap: https://mabi-life.com/sitemap.xml
 
-# preview pages
-User-agent: *
-Disallow: /barter-preview/
