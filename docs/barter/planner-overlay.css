@@ -65,3 +65,18 @@ body.pvDragging #toast,body.pvDragging #toast *{pointer-events:none!important}
 /* v3: 이번회차 / 주간수량 */
 .pvT td.pvQc{white-space:nowrap}.pvT td.pvQc input.pvQ{width:46px}.pvMax{color:#8f88bb;font-size:12.5px;margin-left:4px;display:inline-block;min-width:30px;text-align:left}
 .pvT th.pvQh{font-size:12px;line-height:1.2;white-space:normal;min-width:84px}
+/* 확인 창 (confirm 대체) — .dbk/.dbox 팝업 스타일 */
+#pvConfirm .pvCbk{position:fixed;inset:0;background:#000a;z-index:10000}
+#pvConfirm .pvCbox{position:fixed;z-index:10001;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,92vw);background:#1d1838;border:1px solid rgba(247,217,139,.4);border-radius:14px;padding:18px 20px 16px;box-shadow:0 10px 40px #000c;color:#ece8ff;animation:pvCin .14s ease-out}
+#pvConfirm .pvCbox.pvDanger{border-color:rgba(255,138,138,.55)}
+#pvConfirm h3{margin:0 0 8px;font-size:16.5px;color:#f7d98b;line-height:1.4}
+#pvConfirm .pvDanger h3{color:#ffb4b4}
+#pvConfirm p{margin:0 0 16px;font-size:14px;line-height:1.55;color:#cfc8ee}
+#pvConfirm .pvCbtn{display:flex;justify-content:flex-end;gap:8px}
+#pvConfirm .pvCbtn button{min-width:84px;padding:7px 14px}
+#pvConfirm .pvCbtn button:focus-visible{outline:2px solid #f7d98b;outline-offset:2px}
+#pvConfirm .pvCok{background:#f7d98b;color:#141029;font-weight:800;border-color:#f7d98b}
+#pvConfirm .pvDanger .pvCok{background:#d9534f;color:#fff;border-color:#d9534f}
+#pvConfirm .pvDanger .pvCok:hover{background:#c9302c;border-color:#ffb4b4}
+#pvConfirm .pvDanger .pvCbtn button:focus-visible{outline-color:#ff8a8a}
+@keyframes pvCin{from{opacity:0;transform:translate(-50%,-46%)}to{opacity:1;transform:translate(-50%,-50%)}}
