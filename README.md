@@ -1,9 +1,11 @@
 # mabi-life.github.io
-마비노기 경매장 공유 시세 피드. 10분마다 GitHub Actions가 `items.json`의 아이템을
-`auction/list`(최저가·매물수) + `auction/history`(체결)로 조회해 `docs/prices.json`에 게시.
-history는 ~1시간 창이라 `docs/history_roll.json`에 `auction_buy_id`로 쌓아 24h 근사(`trades24`/`volume24`).
+마비노기 경매장 시세. 10분마다 GitHub Actions가 `items.json`의 아이템을
+`auction/list`(최저가·매물수) + `auction/history`(체결)로 조회해 `prices.json`을 만든다.
+history는 ~1시간 창이라 `history_roll.json`에 `auction_buy_id`로 쌓아 24h 근사(`trades24`/`volume24`).
 
-URL: https://mabi-life.github.io/prices.json
+수집 결과(NEXON Open API 데이터)는 공개 파일로 두지 않는다. 비공개 저장소 `mabi-life/mabi-data`
+(`prices`·`horn` 브랜치, 매번 커밋 1개로 덮어씀)에 올리고, Worker `mabi-data`(cloudflare/data-worker)가
+`https://mabi-life.com` 출처 요청에만 제공한다(그 외 403). 거뿔 내역은 Worker `mabi-horn`이 같은 방식으로 제공.
 
 형식: `{updated, hotMinVolume, prices: {이름: {min, count, trades, volume, trades24, volume24, t}}}`
 
