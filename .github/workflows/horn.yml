@@ -7,7 +7,7 @@ on:
     - cron: '7,17,27,37,47,57 * * * *'
     - cron: '2,12,22,32,42,52 * * * *'
   workflow_dispatch:
-permissions: {contents: write}
+permissions: {contents: read}
 concurrency: {group: horn, cancel-in-progress: false}
 jobs:
   horn:
@@ -15,15 +15,23 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+      # horn_beads.json 은 비공개 저장소 mabi-life/mabi-data 의 horn 브랜치에 둠 (Worker mabi-data 가 제공).
+      - uses: actions/checkout@v4
+        with: {repository: mabi-life/mabi-data, ref: horn, token: '${{ secrets.DATA_TOKEN }}', path: _data}
+      - run: cp _data/horn_beads.json docs/horn_beads.json
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: python horn_beads.py
         env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
-      - run: |
+      - name: Push to mabi-data (horn branch, single commit)
+        run: |
+          cd _data
+          cp ../docs/horn_beads.json horn_beads.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/horn_beads.json docs/horn_history.json
+          git add -A
           git diff --cached --quiet && exit 0
-          git commit -m "horn: $(date -u +%FT%TZ)"
-          for i in 1 2 3 4; do git pull --rebase -X theirs && git push && exit 0; sleep $((i*5)); done
+          git checkout -q --orphan snap
+          git commit -q -m "horn: $(date -u +%FT%TZ)"
+          for i in 1 2 3 4; do git push -q -f origin snap:horn && exit 0; sleep $((i*5)); done
           exit 1

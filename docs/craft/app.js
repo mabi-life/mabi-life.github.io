@@ -110,11 +110,11 @@ function syncCoin(){const nv=/^나이트브링어/.test((RECIPES[gi()]||{}).n||'
 $('goalSel').onchange=e=>{st.goal=+e.target.value;save();render();syncCoin()};$('goalQty').onchange=e=>{st.qty=Math.max(1,+e.target.value||1);e.target.value=st.qty;save();render();syncCoin()};
 $('resetBtn').onclick=()=>{st.own={};st.open={};save();render();syncCoin()};
 render();
-fetch('/prices.json?t='+Date.now()).then(r=>r.json()).then(j=>{P=j.prices||{};const t=Object.values(P).map(v=>v.t).filter(Boolean).sort().pop();PT=t?t.slice(0,16).replace('T',' '):'';reBeads();render()}).catch(()=>{});
+fetch('https://mabi-data.mabilife.workers.dev/prices.json?t='+Date.now()).then(r=>r.json()).then(j=>{P=j.prices||{};const t=Object.values(P).map(v=>v.t).filter(Boolean).sort().pop();PT=t?t.slice(0,16).replace('T',' '):'';reBeads();render()}).catch(()=>{});
 
 fetch('/craft/recipes.json?t='+Date.now()).then(r=>r.json()).then(j=>{if(Array.isArray(j)&&j.length){RECIPES=j;fillGoals();render();syncCoin()}}).catch(()=>{});
 let HRows=[];function reBeads(){if(!MC.beadTable)return;let cs={};try{cs=JSON.parse(localStorage.getItem('mabiCoin.v1')||'{}')}catch(e){}
  const B=MC.beadTable(HRows,cs.paste);BP={};Object.keys(MC.SHOPS).forEach(t=>{BP[t]=MC.beadPick(B,t,cs.beadOv,P)})}
-fetch('/horn_beads.json?t='+Date.now()).then(r=>r.json()).then(d=>{HRows=d.rows||[];reBeads();render()}).catch(()=>{});
+fetch('https://mabi-data.mabilife.workers.dev/horn_beads.json?t='+Date.now()).then(r=>r.json()).then(d=>{HRows=d.rows||[];reBeads();render()}).catch(()=>{});
 fetch('/assets/icons/icons.json').then(r=>r.json()).then(j=>{IC=j.icons||{};render()}).catch(()=>{});
 document.fonts&&document.fonts.ready.then(()=>render());

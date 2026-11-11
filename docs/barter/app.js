@@ -242,7 +242,7 @@ const tqSave=()=>{try{localStorage.setItem(TQK,JSON.stringify(TQ))}catch(e){}};
 function tqRoutes(){return D.routes.filter(x=>x.id!=='sk')}
 function tqSel(){const R=tqRoutes();let r=R.find(x=>x.id===TQ._r)||R[0];let n=TQ._n||(UI['flip_'+r.id]?2:1);const pl=plan(r);if(n>pl.runs.length)n=Math.max(1,pl.runs.length);return{r,n,pl,ru:pl.runs[n-1]}}
 function tqGoods(){const{ru}=tqSel();return{L:(ru?ru.L:[]).filter(x=>x.q>0),ld:0}}
-let TQW=null;function tqWLoad(){if(TQW)return;TQW={e:[],p:{}};const t=Date.now();Promise.all([fetch('../auction/warranty_effects.json?t='+t).then(r=>r.json()),fetch('../auction/warranty_data.json?t='+t).then(r=>r.json()).catch(()=>({rows:[]}))]).then(([f,d])=>{TQW.e=(f.items||[]).filter(x=>x.barter!=null).sort((a,b)=>b.barter-a.barter);for(const r of d.rows||[])if(r.group==='w'&&r.min&&(!TQW.p[r.base]||r.min<TQW.p[r.base]))TQW.p[r.base]=r.min;const b=$('#tqBody');if(b)b.innerHTML=tqBody()}).catch(()=>{TQW=null})}
+let TQW=null;function tqWLoad(){if(TQW)return;TQW={e:[],p:{}};const t=Date.now();Promise.all([fetch('../auction/warranty_effects.json?t='+t).then(r=>r.json()),fetch('https://mabi-data.mabilife.workers.dev/auction/warranty_data.json?t='+t).then(r=>r.json()).catch(()=>({rows:[]}))]).then(([f,d])=>{TQW.e=(f.items||[]).filter(x=>x.barter!=null).sort((a,b)=>b.barter-a.barter);for(const r of d.rows||[])if(r.group==='w'&&r.min&&(!TQW.p[r.base]||r.min<TQW.p[r.base]))TQW.p[r.base]=r.min;const b=$('#tqBody');if(b)b.innerHTML=tqBody()}).catch(()=>{TQW=null})}
 const tqWSel=()=>TQW&&TQW.e.find(x=>x.name===TQ._w)||null;
 const tqU=()=>TQ._u==='g'?'g':'d';
 function tqBody(){const{r,n,pl}=tqSel(),{L}=tqGoods(),u=tqU(),dr=+S.drate||0,tot={},cnt={},tc={};
@@ -453,7 +453,7 @@ $('#chars').addEventListener('dblclick',e=>{const b=e.target.closest('[data-a=ch
 const tipEl=document.createElement('div');tipEl.id='tip';document.body.appendChild(tipEl);
 document.addEventListener('mouseover',e=>{const t=e.target.closest('[data-tip]');if(!t){tipEl.style.display='none';return}tipEl.innerHTML=t.dataset.tip;tipEl.style.display='block';const r=t.getBoundingClientRect(),h=tipEl.offsetHeight,w=tipEl.offsetWidth;let y=r.bottom+10,dn=true;if(y+h>innerHeight-8){y=r.top-h-10;dn=false}const x=Math.max(8,Math.min(r.left,innerWidth-w-8));tipEl.className=dn?'dn':'up';tipEl.style.top=Math.max(8,y)+'px';tipEl.style.left=x+'px';tipEl.style.setProperty('--ax',Math.max(10,Math.min(w-20,r.left+14-x))+'px')});
 $('#impFile').onchange=async e=>{try{const o=JSON.parse(await e.target.files[0].text());if(!o.chars)throw 0;mut(()=>S=migrate(o),'가져오기 완료')}catch(x){toast('잘못된 파일')}e.target.value=''};
-const FEED='/prices.json';
+const FEED='https://mabi-data.mabilife.workers.dev/prices.json';
 async function loadFeed(){const r=await fetch(FEED+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error(r.status);const j=await r.json();if(!j.prices)throw new Error('bad');return j}
 const feedTime=u=>{const d=new Date(u);return isNaN(d)?'?':d.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})};
 async function loadPrices(){const ms0=Object.keys(need([...routeGoods(D.routes[0]),...routeGoods(D.routes[1])],false));

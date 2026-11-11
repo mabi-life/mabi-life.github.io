@@ -77,6 +77,6 @@ $('paste').oninput=function(){st.paste=this.value;save();render()};
 $('beadOv').oninput=function(){var v=parseFloat(this.value)||0;if(v>0&&v<1000)v*=1e4;if(v>0)st.beadOv[st.tab]=v;else delete st.beadOv[st.tab];save();render();this.focus()};
 document.addEventListener('craftneed',function(){render()});
 render();
-fetch('/horn_beads.json?t='+Date.now()).then(function(r){return r.json()}).then(function(d){HR=d.rows||[];$('hupd').textContent='뿔피리 수집: '+(d.updated||'—').replace('T',' ').slice(0,16)+' (KST) · 최근 48시간 구슬 관련 '+HR.length+'건';render()}).catch(function(){$('hupd').textContent='뿔피리 데이터를 불러오지 못했습니다.'});
-fetch('/prices.json?t='+Date.now()).then(function(r){return r.json()}).then(function(d){P=d.prices||{};$('upd').textContent='시세 갱신: '+(d.updated||'').replace('T',' ').slice(0,16)+' (KST) · 시세 없는 항목은 — 로 표시';render()}).catch(function(){$('upd').textContent='시세를 불러오지 못했습니다.'});
+fetch('https://mabi-data.mabilife.workers.dev/horn_beads.json?t='+Date.now()).then(function(r){return r.json()}).then(function(d){HR=d.rows||[];$('hupd').textContent='뿔피리 수집: '+(d.updated||'—').replace('T',' ').slice(0,16)+' (KST) · 최근 48시간 구슬 관련 '+HR.length+'건';render()}).catch(function(){$('hupd').textContent='뿔피리 데이터를 불러오지 못했습니다.'});
+fetch('https://mabi-data.mabilife.workers.dev/prices.json?t='+Date.now()).then(function(r){return r.json()}).then(function(d){P=d.prices||{};$('upd').textContent='시세 갱신: '+(d.updated||'').replace('T',' ').slice(0,16)+' (KST) · 시세 없는 항목은 — 로 표시';render()}).catch(function(){$('upd').textContent='시세를 불러오지 못했습니다.'});
 })();

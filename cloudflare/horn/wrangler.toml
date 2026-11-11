@@ -1,0 +1,12 @@
+name = "mabi-horn"
+main = "../horn-worker.js"
+compatibility_date = "2024-11-01"
+account_id = "8802acc5ce8c71fa766df4bc76607d80"
+# secrets: NEXON_API_KEY, COLLECT_TOKEN (wrangler secret put 으로만 설정)
+
+[[kv_namespaces]]
+binding = "HORN"
+id = "3fd3e6c51cea46359343042ef8afcf35"
+
+[triggers]
+crons = ["*/5 * * * *"]

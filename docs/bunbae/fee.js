@@ -7,7 +7,7 @@ let cpPrice={10:254900,20:800000,30:1495000,50:11740000,100:7140000},cpT=new Dat
 let rate=4,force=null;
 function feeToast(t){const e=$('#toast');if(!e){try{console.log(t)}catch(_){ }return}e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>{e.style.display='none'},2400)}
 async function refresh(){$('#upd').textContent='시세 불러오는 중…';let ok=false;
- try{const ac=window.AbortController?new AbortController():null,tm=setTimeout(()=>ac&&ac.abort(),8000);const r=await fetch('/prices.json',{cache:'no-store',signal:ac?ac.signal:undefined});clearTimeout(tm);const d=await r.json();let got=0;CP.forEach(c=>{const x=d.prices&&d.prices[NAME(c)];if(x){cpPrice[c]=x.min;got++;if(x.t)cpT=new Date(x.t)}});if(!got)throw 0;ok=true}
+ try{const ac=window.AbortController?new AbortController():null,tm=setTimeout(()=>ac&&ac.abort(),8000);const r=await fetch('https://mabi-data.mabilife.workers.dev/prices.json',{cache:'no-store',signal:ac?ac.signal:undefined});clearTimeout(tm);const d=await r.json();let got=0;CP.forEach(c=>{const x=d.prices&&d.prices[NAME(c)];if(x){cpPrice[c]=x.min;got++;if(x.t)cpT=new Date(x.t)}});if(!got)throw 0;ok=true}
  catch(e){}
  calc();if(!ok)$('#upd').textContent='시세를 불러오지 못했어요 · 저장된 기본 시세로 계산 중 (↻ 다시 시도)'}
 function calc(){const p=num($('#price').value),n=Math.max(1,num($('#n').value)),base=Math.floor(p*rate/100);

@@ -7,7 +7,7 @@ on:
   # 아래 schedule은 백업. concurrency로 dispatch/schedule 동시 실행 충돌 방지.
   schedule: [{cron: '*/10 * * * *'}]
   workflow_dispatch:
-permissions: {contents: write}
+permissions: {contents: read}
 concurrency: {group: prices, cancel-in-progress: false}
 jobs:
   fetch:
@@ -15,6 +15,12 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+      # 수집 결과(NEXON Open API)는 공개 사이트가 아니라 비공개 저장소 mabi-life/mabi-data 의 prices 브랜치에 둠.
+      # Worker mabi-data 가 mabi-life.com 출처 요청에만 제공. 이전 상태(누적 이력)도 여기서 읽음.
+      - uses: actions/checkout@v4
+        with: {repository: mabi-life/mabi-data, ref: prices, token: '${{ secrets.DATA_TOKEN }}', path: _data}
+      - name: Restore previous state from mabi-data
+        run: rsync -a --exclude .git _data/ docs/
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: python fetch_prices.py
@@ -27,26 +33,17 @@ jobs:
         env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
       - run: python echo_pack.py || true
         env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
-      - name: Commit and push (retry on conflict/glitch)
+      - name: Push to mabi-data (prices branch, single commit)
         run: |
-          # horn_*.json 은 horn.yml 전담 → 여기선 커밋하지 않음 (충돌 원인 제거)
+          FILES="prices.json history_roll.json pyeollin_history.json auction/data.json auction/history.json auction/enchant_data.json auction/enchant_history.json auction/warranty_data.json auction/warranty_history.json auction/echo_data.json auction/echo_history.json auction/idea_data.json auction/idea_history.json"
+          cd _data
+          for f in $FILES; do [ -f "../docs/$f" ] && mkdir -p "$(dirname $f)" && cp "../docs/$f" "$f"; done
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          FILES="docs/prices.json docs/history_roll.json docs/pyeollin_history.json docs/auction/data.json docs/auction/history.json docs/auction/enchant_data.json docs/auction/enchant_history.json docs/auction/warranty_data.json docs/auction/warranty_history.json docs/auction/echo_data.json docs/auction/echo_history.json docs/auction/idea_data.json docs/auction/idea_history.json"
-          STASH=$(mktemp -d)
-          for f in $FILES; do [ -f "$f" ] && mkdir -p "$STASH/$(dirname $f)" && cp "$f" "$STASH/$f"; done
-          for i in 1 2 3 4 5 6; do
-            # 항상 깨끗한 상태에서 origin/main 위에 우리 파일만 다시 얹음
-            git rebase --abort 2>/dev/null || true
-            git merge --abort 2>/dev/null || true
-            git fetch origin main && git reset --hard origin/main
-            for f in $FILES; do [ -f "$STASH/$f" ] && mkdir -p "$(dirname $f)" && cp "$STASH/$f" "$f"; done
-            git add $FILES
-            if git diff --cached --quiet; then echo "no price changes"; exit 0; fi
-            git commit -q -m "prices: $(date -u +%FT%TZ)"
-            if git push origin HEAD:main; then echo "push ok (attempt $i)"; exit 0; fi
-            echo "push failed (attempt $i), sleep $((i*15))s"
-            sleep $((i * 15))
-          done
-          echo "push failed after retries"
-          exit 1
+          git add -A
+          if git diff --cached --quiet; then echo "no price changes"; exit 0; fi
+          # 브랜치 이력이 계속 쌓이지 않도록 매번 부모 없는 커밋 1개로 덮어씀 (concurrency 로 동시 실행 없음)
+          git checkout -q --orphan snap
+          git commit -q -m "prices: $(date -u +%FT%TZ)"
+          for i in 1 2 3 4; do git push -q -f origin snap:prices && { echo "push ok (attempt $i)"; exit 0; }; sleep $((i*10)); done
+          echo "push failed"; exit 1
