@@ -128,4 +128,6 @@ function tick(){render();if(!S.noti.on||!("Notification"in window)||Notification
  Object.keys(sent).forEach(function(k){if(now-sent[k]>3*DAY)delete sent[k]});try{localStorage.setItem("mabi-schedule-sent",JSON.stringify(sent))}catch(e){}}
 var tt;function toast(m){var t=$("scToast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(function(){t.classList.remove("on")},1800)}
 syncView();render();setInterval(tick,30e3);document.addEventListener("visibilitychange",function(){if(!document.hidden)render()});
+/* 시간·날짜 칸 아무 곳이나 클릭하면 피커 열기 */
+["fTime","fDate"].forEach(function(id){var el=$(id);if(!el)return;el.addEventListener("click",function(){if(typeof el.showPicker!=="function")return;try{el.showPicker()}catch(e){}})});
 })();

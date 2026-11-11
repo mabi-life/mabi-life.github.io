@@ -280,7 +280,9 @@ function renderGrade(){const q=t=>t.replace(/"/g,'&quot;');
 const RIDX=new Map(DATA.map((d,i)=>[d.id,i]));
 function routeCode(){const L=a=>a.map(id=>RIDX.get(id)).filter(i=>i!=null).map(i=>i.toString(36)).join('-');
  return '1.'+L(S.jobs.filter(j=>j.avoid).map(j=>j.id))+'.'+L(S.jobs.filter(j=>j.fav).map(j=>j.id))+'.'+L(S.manualSeq||[])}
-function routeParse(code){const p=String(code||'').trim().replace(/^.*[#&]r=/,'').split('.');if(p[0]!=='1'||p.length!==4)return null;
+function routeParse(code){let s=String(code||'').trim();
+ const m=s.match(/[#&]r=([0-9a-z.\-]+)/i)||s.match(/#([0-9a-z.\-]+)/)||s.match(/\b(1\.[0-9a-z.\-]*)/i);
+ if(m)s=m[1];const p=s.split('.');if(p[0]!=='1'||p.length!==4)return null;
  const L=x=>x?x.split('-').map(v=>DATA[parseInt(v,36)]).filter(Boolean).map(d=>d.id):[];return {hid:L(p[1]),fav:L(p[2]),seq:L(p[3])}}
 function routeApply(r){const H=new Set(r.hid),F=new Set(r.fav);
  change(()=>{S.jobs.forEach(j=>{if(!RIDX.has(j.id))return;const d=DATA.find(x=>x.id===j.id);j.avoid=H.has(j.id)?(j.avoid||(d&&d.avoid)||AVOID_DEF):'';j.fav=F.has(j.id)});S.manualSeq=r.seq.filter(id=>S.jobs.some(j=>j.id===id))},`나만의 알바 적용 · 접기 ${r.hid.length} · ★ ${r.fav.length} · 순서 ${r.seq.length} (Ctrl+Z 되돌리기)`)}
@@ -288,7 +290,7 @@ const routeURL=()=>location.origin+'/a/#'+routeCode();
 function routeShare(){const u=routeURL();const done=()=>toast('나만의 알바 링크 복사됨');if(navigator.clipboard)navigator.clipboard.writeText(u).then(done,()=>prompt('나만의 알바 공유 링크',u));else prompt('나만의 알바 공유 링크',u)}
 function routeImport(){const v=prompt('받은 나만의 알바 링크 또는 코드를 붙여 넣으세요\n(접기·★·순서만 바뀜, 완료 체크·등급·설정은 그대로)');if(!v)return;const r=routeParse(v);if(!r)return toast('나만의 알바 코드를 읽을 수 없음');routeApply(r)}
 document.addEventListener('click',e=>{const t=e.target.closest('#bRShare,#bRImp');if(!t)return;t.id==='bRShare'?routeShare():routeImport()});
-(()=>{const m=location.hash.match(/[#&]r=([0-9a-z.\-]+)/);if(!m)return;const r=routeParse(m[1]);history.replaceState(null,'',location.pathname+location.search);if(!r)return toast('나만의 알바 코드를 읽을 수 없음');
+(()=>{const r=routeParse(location.hash)||routeParse(location.href);if(!r)return;history.replaceState(null,'',location.pathname+location.search);
  if(confirm(`공유받은 나만의 알바를 적용할까요?\n접기 ${r.hid.length} · ★ ${r.fav.length} · 순서 ${r.seq.length}개\n(접기·즐겨찾기·순서만 바뀜 · Ctrl+Z로 되돌리기)`))routeApply(r)})();
 let feedReady=null;/*persist catalog migrate*/save();window.__alba={routeCode,routeParse,get S(){return S},get feedReady(){return feedReady},isUla,erinAbs,erinDay,gameDay,seqPlan,shopOf,NAMEFIX,budget,erinMin,best,expandedSet,focus,ch,knap,mixOf,importV1,fetchPrices,HOT_MIN,get feedHotMin(){return feedHotMin},verifyBadge,hotIcon,hotMetric};render();
 feedReady=fetchPrices({quiet:true});// 첫 화면은 SNAP/localStorage, 이어서 공유 시세
