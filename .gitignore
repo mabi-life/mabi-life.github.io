@@ -1,2 +1,13 @@
 __pycache__/
 .env
+
+# NEXON Open API 수집 데이터는 docs/에 두지 않음 (비공개 저장소 mabi-life/mabi-data → Worker mabi-data)
+/docs/prices.json
+/docs/history_roll.json
+/docs/pyeollin_history.json
+/docs/horn_beads.json
+/docs/horn_history.json
+/docs/auction/*_data.json
+/docs/auction/*_history.json
+/docs/auction/data.json
+/docs/auction/history.json
