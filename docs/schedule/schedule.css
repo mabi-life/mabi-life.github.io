@@ -86,14 +86,16 @@ input[type=checkbox],input[type=radio]{accent-color:var(--ac)}
 .scUp li.more{display:block;text-align:center;border:0;background:none;padding:2px}
 
 
-/* B: native date/time picker icons visible in dark + light */
+/* B: native date/time picker icons. color-scheme already tints the indicator;
+   invert() would cancel it and hide the icon on the dark form. No filter, so
+   theme.js (which copies filter decls into the light sheet) cannot re-invert. */
 input[type="time"],input[type="date"]{color-scheme:dark}
 html[data-theme="light"] input[type="time"],html[data-theme="light"] input[type="date"]{color-scheme:light}
 input[type="time"]::-webkit-calendar-picker-indicator,
 input[type="date"]::-webkit-calendar-picker-indicator{
-  cursor:pointer;opacity:1;filter:invert(1) brightness(1.35);width:1.1em;height:1.1em
+  cursor:pointer;opacity:1;width:1.25em;height:1.25em
 }
 html[data-theme="light"] input[type="time"]::-webkit-calendar-picker-indicator,
 html[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator{
-  filter:none;opacity:.85
+  opacity:1
 }
