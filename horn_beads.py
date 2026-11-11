@@ -2,7 +2,9 @@
 """거대한 외침의 뿔피리(world horn) 내역 → 구슬 관련 원문만 48시간 보관 (docs/horn_beads.json).
 Nexon Open API horn-bugle-world/history 는 서버별 최근 1시간·최대 1,000건만 줌 → 10분마다 누적.
 가격 파싱은 클라이언트(/coin/app.js)에서 함 (파서 개선 시 데이터 재수집 불필요).
-개인정보 최소화: 캐릭터명은 저장하지 않고 해시 앞 8자리(중복 제거용)만 저장."""
+개인정보 최소화: 캐릭터명은 저장하지 않고 해시 앞 8자리(중복 제거용)만 저장.
+서버별 전체 거뿔 내역(/horn/)은 Cloudflare Worker mabi-horn 이 따로 수집·제공 → 여기선 만들지 않음.
+결과 파일은 비공개 저장소 mabi-life/mabi-data (horn 브랜치)로 올라감 (.github/workflows/horn.yml)."""
 import json, os, sys, time, hashlib, datetime, urllib.request, urllib.parse, urllib.error
 H = os.path.dirname(os.path.abspath(__file__))
 KEY = os.environ.get('NEXON_API_KEY') or sys.exit('NEXON_API_KEY 필요')
@@ -13,10 +15,6 @@ KW = ('구슬', '구구', '거뿔', '거대한 외침', '거대 뿔', '거대뿔
 try: db = json.load(open(P, encoding='utf-8'))
 except Exception: db = {}
 rows = {r['id']: r for r in db.get('rows', [])}
-HP = f'{H}/docs/horn_history.json'  # 서버별 거뿔 내역 (n=발신 캐릭터명: 클릭 복사용 표시만, 48h 후 삭제)
-try: hdb = json.load(open(HP, encoding='utf-8'))
-except Exception: hdb = {}
-hrows = {r['id']: r for r in hdb.get('rows', [])}
 ok = 0
 for s in SERVERS:
     u = 'https://open.api.nexon.com/mabinogi/v1/horn-bugle-world/history?server_name=' + urllib.parse.quote(s)
@@ -30,7 +28,6 @@ for s in SERVERS:
         who = hashlib.sha1((x.get('character_name') or '').encode()).hexdigest()[:8]
         t = x.get('date_send') or ''
         rid = hashlib.sha1(f'{s}|{who}|{t}|{m}'.encode()).hexdigest()[:12]
-        if m: hrows.setdefault(rid, {'id': rid, 's': s, 't': t, 'n': (x.get('character_name') or '').strip(), 'm': m})
         if not any(k in m for k in KW): continue
         rows.setdefault(rid, {'id': rid, 's': s, 'w': who, 't': t, 'm': m})
     time.sleep(0.2)
@@ -45,14 +42,4 @@ KST = datetime.timezone(datetime.timedelta(hours=9))
 json.dump({'updated': datetime.datetime.now(KST).isoformat(timespec='seconds'),
            'source': 'NEXON Open API horn-bugle-world/history (서버별 최근 1시간, 10분마다 누적, 48시간 보관)',
            'rows': keep}, open(P, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
-HCAP = 3000  # 서버당 최대 보관 (용량 제한)
-hk = sorted((r for r in hrows.values() if ts(r) >= cut), key=lambda r: r['t'], reverse=True)
-per = {}; hout = []
-for r in hk:
-    per[r['s']] = per.get(r['s'], 0) + 1
-    if per[r['s']] <= HCAP: hout.append(r)
-json.dump({'updated': datetime.datetime.now(KST).isoformat(timespec='seconds'),
-           'source': 'NEXON Open API horn-bugle-world/history (서버별, 10분마다 누적, 48시간·서버당 최대 3000건)',
-           'servers': SERVERS, 'rows': hout}, open(HP, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
-print(f'horn: history rows {len(hout)}')
 print(f'horn: servers ok {ok}, bead rows {len(keep)}')

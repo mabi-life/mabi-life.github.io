@@ -2,15 +2,29 @@ const SERVERS = ['류트', '만돌린', '하프', '울프'];
 const KEEP_MS = 48 * 3600 * 1000;
 const CAP = 3000;
 
-function cors(h = {}) {
-  return {
+// 거뿔 내역(NEXON Open API 결과)은 mabi-life.com 에서 온 요청에만 제공. 그 외 출처는 403.
+const ALLOW = new Set(['https://mabi-life.com', 'https://www.mabi-life.com']);
+function originOf(req) {
+  const o = req.headers.get('Origin');
+  if (o) return ALLOW.has(o) ? o : null;
+  const r = req.headers.get('Referer');
+  if (!r) return null;
+  try { const u = new URL(r).origin; return ALLOW.has(u) ? u : null; } catch (_) { return null; }
+}
+
+function cors(h = {}, origin = null) {
+  const o = {
     ...h,
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    Vary: 'Origin',
   };
+  if (origin) {
+    o['Access-Control-Allow-Origin'] = origin;
+    o['Access-Control-Allow-Methods'] = 'GET, OPTIONS';
+    o['Access-Control-Allow-Headers'] = 'Content-Type';
+  }
+  return o;
 }
 
 async function collect(env) {
@@ -109,9 +123,12 @@ async function authed(request, env) {
 
 export default {
   async fetch(request, env, ctx) {
-    if (request.method === 'OPTIONS')
-      return new Response(null, { status: 204, headers: cors() });
     const url = new URL(request.url);
+    if (url.pathname === '/robots.txt')
+      return new Response('User-agent: *\nDisallow: /\n', { headers: { 'Content-Type': 'text/plain' } });
+    const origin = originOf(request);
+    if (request.method === 'OPTIONS')
+      return new Response(null, { status: origin ? 204 : 403, headers: cors({}, origin) });
     if (url.pathname === '/collect') {
       if (request.method !== 'POST' || !(await authed(request, env)))
         return Response.json({ error: 'unauthorized' }, { status: 401, headers: cors({ 'Cache-Control': 'no-store' }) });
@@ -138,6 +155,8 @@ export default {
       url.pathname === '/horn_history.json' ||
       url.pathname.endsWith('.json')
     ) {
+      if (!origin)
+        return new Response('forbidden', { status: 403, headers: cors({ 'Cache-Control': 'no-store' }) });
       if (url.searchParams.get('refresh') === '1' && (await authed(request, env))) {
         ctx.waitUntil(collect(env).catch(() => {}));
       }
@@ -147,13 +166,13 @@ export default {
           headers: cors({
             'Content-Type': 'application/json; charset=utf-8',
             'Cache-Control': 'no-store',
-          }),
+          }, origin),
         });
       return new Response(raw, {
         headers: cors({
           'Content-Type': 'application/json; charset=utf-8',
           'Cache-Control': 'public, max-age=30',
-        }),
+        }, origin),
       });
     }
     return new Response('mabi horn worker', { headers: cors() });

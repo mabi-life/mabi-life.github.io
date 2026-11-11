@@ -134,12 +134,12 @@
       draw();
     };
   });
-  fetch('/pyeollin_history.json?t=' + Date.now(), { cache: 'no-store' })
+  fetch('https://mabi-data.mabilife.workers.dev/pyeollin_history.json?t=' + Date.now(), { cache: 'no-store' })
     .then(function (r) { return r.json(); })
     .then(function (j) {
       P = j.points || [];
       U = j.updated;
-      return fetch('/prices.json?t=' + Date.now(), { cache: 'no-store' })
+      return fetch('https://mabi-data.mabilife.workers.dev/prices.json?t=' + Date.now(), { cache: 'no-store' })
         .then(function (r) { return r.json(); })
         .then(function (q) {
           var e = q.prices && q.prices['균열의 편린'];

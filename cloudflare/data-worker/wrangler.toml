@@ -1,0 +1,5 @@
+name = "mabi-data"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+account_id = "8802acc5ce8c71fa766df4bc76607d80"
+# secret: GH_TOKEN (비공개 저장소 mabi-life/mabi-data 읽기용, wrangler secret put 으로만 설정)
