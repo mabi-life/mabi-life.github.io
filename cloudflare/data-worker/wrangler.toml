@@ -3,3 +3,13 @@ main = "worker.js"
 compatibility_date = "2024-11-01"
 account_id = "8802acc5ce8c71fa766df4bc76607d80"
 # secret: GH_TOKEN (비공개 저장소 mabi-life/mabi-data 읽기용, wrangler secret put 으로만 설정)
+
+# 비공개 D1: 공개 엔드포인트 없음, 이 Worker 바인딩으로만 접근. 스키마는 schema.sql
+[[d1_databases]]
+binding = "DB"
+database_name = "mabi-data-json"
+database_id = "f483589f-ceb8-4889-bff4-b561526b61b8"
+
+# 5분마다 GitHub(mabi-data) → D1 동기화 (바뀐 파일만)
+[triggers]
+crons = ["*/5 * * * *"]
