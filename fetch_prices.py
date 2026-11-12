@@ -28,21 +28,28 @@ UTC = datetime.timezone.utc
 ROLL_HOURS = 24
 items = json.load(open(f'{H}/items.json', encoding='utf-8'))
 def recipe_names(path):
-    """제작 도우미 레시피(완성품 + 중첩 재료 트리) 이름 전부 — recipes.json이 단일 출처"""
+    """제작 도우미 레시피(완성품 + 중첩 재료 트리 + 마감재 fin) 이름 전부 — recipes.json이 단일 출처"""
     out = set()
     def walk(node):
         if isinstance(node, dict):
             if isinstance(node.get('n'), str): out.add(node['n'])
             for c in node.get('c') or []: walk(c)
-        elif isinstance(node, list) and node and isinstance(node[0], str):
-            out.add(node[0])  # [이름, 수량, {하위 레시피}?]
-            for x in node[2:]: walk(x)
+            for g in node.get('fin') or []: walk(g)
+        elif isinstance(node, list) and node:
+            if isinstance(node[0], str):
+                out.add(node[0])  # [이름, 수량, {하위 레시피}?]
+                for x in node[2:]: walk(x)
+            else:
+                # fin 그룹 등: [[이름, 수량], ...] 또는 그 바깥 리스트
+                for x in node: walk(x)
     try: data = json.load(open(path, encoding='utf-8'))
     except Exception: return out
     for r in data: walk(r)
     return out
 base_names = {n for k, v in items.items() if not k.startswith('_') for n in v}
 craft_names = recipe_names(f'{H}/docs/craft/recipes.json')
+if '희미한 에너지 조각' not in craft_names:
+    sys.exit('recipe_names()가 마감재(fin) 희미한 에너지 조각을 빠뜨렸습니다')
 names = sorted(base_names | craft_names)
 print(f'names: items.json {len(base_names)} + craft {len(craft_names - base_names)} new = {len(names)}')
 out_p = f'{H}/docs/prices.json'
