@@ -1,19 +1,19 @@
 /* 홈 「이벤트 정보」 — 오늘의 운세와 같은 카드 톤, 강조색은 골드 */
-.events{max-width:960px;margin:0 auto 16px;padding:0;font-family:"Noto Sans KR","Malgun Gothic",sans-serif;color:#e6e8ee;text-align:left}
-.wrap>.events{max-width:none}
+.events{margin:0;padding:14px 18px 14px;background:#1d2027;border:1px solid #333846;border-radius:12px;box-shadow:inset 4px 0 0 #f7d98b;font-family:"Noto Sans KR","Malgun Gothic",sans-serif;color:#e6e8ee;text-align:left;min-width:0}
 .events[hidden]{display:none!important}
-.events .evHd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 10px}
-.events .evHd h2{margin:0;font-size:1.15em;color:#e3c98a}
+.events .evHd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 8px}
+.events .evHd h2{margin:0;font-size:1.08em;color:#e3c98a}
 .events .evNote{font-size:11.5px;color:#7d8394;font-weight:500}
-.events .evList{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
-.events .evCard{background:#1d2027;border:1px solid #333846;border-radius:12px;box-shadow:inset 4px 0 0 #f7d98b;padding:16px 18px 14px}
-.events .evTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 6px}
-.events .evTitle{margin:0;font-size:18px;font-weight:800;color:#e6e8ee;letter-spacing:-.2px}
+.events .evList{display:flex;flex-direction:column;gap:0;margin:0;padding:0;list-style:none}
+.events .evCard{padding:0}
+.events .evCard+.evCard{margin-top:14px;padding-top:14px;border-top:1px solid #333846}
+.events .evTop{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;margin:0 0 6px}
+.events .evTitle{margin:0;font-size:20px;font-weight:800;color:#e6e8ee;letter-spacing:-.2px}
 .events .evBadge{flex:0 0 auto;font-size:11.5px;font-weight:700;color:#f7d98b;background:rgba(247,217,139,.12);border:1px solid #6b5a33;border-radius:999px;padding:2px 9px;line-height:1.4}
 .events .evBadge.shop{color:#c9b27a;border-color:#5a5340;background:rgba(201,178,122,.1)}
-.events .evPeriod{margin:0 0 8px;font-size:13.5px;color:#c9cdd8}
+.events .evPeriod{margin:0 0 0 auto;font-size:13px;color:#c9cdd8}
 .events .evPeriod b{color:#e3c98a;font-weight:700;font-variant-numeric:tabular-nums}
-.events .evPoints{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:2px 20px}
+.events .evPoints{margin:8px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:2px 20px}
 .events .evPoints li{position:relative;padding:3px 0 3px 14px;font-size:13.5px;line-height:1.6;color:#c9cdd8;word-break:keep-all;overflow-wrap:break-word}
 .events .evPoints li::before{content:"";position:absolute;left:0;top:.85em;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:#f7d98b}
 .events .evFoot{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid #333846}
@@ -23,7 +23,7 @@
 .events .evSrc{margin:0;font-size:11.5px;color:#7d8394}
 
 /* 지도 가운데, 사진 좌우 2×2 */
-.events .evGallery{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.42fr) minmax(0,1fr);gap:10px;align-items:center;margin:12px 0 0}
+.events .evGallery{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.42fr) minmax(0,1fr);gap:10px;align-items:center;margin:0}
 .events .evMap{margin:0;padding:0;border-radius:8px;overflow:hidden;border:1px solid #333846;background:#1a1c20}
 .events .evMapBox{position:relative;line-height:0}
 .events .evMapBox img{display:block;width:100%;height:auto}
@@ -81,25 +81,51 @@
 .homeTools>h2{margin:0 0 10px;font-size:1.15em;color:#e3c98a;font-weight:700;font-family:"Noto Sans KR","Malgun Gothic",sans-serif}
 .homeTools .grid{margin:0}
 
-/* 주차별 모모 등장 표 */
-.events .evWeek{margin:10px 0 12px}
-.events .evWeek h4{margin:0 0 7px;font-size:13.5px;color:#e3c98a;font-weight:700}
-.events .evWeek table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;background:#1a1c22;border:1px solid #333846;border-radius:8px;overflow:hidden}
-.events .evWeek th,.events .evWeek td{padding:8px 10px;border-bottom:1px solid #333846;border-right:1px solid #333846;text-align:center;word-break:keep-all;overflow-wrap:break-word;vertical-align:middle;line-height:1.45}
+/* 한 줄 소개 */
+.events .evLead{margin:0 0 8px;font-size:13px;color:#9aa1b0;word-break:keep-all}
+
+/* 주차 정보 — 기본은 한 줄, 누르면 전체 표 */
+.events .evWeek{margin:0 0 12px;border:1px solid #333846;border-radius:8px;background:#1a1c22}
+.events .evWeek>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 12px;cursor:pointer;list-style:none;font-size:13.5px;color:#e6e8ee}
+.events .evWeek>summary::-webkit-details-marker{display:none}
+.events .evWeekLine b{color:#f7d98b;font-weight:700;margin-right:2px}
+.events .evWeekLine i{font-style:normal;color:#5d6373;margin:0 9px}
+.events .evWeekLine .mu{color:#9aa1b0;font-size:12.5px}
+.events .evWeekMore{flex:0 0 auto;font-size:11.5px;color:#9aa1b0}
+.events .evWeekMore::after{content:" ▸"}
+.events .evWeek[open] .evWeekMore::after{content:" ▾"}
+.events .evWeek>summary:hover .evWeekMore{color:#e3c98a}
+.events .evWeek table{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px;border-top:1px solid #333846}
+.events .evWeek th,.events .evWeek td{padding:6px 8px;border-bottom:1px solid #333846;border-right:1px solid #333846;text-align:center;word-break:keep-all;overflow-wrap:break-word;vertical-align:middle;line-height:1.4}
 .events .evWeek tr:last-child th,.events .evWeek tr:last-child td{border-bottom:0}
 .events .evWeek th:last-child,.events .evWeek td:last-child{border-right:0}
-.events .evWeek thead th{background:#262a33;color:#e3c98a;font-weight:700;font-size:13px}
+.events .evWeek thead th{background:#262a33;color:#e3c98a;font-weight:700}
 .events .evWeek thead th:first-child{color:#9aa1b0;font-weight:600;text-align:left;width:7.5em;background:#22252c}
-.events .evWeek tbody th{background:#22252c;color:#9aa1b0;font-weight:600;text-align:left;white-space:nowrap;font-size:12.5px}
+.events .evWeek tbody th{background:#22252c;color:#9aa1b0;font-weight:600;text-align:left;white-space:nowrap}
 .events .evWeek tbody td{color:#e6e8ee}
-.events .evWeek tbody td.num{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;color:#e6e8ee}
+.events .evWeek tbody td.num{font-variant-numeric:tabular-nums;font-weight:700;font-size:14px}
 .events .evWeek thead th.on{background:rgba(247,217,139,.16);color:#f7d98b;box-shadow:inset 0 -2px 0 #f7d98b}
 .events .evWeek tbody td.on{background:rgba(247,217,139,.1)}
 .events .evWeek tbody td.on.num{color:#f7d98b}
-.events .evWeek thead th.on small{display:block;margin-top:2px;font-size:10.5px;font-weight:700;color:#f7d98b;letter-spacing:0}
+.events .evWeek thead th.on small{display:block;margin-top:2px;font-size:10.5px;font-weight:700;color:#f7d98b}
 .events .evWeek td.dash{color:#7d8394;font-weight:600}
 
-/* 검색·안내 설명글 */
-.events .evIntro{margin:8px 0 12px}
-.events .evIntro p{margin:0 0 8px;font-size:14px;line-height:1.7;color:#c9cdd8;word-break:keep-all;overflow-wrap:break-word}
-.events .evIntro p:last-child{margin-bottom:0}
+/* 마을 구역 — 지도+사진 한 묶음, 주차가 늘면 아래로 쌓임 */
+.events .evTowns{display:flex;flex-direction:column;gap:0}
+.events .evTown+.evTown{margin-top:16px;padding-top:14px;border-top:1px dashed #3a3f4d}
+.events .evTownHd{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:0 0 8px}
+.events .evTownHd h4{margin:0;font-size:16px;font-weight:800;color:#f7d98b}
+.events .evTownWk{font-size:12px;font-weight:700;color:#e3c98a;background:rgba(247,217,139,.1);border:1px solid #5a5340;border-radius:999px;padding:0 8px}
+.events .evTownCnt{font-size:12px;color:#9aa1b0}
+
+/* 참여 방법 · 보상 — 접어 둠 */
+.events .evMore{margin-top:12px;border-top:1px solid #333846;padding-top:9px}
+.events .evMore>summary{cursor:pointer;list-style:none;font-size:13.5px;color:#9aa1b0}
+.events .evMore>summary::-webkit-details-marker{display:none}
+.events .evMore>summary::before{content:"▸ "}
+.events .evMore[open]>summary::before{content:"▾ "}
+.events .evMore>summary:hover{color:#e3c98a}
+
+/* 정적 대체 문구(자바스크립트 꺼짐·로딩 전) */
+.events .evIntro{margin:8px 0 0}
+.events .evIntro p{margin:0;font-size:13.5px;line-height:1.7;color:#c9cdd8;word-break:keep-all}

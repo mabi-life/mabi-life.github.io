@@ -40,17 +40,23 @@ window.mabiFortune={channelFor:channelFor,HOUSING_CHANNEL:HOUSING_CHANNEL,SIGNS:
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function render(){compute();var my=ls("mabi-fortune-sign"),srv=ls("mabi-fortune-server");if(SRV.indexOf(srv)<0)srv="";
  var mine=my!=null&&my!==""?rank.filter(function(x){return x.si===+my})[0]:null;
+ /* 위: 내 별자리 · 서버 · 오늘 추천 채널 (실제로 쓰는 부분) */
  var chMsg;
- if(!srv){chMsg='<p class="ftCh mu">서버를 고르면 오늘의 추천 채널을 알려 드려요.</p>'}
+ if(!srv&&!mine){chMsg='<p class="ftCh mu">별자리와 서버를 고르면 오늘의 추천 채널을 알려 드려요.</p>'}
+ else if(!srv){chMsg='<p class="ftCh mu">서버를 고르면 오늘의 추천 채널을 알려 드려요.</p>'}
  else if(!mine){chMsg='<p class="ftCh mu">별자리를 고르면 <b>'+srv+'</b> 서버의 오늘 추천 채널을 알려 드려요.</p>'}
- else{chMsg='<p class="ftCh">오늘 <b>'+SIGNS[mine.si][0]+'</b> · <b>'+srv+'</b> 서버는 <b class="n">'+channel(srv,mine.si)+'채널</b>에서 득템하실 수 있어 보여요!</p>'}
+ else{chMsg='<p class="ftCh"><span class="ftChLbl">오늘 <b>'+SIGNS[mine.si][0]+'</b> · <b>'+srv+'</b> 서버는</span><b class="n">'+channel(srv,mine.si)+'채널</b><span class="ftChTx">에서 득템하실 수 있어 보여요!</span></p>'}
+ var msg=mine?'<p class="ftMsg"><b>'+SIGNS[mine.si][0]+' '+mine.rank+'위</b> '+esc(mine.msg)+'<span>럭키 아이템 · '+esc(mine.item)+'</span></p>':'<p class="ftMsg mu">오늘 1위는 <b>'+SIGNS[rank[0].si][0]+'</b>예요!</p>';
  var srcNote=rankSrc==='ohaasa'?'순위 출처: 오하아사(ABC おはよう朝日です)':'오늘은 오하아사 발표가 없어 사이트 자체 순위예요';
- var html='<div class="ftHd"><h2>🔮 오늘의 운세 <span class="ftDate">'+today.m+'월 '+today.d+'일 ('+WD[today.w]+')</span></h2><small class="ftNote">재미로 보는 운세예요 · 실제 드롭 확률과 무관</small><small class="ftSrc">'+srcNote+'</small></div>'+
- '<div class="ftBody"><ol class="ftRank">'+rank.map(function(x){var s=SIGNS[x.si];return '<li role="button" tabindex="0" data-sign="'+x.si+'" class="'+(x.rank===1?"r1 ":x.rank<=3?"r3 ":"")+(mine&&mine.si===x.si?"me":"")+'" aria-pressed="'+(mine&&mine.si===x.si?"true":"false")+'"><b class="no">'+x.rank+'</b><span class="sg"><i aria-hidden="true">'+s[1]+'</i>'+s[0]+'</span><span class="it">'+esc(x.item)+'</span></li>'}).join("")+'</ol>'+
- '<div class="ftSide"><label class="ftMy">내 별자리 <select id="ftSign"><option value="">선택</option>'+SIGNS.map(function(s,i){return '<option value="'+i+'"'+(mine&&mine.si===i?" selected":"")+'>'+s[1]+" "+s[0]+" ("+s[2]+")</option>"}).join("")+'</select></label>'+
- (mine?'<p class="ftMsg"><b>'+SIGNS[mine.si][0]+' '+mine.rank+'위</b> '+esc(mine.msg)+'<br><span>럭키 아이템 · '+esc(mine.item)+'</span></p>':'<p class="ftMsg mu">별자리를 고르면 오늘의 한마디를 알려 드려요. 1위는 <b>'+SIGNS[rank[0].si][0]+'</b>!</p>')+
+ var html='<div class="ftHd"><h2>🔮 오늘의 운세</h2><span class="ftDate">'+today.m+'월 '+today.d+'일 ('+WD[today.w]+')</span><small class="ftNote">재미로 보는 운세예요 · 실제 드롭 확률과 무관</small></div>'+
+ '<div class="ftMine">'+
+ '<label class="ftMy"><span>내 별자리</span><select id="ftSign"><option value="">선택</option>'+SIGNS.map(function(s,i){return '<option value="'+i+'"'+(mine&&mine.si===i?" selected":"")+'>'+s[1]+" "+s[0]+" ("+s[2]+")</option>"}).join("")+'</select></label>'+
  '<div class="ftSrv" role="group" aria-label="서버 선택">'+SRV.map(function(s){return '<button type="button" data-srv="'+s+'"'+(s===srv?' class="on" aria-pressed="true"':' aria-pressed="false"')+'>'+s+'</button>'}).join("")+'</div>'+
- chMsg+'</div></div>';
+ chMsg+msg+'</div>'+
+ /* 아래: 1~12위 한 줄씩 */
+ '<h3 class="ftRankHd">오늘의 별자리 순위</h3>'+
+ '<ol class="ftRank">'+rank.map(function(x){var s=SIGNS[x.si];return '<li role="button" tabindex="0" data-sign="'+x.si+'" title="'+esc(s[0]+' · 럭키 아이템 '+x.item)+'" class="'+(x.rank===1?"r1 ":x.rank<=3?"r3 ":"")+(mine&&mine.si===x.si?"me":"")+'" aria-pressed="'+(mine&&mine.si===x.si?"true":"false")+'"><b class="no">'+x.rank+'</b><span class="sg"><i aria-hidden="true">'+s[1]+'</i>'+s[0]+'</span><span class="it">'+esc(x.item)+'</span></li>'}).join("")+'</ol>'+
+ '<small class="ftSrc">'+srcNote+'</small>';
  root.innerHTML=html;
  root.querySelector("#ftSign").addEventListener("change",function(){ls("mabi-fortune-sign",this.value);render()});
  root.querySelectorAll("[data-srv]").forEach(function(b){b.addEventListener("click",function(){ls("mabi-fortune-server",b.dataset.srv);render()})});

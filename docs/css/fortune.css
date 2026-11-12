@@ -1,31 +1,40 @@
-.fortune{max-width:960px;margin:22px auto 8px;padding:16px 18px;background:#1d2027;border:1px solid #333846;border-radius:12px;box-shadow:inset 4px 0 0 #b59cf0;font-family:"Noto Sans KR","Malgun Gothic",sans-serif;color:#e6e8ee;text-align:left}
-.fortune .ftHd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-.fortune h2{margin:0;font-size:1.15em;color:#e3c98a}.fortune .ftDate{font-size:13px;color:#9aa1b0;font-weight:500;margin-left:4px}
-.fortune .ftNote{font-size:11.5px;color:#7d8394}
-.fortune .ftSrc{display:block;margin-top:4px;font-size:11.5px;color:#9aa1b0;font-weight:500}
-.fortune .ftBody{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start}
-.fortune .ftRank{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:column;grid-template-rows:repeat(6,auto);gap:4px 10px}
-.fortune .ftRank li{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:6px;padding:4px 8px;border-radius:8px;background:#262a33;font-size:13.5px;border:1px solid transparent}
-.fortune .ftRank .no{font-variant-numeric:tabular-nums;color:#9aa1b0;text-align:center;font-size:12.5px}
-.fortune .ftRank .sg i{font-style:normal;margin-right:5px;color:#b59cf0}
-.fortune .ftRank .it{font-size:12px;color:#9aa1b0;white-space:normal;overflow:visible;text-overflow:clip;max-width:140px;overflow-wrap:anywhere;word-break:keep-all;line-height:1.25;text-align:right}
-.fortune .ftRank li.r3 .no{color:#e3c98a;font-weight:700}
-.fortune .ftRank li.r1{background:rgba(247,217,139,.12);border-color:#6b5a33}.fortune .ftRank li.r1 .no{color:#f7d98b;font-size:14px}
-.fortune .ftRank li.me{border-color:#b59cf0}
-.fortune .ftSide{display:flex;flex-direction:column;gap:9px;font-size:13.5px}
-.fortune .ftMy{display:flex;align-items:center;gap:8px;color:#9aa1b0}
-.fortune select{font:inherit;font-size:13px;color:#e6e8ee;background:#14161b;border:1px solid #333846;border-radius:8px;padding:5px 8px;flex:1;min-width:0}
-.fortune .ftMsg,.fortune .ftCh{margin:0;line-height:1.6}.fortune .ftMsg span{color:#9aa1b0;font-size:12.5px}
-.fortune .mu{color:#9aa1b0}
-.fortune .ftMsg b{color:#e3c98a}
-.fortune .ftSrv{display:flex;gap:6px;flex-wrap:wrap}
-.fortune .ftSrv button{font:inherit;font-size:13px;padding:4px 12px;border-radius:999px;border:1px solid #333846;background:#262a33;color:#c9cdd8;cursor:pointer}
-.fortune .ftSrv button:hover{border-color:#b59cf0}
-.fortune .ftSrv button.on{background:rgba(181,156,240,.18);border-color:#b59cf0;color:#fff;font-weight:700}
-.fortune .ftCh b{color:#e6e8ee}.fortune .ftCh b.n{color:#b59cf0;font-size:15px}
-@media(max-width:760px){.fortune .ftBody{grid-template-columns:1fr}.fortune .ftRank{grid-template-columns:1fr;grid-auto-flow:row;grid-template-rows:none}}
-.wrap>.fortune{max-width:none;margin:0 0 16px}
+/* 홈 「오늘의 운세」 — 왼쪽 고정 칸. 위: 내 별자리·서버·추천 채널 / 아래: 1~12위 한 줄씩 */
+.fortune{padding:13px 12px 11px;background:#1d2027;border:1px solid #333846;border-radius:12px;box-shadow:inset 4px 0 0 #b59cf0;font-family:"Noto Sans KR","Malgun Gothic",sans-serif;color:#e6e8ee;text-align:left}
+.fortune .ftHd{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 8px;margin:0 0 8px}
+.fortune h2{margin:0;font-size:1.08em;color:#e3c98a}
+.fortune .ftDate{font-size:12.5px;color:#9aa1b0;font-weight:500}
+.fortune .ftNote{flex-basis:100%;font-size:11px;color:#7d8394}
+.fortune .ftSrc{display:block;margin-top:8px;font-size:10.5px;color:#7d8394;line-height:1.45;word-break:keep-all}
 
-.fortune .ftRank li[data-sign]{cursor:pointer}
-.fortune .ftRank li[data-sign]:hover{border-color:#b59cf0}
-.fortune .ftRank li.me{outline:1px solid #b59cf0}
+/* 위쪽 강조 블록 */
+.fortune .ftMine{display:flex;flex-direction:column;gap:7px;padding:9px 8px;border-radius:10px;background:rgba(181,156,240,.07);border:1px solid #4b4170;font-size:13px}
+.fortune .ftMy{display:flex;align-items:center;gap:7px;color:#9aa1b0;font-size:12px;white-space:nowrap}
+.fortune select{font:inherit;font-size:12px;color:#e6e8ee;background:#14161b;border:1px solid #333846;border-radius:8px;padding:5px 4px;flex:1;width:100%;min-width:0}
+.fortune .ftSrv{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.fortune .ftSrv button{font:inherit;font-size:12.5px;padding:5px 0;border-radius:999px;border:1px solid #333846;background:#262a33;color:#c9cdd8;cursor:pointer}
+.fortune .ftSrv button:hover{border-color:#b59cf0}
+.fortune .ftSrv button.on{background:rgba(181,156,240,.2);border-color:#b59cf0;color:#fff;font-weight:700}
+.fortune .ftCh{margin:0;line-height:1.45;padding:6px 9px 7px;border-radius:8px;background:#14161b;border:1px solid #333846}
+.fortune .ftCh.mu{text-align:left;background:none;border:0;padding:0;font-size:12.5px}
+.fortune .ftCh .ftChLbl{display:block;font-size:11.5px;color:#9aa1b0}
+.fortune .ftCh .ftChLbl b{color:#c9cdd8;font-weight:700}
+.fortune .ftCh b.n{color:#f7d98b;font-size:23px;font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap;margin-right:2px}
+.fortune .ftCh .ftChTx{font-size:11.5px;color:#c9cdd8}
+.fortune .ftMsg{margin:0;line-height:1.5;font-size:12.5px;color:#c9cdd8;word-break:keep-all}
+.fortune .ftMsg b{color:#e3c98a}
+.fortune .ftMsg span{display:block;color:#9aa1b0;font-size:11.5px;margin-top:1px}
+.fortune .mu{color:#9aa1b0}
+
+/* 아래쪽 순위 — 한 줄씩 */
+.fortune .ftRankHd{margin:10px 0 5px;font-size:12px;font-weight:700;color:#9aa1b0}
+.fortune .ftRank{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.fortune .ftRank li{display:grid;grid-template-columns:20px auto minmax(0,1fr);align-items:center;gap:6px;padding:1px 8px;border-radius:6px;background:#262a33;font-size:12.5px;line-height:1.38;border:1px solid transparent;cursor:pointer}
+.fortune .ftRank li:hover{border-color:#b59cf0}
+.fortune .ftRank .no{font-variant-numeric:tabular-nums;color:#9aa1b0;text-align:center;font-size:12px}
+.fortune .ftRank .sg{white-space:nowrap}
+.fortune .ftRank .sg i{font-style:normal;margin-right:4px;color:#b59cf0}
+.fortune .ftRank .it{font-size:11.5px;color:#9aa1b0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fortune .ftRank li.r3 .no{color:#e3c98a;font-weight:700}
+.fortune .ftRank li.r1{background:rgba(247,217,139,.12);border-color:#6b5a33}
+.fortune .ftRank li.r1 .no{color:#f7d98b;font-size:13px}
+.fortune .ftRank li.me{border-color:#b59cf0;outline:1px solid #b59cf0}
