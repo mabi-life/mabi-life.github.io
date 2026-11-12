@@ -39,7 +39,7 @@ function tipCard(o){// o:{n,kind,sub,all,own,need,p,cn,cg,craft:{tot,miss},kids:
  else{const op=[];if(A!=null||o.craft)op.push(['경매장에서 '+(o.craft?'완성품':'구매'),A,'A']);if(B!=null)op.push(['구슬 교환',B,'B']);if(o.craft)op.push(['하위 재료로 제작',C,'C']);
   const ok=op.filter(x=>x[1]!=null).sort((a,b)=>a[1]-b[1]);const best=ok[0];
   let vd,sv='';if(!best)vd=o.craft?`시세 없는 하위 재료가 ${o.craft.miss}종 있어서 비교가 어려워요`:'경매장 매물이 없어요';
-  else{vd=best[2]==='C'?'하위 재료를 사서 만드세요':best[2]==='B'?'구슬로 교환하세요':o.craft?'경매장에서 완성품을 사세요':'경매장에서 사세요';
+  else{vd=best[2]==='C'?'지금은 직접 만드는 게 더 이득이에요':best[2]==='B'?'지금은 구슬 교환이 더 이득이에요':'지금은 경매장이 더 이득이에요';
    if(ok[1])sv=best[2]==='A'&&ok[1][2]==='C'?`경매가 ${fg(Math.round(ok[1][1]-best[1]))} 더 저렴해요`:`${fg(Math.round(ok[1][1]-best[1]))} 더 저렴해요`;
    else if(o.craft&&A==null)sv='경매장 매물이 없어서 직접 만들어야 해요';else if(o.craft&&C==null)sv=`하위 시세 ${o.craft.miss}종이 없어서 경매가만 볼 수 있어요`}
   const cells=op.map(([l,v,k])=>`<div class="opt${best&&k===best[2]&&ok.length>1?' pick':''}"><span class="ok">${l}${best&&k===best[2]&&ok.length>1?'<span class="badge">추천</span>':''}</span><span class="ov">${v!=null?tg(v):'<span class="na">매물 없음</span>'}</span></div>`).join('');
