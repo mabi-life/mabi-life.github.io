@@ -98,3 +98,8 @@
 .events .evWeek tbody td.on.num{color:#f7d98b}
 .events .evWeek thead th.on small{display:block;margin-top:2px;font-size:10.5px;font-weight:700;color:#f7d98b;letter-spacing:0}
 .events .evWeek td.dash{color:#7d8394;font-weight:600}
+
+/* 검색·안내 설명글 */
+.events .evIntro{margin:8px 0 12px}
+.events .evIntro p{margin:0 0 8px;font-size:14px;line-height:1.7;color:#c9cdd8;word-break:keep-all;overflow-wrap:break-word}
+.events .evIntro p:last-child{margin-bottom:0}
