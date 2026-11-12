@@ -121,6 +121,36 @@ async function authed(request, env) {
   return d === 0;
 }
 
+// 거뿔 내역 캐시: 5분 cron이라 60초 신선, 5분까지는 바로 주고 뒤에서 KV로 갱신.
+const H_KEY = 'https://mabi-horn.cache/v1/history';
+const H_FRESH = 60000, H_STALE = 300000;
+let hRefreshing = null;
+async function hPut(raw) {
+  await caches.default.put(new Request(H_KEY), new Response(raw, {
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'max-age=3600', 'X-Stored-At': String(Date.now()) },
+  })).catch(() => {});
+}
+function hRefresh(env, ctx) {
+  if (hRefreshing) return;
+  hRefreshing = env.HORN.get('history', { cacheTtl: 60 })
+    .then((raw) => (raw ? hPut(raw) : null))
+    .catch(() => {})
+    .finally(() => { hRefreshing = null; });
+  ctx.waitUntil(hRefreshing);
+}
+async function historyBody(env, ctx) {
+  const c = await caches.default.match(new Request(H_KEY));
+  if (c) {
+    const age = Date.now() - (+c.headers.get('X-Stored-At') || 0);
+    if (age < H_FRESH) return [c.body, 'cache'];
+    if (age < H_STALE) { hRefresh(env, ctx); return [c.body, 'cache-stale']; }
+  }
+  const raw = await env.HORN.get('history', { cacheTtl: 60 });
+  if (!raw) return null;
+  ctx.waitUntil(hPut(raw));
+  return [raw, 'kv'];
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -160,18 +190,20 @@ export default {
       if (url.searchParams.get('refresh') === '1' && (await authed(request, env))) {
         ctx.waitUntil(collect(env).catch(() => {}));
       }
-      const raw = await env.HORN.get('history');
-      if (!raw)
+      // Origin 검사 통과 뒤에만 캐시 조회. Cache API(데이터센터별) → KV(cacheTtl) 순.
+      const res = await historyBody(env, ctx);
+      if (!res)
         return new Response('{"rows":[],"updated":null}', {
           headers: cors({
             'Content-Type': 'application/json; charset=utf-8',
             'Cache-Control': 'no-store',
           }, origin),
         });
-      return new Response(raw, {
+      return new Response(request.method === 'HEAD' ? null : res[0], {
         headers: cors({
           'Content-Type': 'application/json; charset=utf-8',
-          'Cache-Control': 'public, max-age=30',
+          'Cache-Control': 'private, max-age=60',
+          'X-Data-Source': res[1],
         }, origin),
       });
     }
