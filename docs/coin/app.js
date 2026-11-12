@@ -5,7 +5,7 @@
  * 시세: /prices.json (Nexon Open API auction/list 최저가 min, auction/history 24h 수량가중 평균 avg24)
  * 구슬 자체는 거래불가라 경매 시세 없음 → /horn_beads.json (Nexon Open API horn-bugle-world/history 누적)
  *  의 「구구 구슬구매 25」「ㅍㅍ 탈라구슬 30만」 같은 뿔피리 원문을 parseHorn()으로 파싱해 중앙값 사용.
- *  상점 재료는 거래 가능해져, 브리 레흐 구슬 시세는 거뽀 중앙값과 재료 역산 중앙값의 평균을 씀.
+ *  상점 재료는 거래 가능해져, 브리 레흐 구슬 시세는 거뿔 중앙값과 재료 역산 중앙값의 평균을 씀.
  *  구구=삽니다(구매 희망), ㅍㅍ/팜=팝니다. 숫자 단위 없으면 1000 미만은 '만' 골드로 간주. */
 (function(){
 var SHOPS=MabiCoin.SHOPS,parseHorn=MabiCoin.parseHorn,median=MabiCoin.median;
@@ -43,13 +43,14 @@ function renderBead(){var P=pts(st.tab),h=$('bead'),ps=P.map(function(x){return 
  var ov=+st.beadOv[st.tab]||0,IM=MabiCoin.IMPLIED[st.tab]?MabiCoin.impliedBead(P0,st.tab):null;BPN=MabiCoin.beadPick(MabiCoin.beadTable(HR,st.paste),st.tab,st.beadOv,P0);
  var nb=P.filter(function(x){return x.side==='buy'}).length;
  var html='🔮 구슬 시세(개당) <b>'+(BPN?fmt(BPN.p)+'골드':'—')+'</b> <small>'+(BPN?BPN.src:'최근 48시간 뿔피리에 '+SHOPS[st.tab].name+' 가격 글이 없습니다 (다른 구슬·미표기 시세는 쓰지 않음)');
- if(IM&&IM.p&&!ov)html+='</small><table class="imt"><thead><tr><th>재료</th><th>경매 최저가</th><th>교환 구슬</th><th>개당 환산</th></tr></thead><tbody>'+IM.list.map(function(x){return '<tr><td>'+esc(x.n)+'</td><td>'+fmt(x.p)+'</td><td>'+x.cost+'</td><td><b>'+fmt(x.u)+'</b></td></tr>'}).join('')+'</tbody></table><small>'+(IM.out?'이상치 '+IM.out+'종 제외 · ':'')+'가격 없는 도면·옷본 제외<br>참고 뿔피리';
- else if(MabiCoin.COMBINE[st.tab]&&!ov&&BPN&&(BPN.horn||(BPN.implied&&BPN.implied.list&&BPN.implied.list.length))){var I=BPN.implied,Ho=BPN.horn;
-  html+='</small>';if(Ho&&I&&I.p)html+='<div class="mix">거뽀 중앙값 '+Ho.n+'건 '+man(Ho.p)+' + 재료 역산 '+I.n+'종 '+man(I.p)+' → 평균 '+man(BPN.p)+'</div>';else if(Ho)html+='<div class="mix">거뽀 중앙값 '+Ho.n+'건 '+man(Ho.p)+'</div>';else if(I&&I.p)html+='<div class="mix">재료 역산 '+I.n+'종 '+man(I.p)+'</div>';
-  if(I&&I.list&&I.list.length)html+='<table class="imt"><thead><tr><th>재료</th><th>경매 최저가</th><th>교환 구슬</th><th>개당 환산</th></tr></thead><tbody>'+I.list.map(function(x){return x.keep?'<tr><td>'+esc(x.n)+'</td><td>'+fmt(x.p)+'</td><td>'+x.cost+'</td><td><b>'+fmt(x.u)+'</b></td></tr>':'<tr class="ex"><td>'+esc(x.n)+'</td><td>'+fmt(x.p)+'</td><td>'+x.cost+'</td><td class="mu">'+fmt(x.u)+' · 제외</td></tr>'}).join('')+'</tbody></table><small>'+(I.out?'거뽀 0.5~2배 밖 '+I.out+'종 제외 · ':'')+'가격 없는 항목 제외';else html+='<small>';
-  if(med!=null)html+='<br>참고 뿔피리'}
- html+=(med!=null&&!ov?' · <b style="color:#7cc4ff">평균 '+fmt(mean)+'</b> · 구구 '+nb+'건 · ㅍㅍ '+(ps.length-nb)+'건':'')+'</small>'+
+ var hornTail=(med!=null&&!ov?' · <b style="color:#7cc4ff">평균 '+fmt(mean)+'</b> · 구구 '+nb+'건 · ㅍㅍ '+(ps.length-nb)+'건':'')+'</small>'+
   chart(P,ps.length?Math.max.apply(0,ps):0,mean)+(P.length?'<div class="leg"><i style="background:#7fd99a"></i>구구(삽니다) <i style="background:#ffa86b"></i>ㅍㅍ(팝니다) <span>해당 상점 구슬로 명시된 글만 · 종류 미표기/거뿔 글 제외 · <b style="color:#f7d98b">노란 점선 = 최대값</b>(48시간 내 최고 시세) · <b style="color:#7cc4ff;white-space:nowrap;display:inline-block">파란 점선 = 평균</b></span></div>':'');
+ if(IM&&IM.p&&!ov)html+='</small><table class="imt"><thead><tr><th>재료</th><th>경매 최저가</th><th>교환 구슬</th><th>개당 환산</th></tr></thead><tbody>'+IM.list.map(function(x){return '<tr><td>'+esc(x.n)+'</td><td>'+fmt(x.p)+'</td><td>'+x.cost+'</td><td><b>'+fmt(x.u)+'</b></td></tr>'}).join('')+'</tbody></table><small>'+(IM.out?'이상치 '+IM.out+'종 제외 · ':'')+'가격 없는 도면·옷본 제외<br>참고 뿔피리'+hornTail;
+ else if(MabiCoin.COMBINE[st.tab]&&!ov&&BPN&&(BPN.horn||(BPN.implied&&BPN.implied.list&&BPN.implied.list.length))){var I=BPN.implied,Ho=BPN.horn;
+  html+='</small>';if(Ho&&I&&I.p)html+='<div class="mix">거뿔 중앙값 '+Ho.n+'건 '+man(Ho.p)+' + 재료 역산 '+I.n+'종 '+man(I.p)+' → 평균 '+man(BPN.p)+'</div>';else if(Ho)html+='<div class="mix">거뿔 중앙값 '+Ho.n+'건 '+man(Ho.p)+'</div>';else if(I&&I.p)html+='<div class="mix">재료 역산 '+I.n+'종 '+man(I.p)+'</div>';
+  if(med!=null)html+='<small>참고 뿔피리'+hornTail;
+  if(I&&I.list&&I.list.length)html+='<table class="imt"><thead><tr><th>재료</th><th>경매 최저가</th><th>교환 구슬</th><th>개당 환산</th></tr></thead><tbody>'+I.list.map(function(x){return x.keep?'<tr><td>'+esc(x.n)+'</td><td>'+fmt(x.p)+'</td><td>'+x.cost+'</td><td><b>'+fmt(x.u)+'</b></td></tr>':'<tr class="ex"><td>'+esc(x.n)+'</td><td>'+fmt(x.p)+'</td><td>'+x.cost+'</td><td class="mu">'+fmt(x.u)+' · 제외</td></tr>'}).join('')+'</tbody></table><small>'+(I.out?'거뿔 0.5~2배 밖 '+I.out+'종 제외 · ':'')+'가격 없는 항목 제외</small>'}
+ else html+=hornTail;
  h.innerHTML=html;$('beadOv').value=st.beadOv[st.tab]||''}
 function render(){
  beadStats();P0=P;renderBead();

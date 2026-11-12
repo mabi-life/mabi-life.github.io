@@ -45,7 +45,7 @@ function beadTable(rows,paste){var acc={};function add(r,src){parseHorn(r.m).for
  var dd={};(rows||[]).forEach(function(r){var key=(r.s||'')+(r.w||'')+r.m.replace(/\[\d+\/\d+명\]/,'');if(dd[key])return;dd[key]=1;add(r)});String(paste||'').split(/\n+/).forEach(function(l){if(l.trim())add({m:l})});
  var B={};Object.keys(acc).forEach(function(k){var a=acc[k];B[k]={buy:median(a.buy),sell:median(a.sell),med:median(a.all),n:a.all.length,_a:a.all}});return B}
 // 역산 구슬 시세: 구슬 상점 재료의 경매 최저가 ÷ 교환 구슬 수 → 중앙값 (가격 없는 항목 제외)
-// 탈라(IMPLIED): 전체 역산 중앙값의 0.5~2배 밖 이상치 제외. 브리(COMBINE): 거뽀 중앙값 H의 0.5~2배 안만 쓰고, 구슬 시세는 (H+M)/2.
+// 탈라(IMPLIED): 전체 역산 중앙값의 0.5~2배 밖 이상치 제외. 브리(COMBINE): 거뿔 중앙값 H의 0.5~2배 안만 쓰고, 구슬 시세는 (H+M)/2.
 var IMPLIED={tala:1},COMBINE={bri:1};
 function impliedBead(P,tab,H){var sh=SHOPS[tab];if(!sh||!P)return null;var L=[];sh.items.forEach(function(x){var e=P[x[0]],v=e&&e.min>0?e.min:null;if(v)L.push({n:x[0],cost:x[1],p:v,u:v/x[1]})});
  if(!L.length)return null;var lo,hi;if(H!=null&&H>0){lo=H*.5;hi=H*2}else{var m0=median(L.map(function(x){return x.u}));lo=m0*.5;hi=m0*2}
@@ -54,7 +54,7 @@ function impliedBead(P,tab,H){var sh=SHOPS[tab];if(!sh||!P)return null;var L=[];
 function beadPick(B,tab,ov,P){var o=+(ov||{})[tab];if(o>0)return{p:o,src:'직접 입력'};
  if(COMBINE[tab]){var b=B&&B[tab],H=b&&b.med!=null?b.med:null,Hn=b?b.n:0,I=P?impliedBead(P,tab,H):null,M=I&&I.p;
   if(H==null&&M==null)return null;
-  if(H!=null&&M!=null)return{p:(H+M)/2,src:'거뽀 중앙값 '+Hn+'건 + 재료 역산 '+I.n+'종 평균',horn:{p:H,n:Hn},implied:I};
+  if(H!=null&&M!=null)return{p:(H+M)/2,src:'거뿔 중앙값 '+Hn+'건 + 재료 역산 '+I.n+'종 평균',horn:{p:H,n:Hn},implied:I};
   if(H!=null)return{p:H,src:'뿔피리 '+Hn+'건 중앙값',horn:{p:H,n:Hn},implied:I};
   return{p:M,src:I.src,horn:null,implied:I}}
  if(IMPLIED[tab]&&P){var I=impliedBead(P,tab);if(I&&I.p)return I}var b=B&&B[tab];if(!b)return null;var v=b.med;return v==null?null:{p:v,src:'뿔피리 '+b.n+'건 중앙값'}}
