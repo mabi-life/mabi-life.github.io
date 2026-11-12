@@ -38,7 +38,7 @@ function spotFig(s, i){
  var n=s.n||(i+1);
  var id=esc(String(s.id||n));
  var who=s.who?'<span>'+esc(s.who)+"</span>":"";
- var alt=esc((s.name||"")+(s.who?" — "+s.who:""));
+ var alt=esc("마비노기 던바튼 "+(s.name||"").replace(/\u00a0/g," ")+(s.who?" — "+s.who:""));
  return '<figure class="evSpot" id="ev-spot-'+id+'">'+
   '<span class="evN" aria-hidden="true">'+esc(String(n))+"</span>"+
   (s.photo?'<img src="'+esc(s.photo)+'" alt="'+alt+'" width="800" height="800">':"")+
@@ -72,6 +72,13 @@ function spotsBlock(ev){
  return '<div class="evGallery">'+L+mapHtml+R+"</div>";
 }
 
+
+
+function introBlock(ev){
+ var paras=Array.isArray(ev.intro)?ev.intro:(ev.intro?[ev.intro]:[]);
+ if(!paras.length)return "";
+ return '<div class="evIntro">'+paras.map(function(p){return "<p>"+esc(p)+"</p>"}).join("")+"</div>";
+}
 
 function weekIndex(weeks, ev){
  var evEnd=parseWhen(ev&&ev.end);
@@ -129,6 +136,7 @@ function card(ev, phase){
  return '<li class="evCard">'+
   '<div class="evTop"><h3 class="evTitle">'+esc(ev.title||"")+'</h3><span class="'+badgeCls+'">'+badge+"</span></div>"+
   (period?'<p class="evPeriod">'+period+"</p>":"")+
+  introBlock(ev)+
   weekTable(ev)+
   (pts?'<ul class="evPoints">'+pts+"</ul>":"")+
   spotsBlock(ev)+
