@@ -144,7 +144,11 @@ function cachePut(path, ent) {
 function revalidate(env, ctx, path, cur) {
   if (INFLIGHT.has(path)) return;
   const p = (async () => {
-    const row = await rdb(env).prepare('SELECT sha FROM files WHERE path = ?1').bind(path).first();
+    const row = await rdb(env).prepare("SELECT sha, (SELECT v FROM meta WHERE k = 'last_sync') AS ls FROM files WHERE path = ?1").bind(path).first();
+    // cron이 멈췄을 때 대비: 마지막 동기화가 12분 넘게 지났으면 여기서 한 번 동기화
+    let lsAt = 0;
+    try { lsAt = row && row.ls ? JSON.parse(row.ls).at : 0; } catch (_) {}
+    if (row && Date.now() - lsAt > 12 * 60000) kickSync(env, ctx);
     let ent;
     if (row && cur && row.sha === cur.sha) ent = { bytes: cur.bytes, sha: cur.sha, at: Date.now() };
     else {
