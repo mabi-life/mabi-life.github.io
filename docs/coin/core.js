@@ -9,8 +9,15 @@ var SHOPS={
 // ── 뿔피리 파서 ──
 var KIND=[['tala',/탈라|가흐/],['bri',/브리|레흐/],['horn',/거뿔|거대한?\s*(외침의\s*)?뿔피리|거대\s*뿔/]];
 function side(m){if(/구구|구매|삽니다|사요|삼\b|매입|ㅅㅅ|ㄱㄱ|구함|구해요/.test(m))return'buy';if(/ㅍㅍ|팜|팝니다|판매|팔아요|팔아|파는/.test(m))return'sell';return null}
-function num(t,strict){var m=strict?t.match(/개당\s*(\d+(?:\.\d+)?)\s*(억|만|천|k|골|g|G)?|(\d+(?:\.\d+)?)\s*(억|만|천|k|골|g|G)/):t.match(/(\d+(?:\.\d+)?)\s*(억|만|천|k|골|g|G)?/);if(m&&strict)m=[0,m[1]||m[3],m[2]||m[4]];if(!m)return null;var v=parseFloat(m[1]),u=m[2]||'';
+function num(t,strict){var m=strict?t.match(/개당\s*(\d+(?:\.\d+)?)\s*(억|만|천|k|골|g|G)?|(\d+(?:\.\d+)?)\s*(억|만|천|k|골|g|G)/):t.match(/(\d+(?:\.\d+)?)\s*(억|만|천|k|골|g|G)?(?!\s*월)/);if(m&&strict)m=[0,m[1]||m[3],m[2]||m[4]];if(!m)return null;var v=parseFloat(m[1]),u=m[2]||'';
  if(u==='억')v*=1e8;else if(u==='만')v*=1e4;else if(u==='천'||u==='k')v*=1e3;else if(v<1000)v*=1e4;return v}
+// 개당 단가 우선. 「N개 X만에」·「N개를 X만」처럼 수량이 앞에 오고 합계가 분명하면 X/N. 「X만 N개」「X만xN개」는 개당 X.
+function unitPrice(t){
+ var a=t.match(/개당\s*(\d+(?:\.\d+)?)\s*(만|천|k|억|골|g|G)?/i);if(a){var v=num(a[1]+(a[2]||''));if(v>=1e4&&v<=1e8)return v}
+ var mul=t.match(/(\d+(?:\.\d+)?)\s*(만|천|k|억)\s*[xX×*]\s*\d+(?:\.\d+)?\s*개/);if(mul){var v=num(mul[1]+mul[2]);if(v>=1e4&&v<=1e8)return v}
+ var tot=t.match(/(\d+(?:\.\d+)?)\s*개(?:를|을|씩)?(?:에)?\s*(\d+(?:\.\d+)?)\s*(만|천|k|억)에?/);
+ if(tot){var n=parseFloat(tot[1]),x=num(tot[2]+tot[3]);if(n>=2&&x&&x%n===0){var u=x/n;if(u>=1e4&&u<=1e8)return u}}
+ return null}
 // 상점 분류: 탈라(탈라|가흐)·브리(브리|레흐) 중 하나만 명시된 글만 해당 상점. 둘 다/미표기 = 'any'(어느 상점 시세에도 쓰지 않음)
 function kindOf(m){var t=/탈라|가흐/.test(m),b=/브리|레흐/.test(m);return t&&!b?'tala':b&&!t?'bri':'any'}
 function parseHorn(msg){
@@ -20,12 +27,14 @@ function parseHorn(msg){
  if(g){var v=num((g[1]||g[3])+(g[2]||g[4]||''));if(v>=1e4&&v<=1e8){var md=m.replace(/거뿔|거대한?\s*(외침의\s*)?뿔피리|거대\s*뿔/g,'');return[{k:kindOf(md),side:'buy',p:v}]}}
  if(/#\[채널|\[\d+\/\d+명\]/.test(m)&&!/개당/.test(m))return[]; // 파티 모집글: 구구 숫자 없으면 가격 아님
  var sd=side(m);if(!sd||!/구슬|구구|거뿔|뿔피리|거대/.test(m))return[];
+ var up=unitPrice(m);
  var hits=[];KIND.forEach(function(k){var r=new RegExp(k[1].source,'g'),x;while((x=r.exec(m)))hits.push({k:k[0],i:x.index,e:x.index+x[0].length})});
  if(!hits.length){var g=m.search(/구슬|구구/);if(g<0)return[];hits.push({k:'any',i:g,e:g+2})}
  hits.sort(function(a,b){return a.i-b.i});
  var out=[],seen={};hits.forEach(function(h,j){if(seen[h.k])return;var end=j+1<hits.length?hits[j+1].i:m.length;
-  var seg=m.slice(h.e,end).replace(/\d+\s*(개|ea|EA|장|묶|시|분|채널|ch)/g,'');var v=num(seg,1);if(v==null&&/^\s*(구매|삽니다|매입|팝니다|판매|ㅍㅍ|구구)?\s*\d/.test(seg))v=num(seg);
-  if(v==null&&j===0){v=num(m.slice(0,h.i).replace(/\d+\s*(개|ea|EA|장|묶|시|분|채널|ch)/g,''))}
+  var v=up,seg=m.slice(h.e,end).replace(/\d+\s*(개|ea|EA|장|묶|시|분|채널|ch)/g,'');
+  if(v==null){v=num(seg,1);if(v==null&&/^\s*(구매|삽니다|매입|팝니다|판매|ㅍㅍ|구구)?\s*\d/.test(seg))v=num(seg);
+  if(v==null&&j===0){v=num(m.slice(0,h.i).replace(/\d+\s*(개|ea|EA|장|묶|시|분|채널|ch)/g,''),1)}}
   if(v!=null&&v>=1e4&&v<=1e8){seen[h.k]=1;out.push({k:h.k,side:sd,p:v})}});
  if(!out.length){var t=m.match(/(?:구매|삽니다|매입|팝니다|판매|ㅍㅍ|구구|사요|팜)\s*(\d+(?:\.\d+)?)\s*(만|천|k)?\s*$/)||m.match(/(?:구슬)\D{0,6}?(\d+(?:\.\d+)?)\s*(만|천|k)?\s*(?:에|씩)?\s*(?:구매|삽니다|매입|팝니다|판매|사요|팜)/);if(t){var v=num(t[1]+(t[2]||''));if(v>=1e4&&v<=1e8)out.push({k:kindOf(m),side:sd,p:v})}}
  return out}
@@ -35,14 +44,21 @@ function median(a){if(!a.length)return null;a=a.slice().sort(function(x,y){retur
 function beadTable(rows,paste){var acc={};function add(r,src){parseHorn(r.m).forEach(function(q){var a=acc[q.k]=acc[q.k]||{buy:[],sell:[],all:[]};a[q.side].push(q.p);a.all.push(q.p)})}
  var dd={};(rows||[]).forEach(function(r){var key=(r.s||'')+(r.w||'')+r.m.replace(/\[\d+\/\d+명\]/,'');if(dd[key])return;dd[key]=1;add(r)});String(paste||'').split(/\n+/).forEach(function(l){if(l.trim())add({m:l})});
  var B={};Object.keys(acc).forEach(function(k){var a=acc[k];B[k]={buy:median(a.buy),sell:median(a.sell),med:median(a.all),n:a.all.length,_a:a.all}});return B}
-// 역산 구슬 시세: 구슬 상점 재료의 경매 최저가 ÷ 교환 구슬 수 → 중앙값 (가격 없는 도면·옷본 제외, 중앙값의 0.5~2배 밖 이상치 제외)
-// 탈라 가흐 구슬은 뿔피리 글이 드물어 이 값을 기준으로 사용 (IMPLIED 탭)
-var IMPLIED={tala:1};
-function impliedBead(P,tab){var sh=SHOPS[tab];if(!sh||!P)return null;var L=[];sh.items.forEach(function(x){var e=P[x[0]],v=e&&e.min>0?e.min:null;if(v)L.push({n:x[0],cost:x[1],p:v,u:v/x[1]})});
- if(!L.length)return null;var m0=median(L.map(function(x){return x.u}));var K=L.filter(function(x){return x.u>=m0*.5&&x.u<=m0*2});var m=median(K.map(function(x){return x.u}));
- return{p:m,n:K.length,out:L.length-K.length,list:L,src:'경매 재료 '+K.length+'종 역산 중앙값(경매가÷교환 구슬 수)'}}
-function beadPick(B,tab,ov,P){var o=+(ov||{})[tab];if(o>0)return{p:o,src:'직접 입력'};if(IMPLIED[tab]&&P){var I=impliedBead(P,tab);if(I&&I.p)return I}var b=B[tab];if(!b)return null;var v=b.med;return v==null?null:{p:v,src:'뿔피리 '+b.n+'건 중앙값'}}
+// 역산 구슬 시세: 구슬 상점 재료의 경매 최저가 ÷ 교환 구슬 수 → 중앙값 (가격 없는 항목 제외)
+// 탈라(IMPLIED): 전체 역산 중앙값의 0.5~2배 밖 이상치 제외. 브리(COMBINE): 거뽀 중앙값 H의 0.5~2배 안만 쓰고, 구슬 시세는 (H+M)/2.
+var IMPLIED={tala:1},COMBINE={bri:1};
+function impliedBead(P,tab,H){var sh=SHOPS[tab];if(!sh||!P)return null;var L=[];sh.items.forEach(function(x){var e=P[x[0]],v=e&&e.min>0?e.min:null;if(v)L.push({n:x[0],cost:x[1],p:v,u:v/x[1]})});
+ if(!L.length)return null;var lo,hi;if(H!=null&&H>0){lo=H*.5;hi=H*2}else{var m0=median(L.map(function(x){return x.u}));lo=m0*.5;hi=m0*2}
+ L.forEach(function(x){x.keep=x.u>=lo&&x.u<=hi});var K=L.filter(function(x){return x.keep}),ex=L.filter(function(x){return !x.keep});var m=K.length?median(K.map(function(x){return x.u})):null;
+ return{p:m,n:K.length,out:ex.length,list:L,used:K,excluded:ex,src:'경매 재료 '+K.length+'종 역산 중앙값(경매가÷교환 구슬 수)'}}
+function beadPick(B,tab,ov,P){var o=+(ov||{})[tab];if(o>0)return{p:o,src:'직접 입력'};
+ if(COMBINE[tab]){var b=B&&B[tab],H=b&&b.med!=null?b.med:null,Hn=b?b.n:0,I=P?impliedBead(P,tab,H):null,M=I&&I.p;
+  if(H==null&&M==null)return null;
+  if(H!=null&&M!=null)return{p:(H+M)/2,src:'거뽀 중앙값 '+Hn+'건 + 재료 역산 '+I.n+'종 평균',horn:{p:H,n:Hn},implied:I};
+  if(H!=null)return{p:H,src:'뿔피리 '+Hn+'건 중앙값',horn:{p:H,n:Hn},implied:I};
+  return{p:M,src:I.src,horn:null,implied:I}}
+ if(IMPLIED[tab]&&P){var I=impliedBead(P,tab);if(I&&I.p)return I}var b=B&&B[tab];if(!b)return null;var v=b.med;return v==null?null:{p:v,src:'뿔피리 '+b.n+'건 중앙값'}}
 // 이름 → {tab, shop, cost}
 var COST={};Object.keys(SHOPS).forEach(function(t){SHOPS[t].items.forEach(function(x){COST[x[0]]={tab:t,shop:SHOPS[t].name,cost:x[1]}})});
-W.MabiCoin={impliedBead:impliedBead,IMPLIED:IMPLIED,COST:COST,beadTable:beadTable,beadPick:beadPick,SHOPS:SHOPS,parseHorn:parseHorn,median:median};
+W.MabiCoin={impliedBead:impliedBead,IMPLIED:IMPLIED,COMBINE:COMBINE,COST:COST,beadTable:beadTable,beadPick:beadPick,SHOPS:SHOPS,parseHorn:parseHorn,median:median};
 })(window);
