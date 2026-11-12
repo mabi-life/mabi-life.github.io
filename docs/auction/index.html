@@ -265,7 +265,7 @@ const EB=t=>String(t||'').replace(/^.*(?:일\s?때|했을\s?시|있을\s?때|경
 const RK=r=>/^\d+$/.test(r)?+r:100+r.charCodeAt(0);
 function eLoad(){if(E)return;E=[];
  $('eInfo').textContent='인챈트 시세를 불러오는 중…';
- Promise.all([getJ(WD+'auction/enchant_data.json'+WT()),getJ(WD+'auction/enchant_history.json'+WT()).catch(()=>({t:{}})),fetch('enchant_effects.json?v=20261102').then(r=>r.ok?r.json():null).catch(()=>null),fetch('enchant_source.json?v=20261103').then(r=>r.ok?r.json():null).catch(()=>null)]).then(([d,h,f,sr])=>{
+ Promise.all([getJ(WD+'auction/enchant_data.json'+WT()),getJ(WD+'auction/enchant_history.json'+WT()).catch(()=>({t:{}})),fetch('enchant_effects.json?v=20261102').then(r=>r.ok?r.json():null).catch(()=>null),fetch('enchant_source.json?v=20261113').then(r=>r.ok?r.json():null).catch(()=>null)]).then(([d,h,f,sr])=>{
   E=d.rows;if(sr)['브리','글렌'].forEach(k=>(sr[k]||[]).forEach(n=>EDG[n.replace(/\s/g,'')]=k));EH=h.t||{};
   if(f){const list=Array.isArray(f)?f:f.enchants||f.rows||[];EF={};EFx={};
    list.forEach(x=>{const rk=String(x.rank).toUpperCase(),es=x.effects||[];es.on=x.on||'';EF[x.name+'|'+x.affix+'|'+rk]=es;(EFx[x.affix+'|'+rk]||(EFx[x.affix+'|'+rk]=[])).push(x);});}

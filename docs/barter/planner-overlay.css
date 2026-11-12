@@ -49,11 +49,10 @@ details.pvEdit>summary::-webkit-details-marker{display:none}
 .pvStat{margin-left:auto;font-size:13px;color:#a9a2d6}
 details.pvEdit[open]>summary{border-bottom:1px dashed rgba(255,255,255,.08);padding-bottom:8px;margin-bottom:8px}
 details.pvEdit:not([open]) .pvGuide::after{content:" ▾"}
-.pvHd{cursor:grab;color:#8f88bb;font-size:15px;padding:3px 2px!important;touch-action:none;user-select:none;width:14px}
-tr.pvItem{cursor:grab;touch-action:pan-y}tr.pvItem:hover .pvHd{color:#f7d98b}tr.pvItem:hover td{background:rgba(255,255,255,.03)}
+tr.pvItem{cursor:grab;touch-action:pan-y}tr.pvItem:hover td{background:rgba(255,255,255,.04)}
 body.pvDragging,body.pvDragging *{cursor:grabbing!important;user-select:none!important}
 tr.pvSrc td{opacity:.35}
-.pvTrip.pvDrop,.pvNew.pvDrop{outline:2px dashed #9fd2ff;outline-offset:2px;background:#1e2442}
+.pvTrip.pvDrop,.pvNew.pvDrop,.pvPark.pvDrop{outline:2px dashed #9fd2ff;outline-offset:2px;background:#1e2442}
 .pvGhost{position:fixed;left:0;top:0;z-index:3000;pointer-events:none;background:#3b2d5a;color:#fff;border:1px solid #d3bfff;border-radius:8px;padding:4px 10px;font-size:13.5px;box-shadow:0 6px 18px #000a;white-space:nowrap}
 .pvGhost img{width:18px;height:18px;vertical-align:-4px;margin-right:4px}
 .pvLine{position:fixed;z-index:2999;height:3px;background:#9fd2ff;border-radius:2px;pointer-events:none;box-shadow:0 0 6px #9fd2ff}
@@ -85,3 +84,17 @@ body.pvDragging #toast,body.pvDragging #toast *{pointer-events:none!important}
 .pvT tr.pvItem.done td,.pvT tr.pvItem.fin td{opacity:.72}
 .pvT tr.pvItem.done .gnm,.pvT tr.pvItem.fin .gnm{text-decoration:line-through}
 .pvT tr.pvItem.done td:last-child,.pvT tr.pvItem.fin td:last-child{opacity:1}
+
+/* v4: 방치물품 (이번 주 안 할 품목 — 회차·재료 체크에서 빠짐) */
+.pvLf,.pvPk{cursor:grab;touch-action:pan-y;user-select:none}
+.pvChip.pvSrc{opacity:.35}
+.pvPark{margin-top:12px;border:1.5px dashed rgba(247,217,139,.38);border-radius:12px;background:rgba(247,217,139,.035);padding:8px 12px 10px;transition:background .12s,border-color .12s}
+.pvPark.pvDrop{outline:none;border-color:#f7d98b;background:rgba(247,217,139,.1)}
+.pvPkH{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.pvPkH b{color:#f7d98b;font-size:14.5px}.pvPkH small{color:#a9a2d6;font-size:12.5px}
+.pvPkL{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;min-height:30px;align-items:center}
+.pvPkE{color:#8f88bb;font-size:13px}
+.pvPk{background:#2a2440;border:1px solid rgba(247,217,139,.22);color:#d8d2f4;font-size:13.5px;padding:3px 4px 3px 8px}
+.pvPk img{width:18px;height:18px;vertical-align:-4px}
+.pvPk b{color:#f7d98b;font-weight:600}
+.pvPkX{border:0;background:transparent;color:#a9a2d6;font-size:15px;line-height:1;padding:0 4px;cursor:pointer;border-radius:6px}.pvPkX:hover{color:#fff;background:rgba(255,255,255,.1)}
+.pvPkN{color:#f7d98b}

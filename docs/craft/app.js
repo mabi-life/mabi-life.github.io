@@ -19,19 +19,72 @@ function nodeCost(c,mult){const [n,k,r]=c;const all=k*mult;const own=+st.own[n]|
 function bal(n,all,own,kind,extra,z){const ok=own>=all;const C={제작:['#e8c66a','⚒'],구매:['#7fb2ff','₲'],채집:['#7fd99a','✿'],코인:['#d59bff','⦿']}[kind];
  return `<span class="t">${IC[n]?`<img class="ic im" src="/assets/icons/2x/${IC[n].id}.png" alt="" loading="lazy" decoding="async">`:`<span class="ic" style="background:${C[0]}22;color:${C[0]}">${C[1]}</span>`}<b>${n}</b>${extra||''}</span><span class="t"><span class="tag" style="color:${C[0]};border-color:${C[0]}55">${kind}</span><span class="q${ok?' ok':''}"><input type="number" min="0" data-n="${n}" value="${own}" title="현재 보유 수량"><em>${f(Math.min(own,all))}</em>/${f(all)}</span></span>${z&&z.cn?`<a class="coin${z.via==='코인'?' best':''}" href="#coin-${z.cn.tab}" onclick="event.stopPropagation()" title="${z.cn.shop} 상점 · 코인 계산기에서 열기">⦿ 구슬 ${z.cn.cost}${z.cn.bp?` ≈${fg(Math.round(z.cn.g))}G`:''}${z.p&&z.cn.g?(z.cn.g<z.p?' ✓':''):''}</a>`:''}`}
 function rcTip(n,r){const o=r.out||1;return `<b>${n}</b> ${o}개 제작 · ${r.skill||''}<br>`+r.c.map(x=>`· ${x[0]} <b>×${f(x[1])}</b>${x[2]?' ⚒':''}`).join('<br>')}
-function tip(c,z,kind,q){const [n,,r,fz,ps,S]=c;const own=+st.own[n]||0;const L=[`<b>${n}</b> <small>${kind}</small>`];
- if(ps)L.push(`공정 1회당 <b>×${f(ps)}</b> · <b>${S}회 공정</b>${q>1?` · ${q}개`:''} 기준 = <b>${f(z.all)}</b>`);
- else if(fz)L.push(`마감 1회분 <b>×${f(z.all/(q||1))}</b>${q>1?` × ${q}개`:''} (공정 횟수 무관)`);
- L.push(`필요 <b>${f(z.all)}</b> · 보유 ${f(own)} · 부족 <b>${f(z.need)}</b>`);
- L.push(`현재 경매가 ${z.p?`개당 <b><img src="/assets/icons/2x/2000.png" alt="G" style="width:1.1em;height:1.1em;vertical-align:-.2em;margin-right:1px">${fg(z.p)}</b>${z.need?` · ${f(z.need)}개 합계 ${fg(z.p*z.need)}`:''}`:'<span style="opacity:.6">시세 없음</span>'}`);
- if(z.cn)L.push(`구슬 ${z.cn.shop} 개당 ${z.cn.cost}개${z.cn.g!=null?` ≈ ${fg(Math.round(z.cn.g))}G${z.need?` · ${f(z.need)}개 합계 ${fg(Math.round(z.cg))}G`:''}`:''}`);
- if(z.sub)L.push(`직접 제작 ${z.sub.runs}회 ${z.sub.miss?`(하위 시세 ${z.sub.miss}종 없음)`:`≈ <b>${fg(Math.round(z.sub.tot))}G</b>`}`);
- if(z.need&&z.via)L.push(`최저: <b style="color:#e8c66a">${z.via}</b> · 개당 <b><img src="/assets/icons/2x/2000.png" alt="G" style="width:1.1em;height:1.1em;vertical-align:-.2em;margin-right:1px">${fg(Math.round(z.best/z.need))}</b> · 필요분(${f(z.need)}개) 합계 <b>${fg(Math.round(z.best))}G</b>`);
- if(r)L.push('<hr style="border:0;border-top:1px solid #fff2;margin:4px 0">'+rcTip(n,r)+'<br><small>클릭: 펼치기/접기</small>');
- return L.join('<br>')}
-(()=>{const t=document.createElement('div');t.id='rcTip';t.style.cssText='position:fixed;z-index:9999;display:none;pointer-events:none;max-width:320px;background:#1b1f2a;color:#e8e8e8;border:1px solid #e8c66a66;border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.55;box-shadow:0 6px 20px #0008';document.body.appendChild(t);
+// 제작 툴팁 v2 — 경매장 가격 vs 하위 재료(재귀 최저 = nodeCost) 비교 + 추천
+const TG='<img src="/assets/icons/2x/2000.png" alt="G">';const tg=v=>`${TG}${fg(Math.round(v))}`;
+function tipKids(list){const hasAuc=list.every(([c,z])=>!z.need||z.p);let auc=0;list.forEach(([c,z])=>{if(z.need&&z.p)auc+=z.p*z.need});
+ const rows=list.map(([c,z])=>{const [n,,r,fz]=c;const ft=fz?'<span class="mt">마감재</span>':'';const own=+st.own[n]||0;const ow=own?` <small>보유 ${f(Math.min(own,z.all))}</small>`:'';
+  if(!z.need)return `<li class="mat leaf"><div class="row"><span class="nm">${n}${ft} <em>×${f(z.all)}</em></span><span class="leafp"><span class="lk ok">보유로 충분해요</span></span></div></li>`;
+  const A=z.p?z.p*z.need:null,C=z.sub&&!z.sub.miss?z.sub.tot:null;
+  if(A!=null&&C!=null&&C<A){const per=v=>`<span class="unit">개당 ${fg(Math.round(v/z.need))}</span>`;
+   return `<li class="mat"><div class="row"><span class="nm">${n}${ft}${ow}</span><span class="qty">×${f(z.need)}</span></div><div class="cmp"><div class="cell"><div class="ck"><span>경매장</span></div><div class="cv">${tg(A)}</div>${per(A)}</div><div class="cell win"><div class="ck"><span>하위 재료</span><span class="badge">추천</span></div><div class="cv">${tg(C)}</div>${per(C)}</div></div>${z.via==='코인'?`<div class="diff">구슬 교환이 ${fg(Math.round(z.cg))}로 더 싸요</div>`:`<div class="diff">하위가 ${fg(Math.round(A-C))} 저렴</div>`}</li>`}
+  const lk=z.via==='코인'?'구슬':z.via==='제작'?'하위 재료':z.via==='구매'?'경매':'';const v=z.miss?'<span class="na">시세 없음</span>':`<span class="g">${tg(z.best)}</span>`;
+  return `<li class="mat leaf"><div class="row"><span class="nm">${n}${ft}${ow} <em>×${f(z.need)}</em></span><span class="leafp">${lk&&!z.miss?`<span class="lk">${lk}</span>`:''}${v}</span></div></li>`}).join('');
+ return {html:`<div class="sec"><h3>재료별 비교 · 필요분 합계</h3><ul class="mats">${rows}</ul></div>`,auc:hasAuc?auc:null}}
+function tipCard(o){// o:{n,kind,sub,all,own,need,p,cn,cg,craft:{tot,miss},kids:[[c,z]],notes,foot}
+ const H=[`<div class="hd"><h2>${o.n}</h2><span class="tag">${o.kind}</span></div>`];if(o.sub)H.push(`<div class="sub">${o.sub}</div>`);
+ H.push(`<div class="stats"><div class="st"><span class="k">필요</span><span class="v">${f(o.all)}</span></div><div class="st"><span class="k">보유</span><span class="v">${f(Math.min(o.own,o.all))}</span></div><div class="st${o.need?' short':' done'}"><span class="k">부족</span><span class="v">${f(o.need)}</span></div></div>`);
+ (o.notes||[]).forEach(x=>H.push(`<div class="note">${x}</div>`));
+ const K=o.kids?tipKids(o.kids):null;const A=o.p&&o.need?o.p*o.need:null,C=o.craft&&!o.craft.miss?o.craft.tot:null,B=o.cg!=null&&o.need?o.cg:null;
+ if(!o.need)H.push(`<div class="rec"><div class="verdict">이미 다 모았어요</div></div>`);
+ else{const op=[];if(A!=null||o.craft)op.push(['경매장에서 '+(o.craft?'완성품':'구매'),A,'A']);if(B!=null)op.push(['구슬 교환',B,'B']);if(o.craft)op.push(['하위 재료로 제작',C,'C']);
+  const ok=op.filter(x=>x[1]!=null).sort((a,b)=>a[1]-b[1]);const best=ok[0];
+  let vd,sv='';if(!best)vd=o.craft?`시세 없는 하위 재료가 ${o.craft.miss}종 있어서 비교가 어려워요`:'경매장 매물이 없어요';
+  else{vd=best[2]==='C'?'하위 재료를 사서 만드세요':best[2]==='B'?'구슬로 교환하세요':o.craft?'경매장에서 완성품을 사세요':'경매장에서 사세요';
+   if(ok[1])sv=best[2]==='A'&&ok[1][2]==='C'?`경매가 ${fg(Math.round(ok[1][1]-best[1]))} 더 저렴해요`:`${fg(Math.round(ok[1][1]-best[1]))} 더 저렴해요`;
+   else if(o.craft&&A==null)sv='경매장 매물이 없어서 직접 만들어야 해요';else if(o.craft&&C==null)sv=`하위 시세 ${o.craft.miss}종이 없어서 경매가만 볼 수 있어요`}
+  const cells=op.map(([l,v,k])=>`<div class="opt${best&&k===best[2]&&ok.length>1?' pick':''}"><span class="ok">${l}${best&&k===best[2]&&ok.length>1?'<span class="badge">추천</span>':''}</span><span class="ov">${v!=null?tg(v):'<span class="na">매물 없음</span>'}</span></div>`).join('');
+  let ex='';if(o.craft&&K&&K.auc!=null&&C!=null&&Math.round(K.auc)!==Math.round(C)){const d=A!=null?K.auc-A:0;ex=`<div class="ex">1단계 재료를 다 경매로 사면 ${fg(Math.round(K.auc))}${A!=null?(d>0?` · 완성품보다 ${fg(Math.round(d))} 비싸요`:d<0?` · 완성품보다 ${fg(Math.round(-d))} 싸요`:''):''}</div>`}
+  H.push(`<div class="rec">${best&&ok.length>1?'<div class="lab">추천</div>':''}<div class="verdict">${vd}</div>${op.length?`<div class="opts${op.length>2?' o3':''}">${cells}</div>`:''}${sv?`<div class="save">${sv}</div>`:''}${ex}</div>`)}
+ if(K)H.push(K.html);if(o.foot)H.push(`<div class="foot">${o.foot}</div>`);return H.join('')}
+function tip(c,z,kind,q){const [n,,r,fz,ps,S]=c;const own=+st.own[n]||0;const notes=[];
+ if(ps)notes.push(`공정 1회당 <b>×${f(ps)}</b> · <b>${S}회 공정</b>${q>1?` · ${q}개`:''} 기준이라 <b>${f(z.all)}</b>개 필요해요`);
+ else if(fz)notes.push(`마감 1회분 <b>×${f(z.all/(q||1))}</b>${q>1?` × ${q}개`:''} (공정 횟수와 상관없어요)`);
+ if(z.p&&z.need&&!(r&&z.need===1))notes.push(`경매장 개당 <b>${tg(z.p)}</b>${P[n]&&P[n].count?` · 매물 ${f(P[n].count)}`:''}`);
+ if(z.cn)notes.push(`구슬 ${z.cn.shop} 개당 ${z.cn.cost}개${z.cn.g!=null?` ≈ ${tg(z.cn.g)}`:' · 구슬 시세 없음'}`);
+ const o=r?(r.out||1):1;
+ return tipCard({n,kind,all:z.all,own,need:z.need,p:z.p,cg:z.cg,notes,
+  sub:r?`${r.skill||'제작'} · ${z.need?(o>1?`${z.sub.runs}회 제작 (1회 ${o}개)`:`${f(z.need)}개 제작`):'보유로 충분해요'}`:(kind==='채집'?'직접 모으는 재료예요':''),
+  craft:r&&z.sub?{tot:z.sub.tot,miss:z.sub.miss}:null,kids:r&&z.sub?r.c.map(x=>[x,nodeCost(x,z.sub.runs)]):null,foot:r?'클릭하면 펼치기/접기':''})}
+(()=>{const s=document.createElement('style');s.textContent=`#rcTip{position:fixed;z-index:9999;display:none;pointer-events:none;width:480px;max-width:calc(100vw - 12px);background:#161326;color:#ece8ff;border:1px solid rgba(247,217,139,.42);border-radius:14px;padding:14px 16px 10px;box-shadow:0 12px 36px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.03) inset;font:500 14px/1.45 'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;text-align:left;font-variant-numeric:tabular-nums}
+#rcTip img{width:1.05em;height:1.05em;vertical-align:-.17em;margin-right:2px}
+#rcTip .hd{display:flex!important;align-items:flex-start;justify-content:space-between;gap:10px}#rcTip h2{font-size:17px;font-weight:800;color:#f7d98b;letter-spacing:-.02em;line-height:1.3;margin:0}
+#rcTip .tag{flex:none;font-size:12px;font-weight:700;color:#1a1530;background:linear-gradient(90deg,#c9a24a,#f7d98b);border:0;border-radius:999px;padding:2px 8px;margin-top:2px}
+#rcTip .sub{font-size:13px;color:#a9a2d6;margin:2px 0 0}
+#rcTip .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0 10px}#rcTip .st{background:rgba(255,255,255,.045);border:1px solid rgba(247,217,139,.18);border-radius:10px;padding:5px 6px 6px;text-align:center}
+#rcTip .st .k{display:block;font-size:11.5px;color:#a9a2d6}#rcTip .st .v{display:block;font-size:17px;font-weight:800}#rcTip .st.short{background:rgba(243,154,154,.10);border-color:rgba(243,154,154,.38)}#rcTip .st.short .v{color:#f39a9a}#rcTip .st.done .v{color:#7fd99a}
+#rcTip .note{font-size:12.5px;color:#c9c3ea;margin:0 0 6px}#rcTip .note b{color:#ece8ff}
+#rcTip .rec{background:linear-gradient(180deg,rgba(247,217,139,.16),rgba(247,217,139,.07));border:1px solid rgba(247,217,139,.42);border-radius:12px;padding:10px 12px 11px;margin:4px 0 0}#rcTip .rec+.sec{margin-top:12px}
+#rcTip .lab{font-size:11.5px;font-weight:700;color:#f7d98b;letter-spacing:.06em}#rcTip .verdict{font-size:16px;font-weight:800;color:#f7d98b;letter-spacing:-.02em;line-height:1.3}
+#rcTip .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}#rcTip .opts.o3{grid-template-columns:1fr 1fr 1fr}
+#rcTip .opt{background:rgba(11,9,24,.45);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:7px 10px 8px}#rcTip .opt.pick{background:rgba(247,217,139,.12);border-color:rgba(247,217,139,.48)}
+#rcTip .opt .ok{display:block;font-size:11.5px;color:#a9a2d6;margin-bottom:2px}#rcTip .opt.pick .ok{color:#f7d98b}#rcTip .opt .ov{display:block;font-size:15px;font-weight:800;white-space:nowrap;color:#d8d3f0}#rcTip .opt.pick .ov{color:#f7d98b}
+#rcTip .badge{display:inline-block;margin-left:5px;font-size:10.5px;font-weight:800;color:#1a1530;background:#f7d98b;border-radius:999px;padding:1px 6px;vertical-align:1px}
+#rcTip .save{margin-top:8px;text-align:center;font-size:13px;font-weight:700;color:#7fd99a}#rcTip .ex{margin-top:4px;text-align:center;font-size:12px;color:#a9a2d6}
+#rcTip .sec{padding-top:10px;border-top:1px solid rgba(247,217,139,.18)}#rcTip h3{font-size:11.5px;font-weight:700;color:#a9a2d6;letter-spacing:.04em;margin:0 0 4px}
+#rcTip .mats{list-style:none;margin:0;padding:0}#rcTip .mat{padding:7px 0 8px;border-bottom:1px solid rgba(255,255,255,.06)}#rcTip .mat:last-child{border-bottom:0;padding-bottom:2px}#rcTip .mat.leaf{padding:5px 0}
+#rcTip .row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:4px;width:auto;padding-top:0;position:static;contain:none;transition:none}#rcTip .leaf .row{margin-bottom:0;align-items:center}
+#rcTip .nm{font-weight:600;font-size:14px;line-height:1.35}#rcTip .nm em{font-style:normal;font-weight:800;color:#f7d98b;margin-left:6px}#rcTip .nm small{font-size:11px;color:#8a84b8;font-weight:500}
+#rcTip .mt{font-size:10.5px;color:#ffb74d;border:1px solid #ffb74d55;border-radius:4px;padding:0 4px;margin-left:5px;vertical-align:1px}
+#rcTip .qty{flex:none;font-weight:800;color:#f7d98b;white-space:nowrap}
+#rcTip .leafp{display:flex;align-items:center;gap:8px;flex:none;white-space:nowrap}#rcTip .lk{font-size:11.5px;font-weight:600;color:#a9a2d6}#rcTip .lk.ok{color:#7fd99a}#rcTip .leafp .g{font-weight:700}#rcTip .na{color:#8f8aa8;font-weight:600;font-size:13px}
+#rcTip .cmp{display:grid;grid-template-columns:1fr 1fr;gap:6px}#rcTip .cell{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:5px 8px 6px}#rcTip .cell.win{background:rgba(247,217,139,.10);border-color:rgba(247,217,139,.40)}
+#rcTip .ck{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:600;color:#a9a2d6}#rcTip .cell.win .ck{color:#f7d98b}
+#rcTip .cv{font-size:14px;font-weight:700;white-space:nowrap;color:#d4d0ea}#rcTip .cell.win .cv{color:#f7d98b;font-weight:800}#rcTip .unit{display:block;font-size:11px;color:#8a84b8}
+#rcTip .diff{margin-top:4px;font-size:12px;font-weight:700;color:#7fd99a;text-align:right}
+#rcTip .foot{margin-top:8px;padding-top:7px;border-top:1px solid rgba(247,217,139,.16);font-size:12px;color:#8a84b8;text-align:center}`;document.head.appendChild(s);
+ const t=document.createElement('div');t.id='rcTip';document.body.appendChild(t);
  document.addEventListener('mouseover',e=>{const b=e.target.closest&&e.target.closest('[data-rc]');if(!b){t.style.display='none';return}t.innerHTML=b.dataset.rc;t.style.display='block'});
- document.addEventListener('mousemove',e=>{if(t.style.display==='none')return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.min(e.clientX+14,innerWidth-w-6)+'px';t.style.top=(e.clientY+h+20>innerHeight?e.clientY-h-10:e.clientY+16)+'px'})})();
+ document.addEventListener('mousemove',e=>{if(t.style.display==='none')return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(6,Math.min(e.clientX+14,innerWidth-w-6))+'px';t.style.top=Math.max(6,e.clientY+h+20>innerHeight?e.clientY-h-10:e.clientY+16)+'px'})})();
 const AVG=R=>Math.ceil(100/R.pct);const stepsOf=R=>R.pct?Math.max(1,+(st.steps||{})[R.n]||AVG(R)):1;
 const matsOf=R=>{const s=stepsOf(R);return R.c.map(c=>[c[0],c[1]*s,c[2],0,R.pct?c[1]:0,s]).concat(((R.fin||[])[0]||[]).map(x=>[x[0],x[1],null,1]))};
 function render(){const R=RECIPES[gi()],q=st.qty,M=matsOf(R),S=stepsOf(R);const root=$('root');
@@ -44,7 +97,7 @@ function render(){const R=RECIPES[gi()],q=st.qty,M=matsOf(R),S=stepsOf(R);const 
   const el=card(id,(r?'craft':'')+(open?' open':'')+((+st.own[n]||0)>=z.all&&z.all>0?' done':''),bal(n,z.all,+st.own[n]||0,kind,(ps?`<small style="opacity:.65;margin-left:4px">${f(ps)}×${S}회</small>`:'')+(r?`<span class="chev">${open?'▾':'▸'}</span>`:'')+(fz?'<span class="tag" style="color:#ffb74d;border-color:#ffb74d55;margin-left:4px">마감재</span>':''),z),'');el.dataset.rc=tip(c,z,fz?'마감재':kind,mult);
   el.dataset.dep=dep;const nd={id,el,open,dep,craft:!!r,col:BC[bi%BC.length],kids:open?r.c.map(x=>mk(x,z.sub.runs,id,dep+1,bi)):null};
   if(r)el.onclick=()=>toggle(id,el);return nd};
- const g=card('G','goal craft'+((+st.own[R.n]||0)>=q&&q>0?' done':''),bal(R.n,q,+st.own[R.n]||0,'제작',`<small style="margin-left:8px;font-size:13px;color:${gp?'#f7d98b':'#8f8aa8'};white-space:nowrap" title="경매장 최저가">경매장 ${gp?'<img src="/assets/icons/2x/2000.png" alt="G" style="width:1.1em;height:1.1em;vertical-align:-.2em;margin-right:1px">'+fg(gp)+'':'매물 없음'}</small><span class="chev">${st.closed?'▸':'▾'}</span>`),'');g.dataset.rc=`<b>${R.n}</b> ×${q}<br>현재 경매가 ${gp?`<b>${fg(gp)}</b>`:'—'} · 최저 재료비 <b>${fg(tot)}</b>${R.pct?`<br><b>${S}회 공정</b> 기준 (1단계 재료 = 1회분 × ${S})`:''}<hr style="border:0;border-top:1px solid #fff2;margin:4px 0">`+rcTip(R.n,{skill:R.skill,out:1,c:R.c})+(R.pct?`<br><small>↑ 공정 1회분 수량</small>`:'');
+ const g=card('G','goal craft'+((+st.own[R.n]||0)>=q&&q>0?' done':''),bal(R.n,q,+st.own[R.n]||0,'제작',`<small style="margin-left:8px;font-size:13px;color:${gp?'#f7d98b':'#8f8aa8'};white-space:nowrap" title="경매장 최저가">경매장 ${gp?'<img src="/assets/icons/2x/2000.png" alt="G" style="width:1.1em;height:1.1em;vertical-align:-.2em;margin-right:1px">'+fg(gp)+'':'매물 없음'}</small><span class="chev">${st.closed?'▸':'▾'}</span>`),'');{const gown=+st.own[R.n]||0;const gn=Math.max(0,q-gown);g.dataset.rc=tipCard({n:R.n,kind:'목표',sub:`${R.skill||'제작'} · ${q}개 목표${R.pct?` · ${S}회 공정 기준`:''}`,all:q,own:gown,need:gn,p:gp,craft:{tot,miss},kids:M.map(c=>[c,nodeCost(c,q)]),notes:R.pct?[`1단계 재료 = 공정 1회분 × <b>${S}회</b>로 잡았어요`]:[],foot:'클릭하면 전체 펼치기/접기'})}
  g.onclick=()=>{st.closed=!st.closed;save();render()};
  const kids=st.closed?[]:M.map((c,i)=>{const k=mk(c,q,'',1,i);return k});
  const paint=(n)=>{n.el.style.borderColor=n.col;n.el.style.boxShadow='inset 3px 0 0 '+n.col;n.el.style.setProperty('--ac',n.col);(n.kids||[]).forEach(paint)};kids.forEach(paint);

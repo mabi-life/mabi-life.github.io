@@ -40,7 +40,7 @@ if(typeof S.buff==='number'&&!S.buffMig){if(S.buff>=2&&!S.paea){const t=Date.now
 if(S.paea&&!paeaOn())S.paea=null;
 const AVOID_DEF='안 할 알바 (직접 접음)';const avT=j=>j.avoid?`<span class="tag av" title="안 함: ${j.avoid} (다시 보기·우클릭으로 해제)">안 함</span>`:'';
 function togAvoid(id){const j=S.jobs.find(x=>x.id===id);if(!j)return;const d=DATA.find(x=>x.id===id);change(()=>j.avoid=j.avoid?'':((d&&d.avoid)||AVOID_DEF),j.npc+(j.avoid?' 다시 보기':' 안 함으로 접음 (Ctrl+Z)'))}
-let undo=[],openId=null,edit=false,openGrp={};
+let undo=[],openId=null,edit=false,openGrp={};/*openGrp: 펼치기·편집 중 임시 접기/열기 (저장 안 함). 평소 열림 상태는 S.grpOpen에 저장*/
 const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
 function change(fn,msg){undo.push(JSON.stringify(S));if(undo.length>100)undo.shift();fn();save();render();if(msg)toast(msg)}
 function doUndo(){if(!undo.length)return toast('되돌릴 것 없음');S=JSON.parse(undo.pop());save();render();toast('되돌림')}
@@ -132,7 +132,8 @@ function render(){const B=budget(),c=ch(),ids=expandedSet(B),f=focus(c,ids);
  const plan=seqPlan(c,B),star=j=>`<button class="star${j.fav?' on':''}" data-fav="${j.id}" title="${j.fav?'즐겨찾기 해제':'즐겨찾기'} (같은 종류·시간대에서 우선)">${j.fav?'★':'☆'}</button>`;
  let html='',grp=[];
  const thin=j=>{const b=best(j,B),dn=c.done.includes(j.id);return `<tr class="job thin${dn?' done':''}" data-open="${j.id}"><td class="tm">${star(j)}${j.start?j.start+'–'+(j.end||''):'—'}${repH(j)}${miniBar(j)}</td><td>${j.village}${!isUla(j)?' <span class="tag">울라 밖</span>':''}</td><td>${npcH(j)}${avT(j)}</td><td>${b?b.r.item+hotIcon(b.r):''}${b?'':'<span class="tag">가격 미상</span>'}</td><td class="n gold">${b?'+'+fmt(b.g):''}</td><td class="ac">${j.avoid?`<button class="tg unhide" data-avoid="${j.id}" title="다시 보기 (순서에 다시 포함)">다시 보기</button>`:`<button class="chk${dn?' on':''}" data-done="${j.id}">${dn?'✓':''}</button>`}</td></tr>`+(openId===j.id?detail(j,B):'')};
- const fold=(k,lab,L)=>{if(!L.length)return;if(S.showAll||edit||openGrp[k])html+=L.map(thin).join('');else html+=`<tr class="grp" data-grp="${k}"><td colspan="6">▸ ${lab} ${L.length}개 <span style="opacity:.7">· ${L.slice(0,8).map(j=>j.npc).join(', ')}${L.length>8?' …':''}</span></td></tr>`};
+ const grpOn=k=>(S.showAll||edit)?openGrp[k]!==0:!!(S.grpOpen&&S.grpOpen[k]);
+ const fold=(k,lab,L)=>{if(!L.length)return;const o=grpOn(k);html+=`<tr class="grp${o?' open':''}" data-grp="${k}" aria-expanded="${o}" title="${o?'눌러서 접기':'눌러서 펼치기'}"><td colspan="6"><span class="ga">${o?'▾':'▸'}</span> ${lab} ${L.length}개${o?'':` <span style="opacity:.7">· ${L.slice(0,8).map(j=>j.npc).join(', ')}${L.length>8?' …':''}</span>`}</td></tr>`;if(o)html+=L.map(j=>thin(j).replace('<tr class="job thin','<tr class="job thin gin')).join('')};
  plan.forEach((x,i)=>{const j=x.j,b=best(j,B),isF=i===0;
   if(x.gap>0)html+=`<tr class="gapr"><td colspan="6">⏳ 빈 시간 에린 ${hm(((x.acc-x.gap)%1440+1440)%1440)}–${hm(x.acc%1440)} (현실 ${Math.round(x.gap*1.5/60)}분)</td></tr>`;
   const left=x.end-x.now,urg=left>0&&left<=60,rm=Math.round((x.rep-x.now)*1.5/60),lab=isF?(x.acc===x.now?'지금':'다음 '+Math.ceil((x.acc-x.now)*1.5/60)+'분 후'):'';
@@ -202,7 +203,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-buff],[dat
  if(d.fri)return change(()=>{const v=!isFri();S.friOv=v===isFriAuto()?null:{d:kstKey(),v}});
  if(d.paea)return change(()=>{if(paeaOn())S.paea=null;else{const t=Date.now();S.paea={start:t,exp:t+DAY7}}},paeaOn()?'파에아 해제':'파에아 7일 활성 — 서버 게이지 100% 후 7일, 캐릭터창 아르바이트 탭 확인');
  if(d.done){e.stopPropagation();return change(()=>{const c=ch(),i=c.done.indexOf(d.done);i<0?(c.done.push(d.done),winOnDone(c,d.done)):c.done.splice(i,1)})}
- if(d.grp){openGrp[d.grp]=1;return render()}
+ if(d.grp){const k=d.grp;if(S.showAll||edit)openGrp[k]=openGrp[k]===0?1:0;else{S.grpOpen=Object.assign({},S.grpOpen);S.grpOpen[k]=S.grpOpen[k]?0:1;save()}return render()}
  if(d.del){openId=null;return change(()=>S.jobs=S.jobs.filter(j=>j.id!==d.del),'삭제됨 (Ctrl+Z)')}
  if(d.delr)return change(()=>S.jobs.forEach(j=>j.rewards=j.rewards.filter(r=>r.id!==d.delr)));
  if(d.addr)return change(()=>S.jobs.find(j=>j.id===d.addr).rewards.push({id:d.addr+':u'+Date.now(),item:'새 보상',en:'',qty:1,pts:60,price:null,api:'',apiPrice:null,useApi:false,max:0,flags:[]}));
@@ -212,9 +213,9 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-buff],[dat
  if(d.open&&!e.target.closest('input')){openId=openId===d.open?null:d.open;return render()}
  const pop=(id,o)=>{['#pSet','#pPrice','#pCombo','#pGrade'].forEach(p=>$(p).classList.toggle('hid',p!==id||!o))};
  switch(t.id){case'bSet':pop('#pSet',$('#pSet').classList.contains('hid'));renderSet();break;case'bPrice':pop('#pPrice',$('#pPrice').classList.contains('hid'));renderPrice();break;
- case'bGrade':pop('#pGrade',$('#pGrade').classList.contains('hid'));renderGrade();break;case'bCombo':pop('#pCombo',$('#pCombo').classList.contains('hid'));renderCombo();break;case'bAll':change(()=>S.showAll=!S.showAll);break;
+ case'bGrade':pop('#pGrade',$('#pGrade').classList.contains('hid'));renderGrade();break;case'bCombo':pop('#pCombo',$('#pCombo').classList.contains('hid'));renderCombo();break;case'bAll':openGrp={};change(()=>S.showAll=!S.showAll);break;
  case'bUla':change(()=>S.seqAll=!S.seqAll,S.seqAll?'울라만':'전체 대륙');break;case'bAuto':if(!(S.manualSeq&&S.manualSeq.length))return toast('이미 자동 순서');change(()=>S.manualSeq=[],'자동 순서로');break;case'bFav':change(()=>S.favOnly=!S.favOnly,S.favOnly?'전체 보기':'★ 즐겨찾기만');break;
- case'bUndo':doUndo();break;case'bEdit':edit=!edit;render();break;case'bFetch':fetchPrices();break;
+ case'bUndo':doUndo();break;case'bEdit':edit=!edit;openGrp={};render();break;case'bFetch':fetchPrices();break;
  case'bAdd':change(()=>S.jobs.push({id:'u'+Date.now(),npc:'새 NPC',npcEn:'',village:'',type:'',start:'',end:'',report:'',note:'',rewards:[]}));break;
  case'bV1':try{const o=JSON.parse(localStorage.getItem(V1KEY));change(()=>S=oneChar(importV1(o)),'v1 데이터 가져옴')}catch(_){toast('v1 데이터 없음')}break;
  case'bExp':{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download='알바도우미_'+gameDay()+'.json';a.click();break}

@@ -1,6 +1,6 @@
 /* 물교 플래너 확장 — 기존 app.js는 그대로 두고 그 위에
    운송수단 선택·그랜마/덮개·추천 방식·회차 버튼·회차별 편집(드래그 포함)을 얹는다. */
-import { CARRIERS as PC, capacity, recommendTrips, tripTotals, weeklyWarnings, applyTripEdit, unassigned, moveItem, setTripQty } from './core/planner.mjs?v=4';
+import { CARRIERS as PC, capacity, recommendTrips, tripTotals, weeklyWarnings, applyTripEdit, unassigned, moveItem, setTripQty, parkedMap, parkItem, parkLeft, unparkItem, placeLeft } from './core/planner.mjs?v=5';
 
 const ALLR = { id: 'all', name: '페라 → 칼리다 → 카루숲 → 오아시스 → 셀라·콘누스 항구', posts: ['페라', '칼리다', '카루숲', '오아시스'] };
 const ROUTE_IDS = ['pk', 'ko'];
@@ -18,7 +18,11 @@ const syncCap = () => { const c = cap(); S.cw = c.weight; S.cs = c.slots; };
 const scopeRoutes = () => pv().scope === 'all' ? [ALLR] : D.routes.filter(r => ROUTE_IDS.includes(r.id));
 const routeById = id => id === 'all' ? ALLR : D.routes.find(r => r.id === id);
 const minTierNow = () => pv().mode === 'high_tier' ? (+pv().minTier || 0) : 0; // high_then_low ignores minTier
-const qtyMapOf = r => Object.fromEntries(routeGoods(r).map(g => [g.id, qtyOf(g)]));
+/* 방치물품: plans[routeId].parked = [{goodsId, qty}] — 회차·남은 교환·추천·재료 체크에서 빠짐 */
+const parkOf = id => parkedMap((pv().plans[id] || {}).parked);
+const qtyMapOf = r => { const pk = parkOf(r.id); return Object.fromEntries(routeGoods(r).map(g => [g.id, Math.max(0, qtyOf(g) - (pk[g.id] || 0))])); };
+// app.js 재료 체크(matNeed·matsLeft)용 훅: 지금 보이는 범위(루트별 = 두 루트, 전체 순회 = all)의 방치 수량
+parkedOf = g => { const ids = pv().scope === 'all' ? ['all'] : ROUTE_IDS; let s = 0; for (const id of ids) s += parkOf(id)[g.id] || 0; return s; };
 const fpOf = r => { const c = cap(); return JSON.stringify({ c: [c.slots, c.weight], m: pv().mode, t: minTierNow(), g: routeGoods(r).map(g => [g.id, qtyOf(g)]) }); };
 const copyItems = items => (items || []).map(x => ({ goodsId: +x.goodsId, qty: +x.qty }));
 
@@ -29,7 +33,8 @@ function ensurePlan(r) {
   const p = pv(), f = fpOf(r), P = p.plans[r.id];
   if (!P || (P.fp !== f && !P.trips.some(t => t.customized))) {
     const rec = freshRec(r);
-    p.plans[r.id] = { fp: f, note: rec.note, rec: rec.trips.map(t => ({ items: copyItems(t.items) })), trips: rec.trips.map(t => ({ items: copyItems(t.items), customized: false })) };
+    const parked = P && P.parked ? P.parked : [];
+    p.plans[r.id] = { fp: f, note: rec.note, parked, rec: rec.trips.map(t => ({ items: copyItems(t.items) })), trips: rec.trips.map(t => ({ items: copyItems(t.items), customized: false })) };
     if (P) saveSoon();
   }
   return p.plans[r.id];
@@ -102,7 +107,7 @@ function tripCard(r, P, t, i, c, cum) {
     const exBtn = fin
       ? `<button class="sm dong" data-a="unex" data-g="${g.id}" data-n="${off}" title="완료 해제 · 재료 복원">✔ 완료</button>`
       : `<button class="sm" data-a="ex" data-g="${g.id}" data-n="${off + l.qty}" title="이 회차 수량 교환완료 + 재료 차감">✔ 완료</button>`;
-    return `<tr class="pvItem${fin ? ' done fin' : ''}" data-r="${r.id}" data-i="${i}" data-g="${g.id}" title="끌어서 다른 회차로 옮기거나 순서를 바꿀 수 있어요"><td class="pvHd" aria-label="끌어서 옮기기">⠿</td><td><span class="t t${g.tier || 0}">${g.tier ? 'T' + g.tier : '—'}</span></td><td>${esc(g.post)}</td><td class="gnm" title="${esc(g.name)}">${iconHtml(g.name)}${esc(g.name)}${fin ? ' <span class="dbadge">완료</span>' : ''}${off6 ? ' <span class="warn" title="이번 시즌 선택된 6티어가 아님">비활성</span>' : ''}</td>
+    return `<tr class="pvItem${fin ? ' done fin' : ''}" data-r="${r.id}" data-i="${i}" data-g="${g.id}" title="줄을 끌어서 다른 회차로 옮기거나 순서를 바꿀 수 있어요 · 아래 「방치물품」에 놓으면 이번 주는 안 해요"><td><span class="t t${g.tier || 0}">${g.tier ? 'T' + g.tier : '—'}</span></td><td>${esc(g.post)}</td><td class="gnm" title="${esc(g.name)}">${iconHtml(g.name)}${esc(g.name)}${fin ? ' <span class="dbadge">완료</span>' : ''}${off6 ? ' <span class="warn" title="이번 시즌 선택된 6티어가 아님">비활성</span>' : ''}</td>
       <td class="r pvQc" title="${esc(`전체 회차 합계 ${allOf(P, g.id)} / 주간수량 ${qtyOf(g)}`)}"><input class="n pvQ" data-pv="qty" data-r="${r.id}" data-i="${i}" data-g="${g.id}" value="${l.qty}" inputmode="numeric" aria-label="${esc(g.name)} 이번 회차 수량 (주간수량 ${qtyOf(g)})"${fin ? ' disabled' : ''}><span class="pvMax">/ ${qtyOf(g)}</span></td>
       <td class="r${fin ? ' mut' : ''}">${fmt(l.weight)}</td><td class="r${fin ? ' mut' : ''}">${l.slots}</td>
       <td style="white-space:nowrap">${exBtn} <button class="ghost sm" data-pv="del" data-r="${r.id}" data-i="${i}" data-g="${g.id}" title="이 회차에서 빼기" aria-label="${esc(g.name)} 빼기">✕</button></td></tr>`;
@@ -124,12 +129,18 @@ function tripCard(r, P, t, i, c, cum) {
   return `<article class="pvTrip${warns.length ? ' over' : ''}${t.customized ? ' edited' : ''}" data-trip="${i}" data-r="${r.id}">
     <div class="pvTh"><h4>${i + 1}회차 <span class="pvPosts">${posts.length ? esc(posts.join(' → ')) : '비어 있음'}</span>${t.customized ? '<span class="pvEd">✏️ 편집됨</span>' : '<span class="pvRec">추천</span>'}</h4>
       <span>${t.customized && hasRec ? `<button class="ghost sm" data-pv="reset" data-r="${r.id}" data-i="${i}">↺ 추천으로 되돌리기</button>` : ''}${!hasRec ? `<button class="ghost sm" data-pv="dropTrip" data-r="${r.id}" data-i="${i}">회차 삭제</button>` : ''}</span></div>
-    ${rows ? `<table class="rt pvT"><tr><th></th><th>티어</th><th>교역소</th><th>품목</th><th class="r pvQh">이번회차 / 주간수량</th><th class="r">무게</th><th class="r">슬롯</th><th>교환</th></tr>${rows}</table>` : '<div class="mut" style="margin:8px 0">담긴 품목이 없어요. 아래에서 추가하세요.</div>'}
+    ${rows ? `<table class="rt pvT"><tr><th>티어</th><th>교역소</th><th>품목</th><th class="r pvQh">이번회차 / 주간수량</th><th class="r">무게</th><th class="r">슬롯</th><th>교환</th></tr>${rows}</table>` : '<div class="mut" style="margin:8px 0">담긴 품목이 없어요. 아래에서 추가하세요.</div>'}
     <div class="pvAdd">${cands.length ? `${addSel}<input class="n" id="pvAddQ_${r.id}_${i}" placeholder="수량" inputmode="numeric" aria-label="추가 수량"><button class="sm" data-pv="add" data-r="${r.id}" data-i="${i}">＋ 추가</button>` : '<span class="mut">추가할 품목 없음</span>'}</div>
     <div class="esum"><span>무게 <b class="${ow > 0 ? 'neg' : ''}">${fmt(tot.weight)} / ${fmt(c.weight)}</b></span><span>슬롯 <b class="${os > 0 ? 'neg' : ''}">${tot.slots} / ${c.slots}</b></span><span>재료비 <b class="neg">${gk(cost)}</b>${unk ? '<span class="warn">+?</span>' : ''}</span></div>
     ${warns.length ? `<div class="pvWarn">${warns.join(' · ')} <small>— 편집한 수량은 그대로 두었어요. 직접 줄이거나 다른 회차로 옮겨 주세요.</small></div>` : ''}
     ${mats.length ? `<details class="pvMats"><summary>필요 재료 ${mats.length}종${short ? ` <span class="neg">· 누적 기준 부족 ${short}종</span>` : ''}</summary><div class="pvMl">${matRows}</div></details>` : ''}
   </article>`;
+}
+
+function parkHtml(r, pk) {
+  const chips = pk.sort((a, b) => (b.g.tier || 0) - (a.g.tier || 0)).map(({ g, q }) => `<span class="pvChip pvPk" data-r="${r.id}" data-g="${g.id}" title="끌어서 회차에 놓으면 다시 담겨요"><span class="t t${g.tier || 0}">${g.tier ? 'T' + g.tier : '—'}</span>${iconHtml(g.name)}${esc(g.name)} <b>×${q}</b><button class="pvPkX" data-pv="unpark" data-r="${r.id}" data-g="${g.id}" title="방치 해제 (회차에 안 담긴 교환으로)" aria-label="${esc(g.name)} 방치 해제">×</button></span>`).join('');
+  return `<section class="pvPark" data-r="${r.id}" aria-label="방치물품"><div class="pvPkH"><b>💤 방치물품</b><small>이번 주 안 할 품목 · 회차와 아래 재료 체크에서 빠져요</small></div>
+    <div class="pvPkL">${chips || '<span class="pvPkE">안 할 품목을 여기로 끌어다 놓으세요</span>'}</div></section>`;
 }
 
 function editorHtml() {
@@ -138,21 +149,23 @@ function editorHtml() {
   const r = routeById(tab), P = ensurePlan(r), c = cap();
   const ww = weeklyWarnings(P.trips, G);
   const un = unassigned(P.trips, routeGoods(r), qtyMapOf(r));
+  const pk = Object.entries(parkOf(r.id)).map(([id, q]) => ({ g: G[id], q })).filter(x => x.g);
   const cum = {};
   const tabs = p.scope === 'all' ? `<span class="pvTab on">${esc(ALLR.posts.join(' → '))}</span>` :
     rs.map(x => { const Q = ensurePlan(x); return `<button class="pvTab ${x.id === tab ? 'on' : ''}" data-pv="tab" data-r="${x.id}">${esc(x.posts.join(' → '))} <small>${Q.trips.length}회차${Q.trips.some(t => t.customized) ? ' · ✏️' : ''}${stale(x) ? ' · ⚠' : ''}</small></button>`; }).join('');
   const nEd = P.trips.filter(t => t.customized).length;
   const nOver = P.trips.filter(t => { const T = tripTotals(t.items, G); return T.weight > c.weight || T.slots > c.slots; }).length + (ww.over.length ? 1 : 0);
   return `<details class="pvEdit" id="pvEdit" aria-label="회차별 적재 편집"${UI.pvOpen ? ' open' : ''}>
-  <summary class="pvSum"><span class="pvArr" aria-hidden="true">▸</span><b>🧾 회차별 적재</b><span class="pvGuide">펼쳐서 품목을 직접 편집하실 수 있어요 · 줄을 끌어 다른 회차로 옮길 수도 있어요</span>
-    <span class="pvStat">${P.trips.length}회차${nEd ? ` · <span class="pvEd">✏️ 편집 ${nEd}</span>` : ''}${nOver || stale(r) ? ` · <span class="neg">⚠ 확인 ${nOver + (stale(r) ? 1 : 0)}</span>` : ''}</span></summary>
-  <div class="pvEh"><small class="mut">추천 → 직접 편집 · ⠿ 줄을 끌어 다른 회차 카드(또는 「＋ 회차 추가」)에 놓으면 옮겨지고, 같은 카드 안에서는 순서가 바뀌어요. 같은 품목이 있으면 수량이 합쳐져요. 위 루트 카드와 상세표에도 반영돼요.</small><div class="pvTabs">${tabs}</div></div>
+  <summary class="pvSum"><span class="pvArr" aria-hidden="true">▸</span><b>🧾 회차별 적재</b><span class="pvGuide">펼쳐서 품목을 직접 편집하실 수 있어요 · 줄을 잡아 끌면 다른 회차로 옮겨져요</span>
+    <span class="pvStat">${P.trips.length}회차${nEd ? ` · <span class="pvEd">✏️ 편집 ${nEd}</span>` : ''}${pk.length ? ` · <span class="pvPkN">방치 ${pk.length}종</span>` : ''}${nOver || stale(r) ? ` · <span class="neg">⚠ 확인 ${nOver + (stale(r) ? 1 : 0)}</span>` : ''}</span></summary>
+  <div class="pvEh"><small class="mut">추천 → 직접 편집 · 품목 줄을 그대로 잡아 다른 회차 카드(또는 「＋ 회차 추가」)에 놓으면 옮겨지고, 같은 카드 안에서는 순서가 바뀌어요. 같은 품목이 있으면 수량이 합쳐져요. 이번 주 안 할 품목은 아래 「방치물품」에 놓으면 재료 체크에서도 빠져요.</small><div class="pvTabs">${tabs}</div></div>
   ${stale(r) ? `<div class="pvStale">⚠ 운송·추천 설정이 바뀌었어요. 편집한 회차는 그대로 두고, 무게·슬롯·한도는 새 설정으로 다시 계산했어요. <button class="sm" data-pv="regen" data-r="${r.id}">이 루트 추천 다시 만들기</button></div>` : ''}
   ${ww.over.length ? `<div class="pvWarn">⚠ 주간 교환 한도 초과: ${ww.over.map(o => `${esc(o.name)} <b>${o.used}/${o.limit}</b>`).join(' · ')} <small>— 편집 내용은 유지돼요.</small></div>` : ''}
   <div class="pvGrid">${P.trips.map((t, i) => tripCard(r, P, t, i, c, cum)).join('')}
     <button class="pvNew" data-pv="addTrip" data-r="${r.id}">＋ 회차 추가</button></div>
-  ${un.length ? `<div class="pvUn"><b>회차에 안 담긴 교환</b> ${un.map(x => `<span class="pvChip"><span class="t t${x.tier}">${x.tier ? 'T' + x.tier : '—'}</span>${esc(x.name)} ×${x.left}</span>`).join('')}</div>` : '<div class="pvUn pos">이번 주 교환 수량이 모두 회차에 담겼어요.</div>'}
+  ${un.length ? `<div class="pvUn"><b>회차에 안 담긴 교환</b> ${un.map(x => `<span class="pvChip pvLf" data-r="${r.id}" data-g="${x.goodsId}" data-q="${x.left}" title="끌어서 회차나 「방치물품」에 놓을 수 있어요"><span class="t t${x.tier}">${x.tier ? 'T' + x.tier : '—'}</span>${esc(x.name)} ×${x.left}</span>`).join('')}</div>` : `<div class="pvUn pos">${pk.length ? '방치한 품목 말고는 모두 회차에 담겼어요.' : '이번 주 교환 수량이 모두 회차에 담겼어요.'}</div>`}
   <div class="pvFoot mut">${esc(P.note || '')}</div>
+  ${parkHtml(r, pk)}
 </details>`;
 }
 
@@ -270,6 +283,7 @@ document.addEventListener('click', e => {
     mut(() => { P.trips[i] = applyTripEdit(P.trips[i], { goodsId: gid, qty: q }); });
     return longToast(q0 > left ? `${G[gid].name}: 주간수량 안에서 남은 ${left}개만 추가했어요` : `${G[gid].name} ×${q} 추가`);
   }
+  if (k === 'unpark') { const P = P_(rid), gid = +b.dataset.g, res = unparkItem(P.trips, P.parked, { goodsId: gid }); if (!res.qty) return; mut(() => { pv().plans[rid].parked = res.parked; }); return longToast(`${G[gid].name} ${res.qty}개 방치 해제 → 「회차에 안 담긴 교환」`); }
   if (k === 'addTrip') { const P = P_(rid); return mut(() => { P.trips.push({ items: [], customized: true }); }, '회차 추가'); }
   if (k === 'dropTrip') {
     const P = P_(rid), go = () => mut(() => { P.trips.splice(i, 1); }, '회차 삭제');
@@ -287,7 +301,7 @@ document.addEventListener('click', e => {
   if (k === 'regen' || k === 'regenAll') {
     const ids = k === 'regen' ? [rid] : scopeRoutes().map(x => x.id);
     const edited = ids.some(id => (pv().plans[id] || { trips: [] }).trips.some(t => t.customized));
-    const go = () => mut(() => { for (const id of ids) delete pv().plans[id]; for (const id of ids) ensurePlan(routeById(id)); }, '추천을 다시 만들었어요');
+    const go = () => mut(() => { for (const id of ids) { const pk = (pv().plans[id] || {}).parked; delete pv().plans[id]; if (pk && pk.length) pv().plans[id] = { parked: pk, trips: [] }; } for (const id of ids) ensurePlan(routeById(id)); }, '추천을 다시 만들었어요');
     if (!edited) return go();
     return pvConfirm('현재 설정으로 추천을 다시 만들면 편집한 회차의 내용이 사라져요.', { title: '추천을 다시 만들까요?', ok: '다시 만들기', danger: true }).then(y => { if (y) go(); });
   }
@@ -332,7 +346,8 @@ function pvConfirm(msg, { title = '확인', ok = '확인', cancel = '취소', da
 
 document.addEventListener('toggle', e => { if (e.target && e.target.id === 'pvEdit') { UI.pvOpen = e.target.open; try { localStorage.setItem(UIK, JSON.stringify(UI)); } catch (x) {} } }, true);
 
-/* ---- 드래그로 회차 편집 (Pointer Events: 마우스·펜·터치). 터치는 ⠿ 손잡이 바로, 줄은 길게 눌러(0.35초) 시작 */
+/* ---- 드래그로 회차 편집 (Pointer Events: 마우스·펜·터치). 마우스는 줄 어디든 바로, 터치는 길게 눌러(0.35초) 시작.
+   끌 수 있는 것: 회차 줄(tr.pvItem) · 방치 칩(.pvPk) · 남은 교환 칩(.pvLf). 놓는 곳: 회차 카드 · 「＋ 회차 추가」 · 「방치물품」 */
 let drag = null, suppressClick = false, ghost = null, line = null;
 function dragCleanup() {
   ghost && ghost.remove(); line && line.remove(); ghost = line = null;
@@ -343,8 +358,8 @@ function startDrag(x, y) {
   drag.active = true; suppressClick = true;
   document.body.classList.add('pvDragging'); drag.row.classList.add('pvSrc');
   ghost = document.createElement('div'); ghost.className = 'pvGhost';
-  const q = drag.row.querySelector('input.pvQ'), nm = drag.row.querySelector('.gnm');
-  ghost.innerHTML = `${nm ? nm.innerHTML : ''} <b>×${q ? esc(q.value) : ''}</b>`;
+  const q = drag.row.querySelector('input.pvQ'), nm = drag.row.querySelector('.gnm'), g = G[drag.g];
+  ghost.innerHTML = drag.kind === 'row' ? `${nm ? nm.innerHTML : ''} <b>×${q ? esc(q.value) : ''}</b>` : `${g ? iconHtml(g.name) + esc(g.name) : ''} <b>×${drag.q}</b>`;
   line = document.createElement('div'); line.className = 'pvLine'; line.style.display = 'none';
   document.body.append(ghost, line); moveDrag(x, y);
 }
@@ -352,7 +367,7 @@ function moveDrag(x, y) {
   ghost.style.transform = `translate(${x + 14}px,${y + 10}px)`;
   document.querySelectorAll('.pvDrop').forEach(e => e.classList.remove('pvDrop'));
   const el = document.elementFromPoint(x, y);
-  const card = el && el.closest('.pvTrip[data-trip]'), nb = el && el.closest('.pvNew');
+  const card = el && el.closest('.pvTrip[data-trip]'), nb = el && el.closest('.pvNew'), pk = el && el.closest('.pvPark');
   drag.to = null; drag.idx = null; line.style.display = 'none';
   if (card && card.dataset.r === drag.r) {
     card.classList.add('pvDrop'); drag.to = +card.dataset.trip;
@@ -365,12 +380,25 @@ function moveDrag(x, y) {
       Object.assign(line.style, { display: 'block', left: tr.left + 'px', width: tr.width + 'px', top: (ref - 1) + 'px' });
     }
   } else if (nb && nb.dataset.r === drag.r) { nb.classList.add('pvDrop'); drag.to = 'new'; }
+  else if (pk && pk.dataset.r === drag.r && drag.kind !== 'park') { pk.classList.add('pvDrop'); drag.to = 'park'; }
   if (y < 90) scrollBy(0, -14); else if (y > innerHeight - 40) scrollBy(0, 14);
 }
 function finishDrag(ok) {
   const d = drag; drag = null; dragCleanup();
   if (!ok || !d || !d.active || d.to == null) return;
   const P = P_(d.r), to = d.to === 'new' ? P.trips.length : d.to;
+  const nm0 = (G[d.g] || {}).name || '';
+  if (d.to === 'park') {
+    if (d.kind === 'left') { const res = parkLeft(P.parked, { goodsId: d.g, qty: d.q }); if (!res.qty) return; return mut(() => { pv().plans[d.r].parked = res.parked; }, `${nm0} ${res.qty}개 → 방치물품`); }
+    if (d.row.classList.contains('fin')) return longToast(`${nm0}: 이미 교환을 끝낸 줄은 방치할 수 없어요`);
+    const res = parkItem(P.trips, P.parked, { from: d.i, goodsId: d.g }); if (!res.qty) return;
+    return mut(() => { pv().plans[d.r].trips = res.trips; pv().plans[d.r].parked = res.parked; }, `${nm0} ${res.qty}개 → 방치물품 · 재료 체크에서도 빠졌어요`);
+  }
+  if (d.kind === 'park') {
+    const res = unparkItem(P.trips, P.parked, { goodsId: d.g, to, index: d.idx }); if (!res.qty) return;
+    return mut(() => { pv().plans[d.r].trips = res.trips; pv().plans[d.r].parked = res.parked; }, `${nm0} ${res.qty}개 방치 해제 → ${to + 1}회차`);
+  }
+  if (d.kind === 'left') { const nt = placeLeft(P.trips, { goodsId: d.g, qty: d.q, to, index: d.idx }); if (nt === P.trips) return; return mut(() => { pv().plans[d.r].trips = nt; }, `${nm0} ×${d.q} → ${to + 1}회차`); }
   const merge = to !== d.i && P.trips[to] && P.trips[to].items.some(x => +x.goodsId === d.g);
   const nt = moveItem(P.trips, { from: d.i, goodsId: d.g, to, index: d.idx });
   if (nt === P.trips) return;
@@ -379,10 +407,11 @@ function finishDrag(ok) {
 }
 document.addEventListener('pointerdown', e => {
   if (e.pointerType === 'mouse' && e.button !== 0) return;
-  const row = e.target.closest && e.target.closest('tr.pvItem'); if (!row) return;
+  const row = e.target.closest && e.target.closest('tr.pvItem,.pvPk,.pvLf'); if (!row) return;
   if (e.target.closest('input,button,select,a,textarea')) return;
-  const onHandle = !!e.target.closest('.pvHd');
-  drag = { row, r: row.dataset.r, i: +row.dataset.i, g: +row.dataset.g, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, id: e.pointerId, active: false, ready: e.pointerType !== 'touch' || onHandle, timer: null };
+  const kind = row.matches('tr.pvItem') ? 'row' : row.matches('.pvPk') ? 'park' : 'left';
+  const q = kind === 'park' ? (parkOf(row.dataset.r)[+row.dataset.g] || 0) : +row.dataset.q || 0;
+  drag = { row, kind, q, r: row.dataset.r, i: kind === 'row' ? +row.dataset.i : -1, g: +row.dataset.g, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, id: e.pointerId, active: false, ready: e.pointerType !== 'touch', timer: null };
   if (e.pointerType === 'mouse') e.preventDefault(); // 글자 선택 방지
   if (!drag.ready) drag.timer = setTimeout(() => { if (drag && !drag.active) { drag.ready = true; startDrag(drag.lx, drag.ly); } }, 350);
 });

@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   capacity, recommendTrips, capacityWarnings, weeklyWarnings,
-  applyTripEdit, resetTripToRecommendation, materialsForTrips, tripTotals, CARRIERS, unassigned, moveItem, setTripQty
+  applyTripEdit, resetTripToRecommendation, materialsForTrips, tripTotals, CARRIERS, unassigned, moveItem, setTripQty,
+  parkedMap, parkItem, parkLeft, unparkItem, placeLeft
 } from '../docs/barter/core/planner.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -305,6 +306,28 @@ t('fuzz: totals never exceed weekly max, never negative, no lost quantity', () =
     for (const tr of r.trips) for (const x of tr.items) assert.ok(x.qty > 0);
     trips = r.trips;
   }
+});
+
+t('방치물품: 회차 → 방치 → 남은 교환/회차 복귀', () => {
+  const goods = [{ id: 1, name: 'A', limit: 20, weight: 15, perSlot: 5 }, { id: 2, name: 'B', limit: 25, weight: 15, perSlot: 10 }];
+  const trips = [{ items: [{ goodsId: 1, qty: 15 }, { goodsId: 2, qty: 25 }] }, { items: [{ goodsId: 1, qty: 5 }] }];
+  let r = parkItem(trips, [], { from: 0, goodsId: 1 });
+  assert.equal(r.qty, 15); assert.deepEqual(r.trips[0].items, [{ goodsId: 2, qty: 25 }]); assert.equal(r.trips[0].customized, true);
+  r = parkItem(r.trips, r.parked, { from: 1, goodsId: 1 });
+  assert.deepEqual(r.parked, [{ goodsId: 1, qty: 20 }]);
+  const pk = parkedMap(r.parked), qm = { 1: 20 - pk[1], 2: 25 };
+  assert.deepEqual(unassigned(r.trips, goods, qm), []); // 방치분은 남은 교환이 아님
+  const u = unparkItem(r.trips, r.parked, { goodsId: 1 });
+  assert.equal(u.qty, 20); assert.deepEqual(u.parked, []); assert.equal(u.trips, r.trips);
+  assert.deepEqual(unassigned(u.trips, goods, { 1: 20, 2: 25 }).map(x => [x.goodsId, x.left]), [[1, 20]]);
+  const v = unparkItem(r.trips, r.parked, { goodsId: 1, to: 0, index: 0 });
+  assert.deepEqual(v.trips[0].items[0], { goodsId: 1, qty: 20 });
+  const w = unparkItem(r.trips, r.parked, { goodsId: 1, to: r.trips.length });
+  assert.equal(w.trips.length, 3);
+  assert.deepEqual(parkLeft([{ goodsId: 2, qty: 3 }], { goodsId: 2, qty: 4 }).parked, [{ goodsId: 2, qty: 7 }]);
+  const pl = placeLeft(trips, { goodsId: 2, qty: 5, to: 1 });
+  assert.deepEqual(pl[1].items, [{ goodsId: 1, qty: 5 }, { goodsId: 2, qty: 5 }]);
+  assert.equal(trips[0].items.length, 2); // 원본 불변
 });
 
 console.log(`\n${passed} tests passed`);
