@@ -350,3 +350,58 @@ export function setTripQty(trips, { trip: i, goodsId, qty, goodsById: G, capacit
   // 비어 버린 '추가' 회차는 정리하지 않음(사용자가 만든 회차일 수 있음) — 화면에서 삭제 가능
   return { trips: out, moves, pulled, clamped, max, qty: want };
 }
+
+/* ---------- 방치물품: 이번 주 일부러 안 할 교환 (회차·재료 계산에서 빠짐) ---------- */
+/** parked: [{goodsId, qty}] → {goodsId: qty} */
+export function parkedMap(parked) {
+  const m = {};
+  for (const x of parked || []) { const q = Math.max(0, +x.qty || 0); if (q) m[+x.goodsId] = (m[+x.goodsId] || 0) + q; }
+  return m;
+}
+const normPark = m => Object.entries(m).filter(([, q]) => q > 0).map(([id, q]) => ({ goodsId: +id, qty: q }));
+/** 회차 from의 품목을 통째로 방치함으로 (같은 품목이 있으면 합침). 반환 { trips, parked, qty } */
+export function parkItem(trips, parked, { from, goodsId }) {
+  const out = trips.map(t => ({ ...t, items: (t.items || []).map(x => ({ ...x })) }));
+  const src = out[from]; if (!src) return { trips, parked, qty: 0 };
+  const si = src.items.findIndex(x => String(x.goodsId) === String(goodsId));
+  if (si < 0) return { trips, parked, qty: 0 };
+  const [it] = src.items.splice(si, 1); src.customized = true;
+  const q = Math.max(0, +it.qty || 0), m = parkedMap(parked);
+  m[+goodsId] = (m[+goodsId] || 0) + q;
+  return { trips: out, parked: normPark(m), qty: q };
+}
+/** 남은(미배정) 수량을 방치함으로. 반환 { parked, qty } */
+export function parkLeft(parked, { goodsId, qty }) {
+  const q = Math.max(0, Math.floor(+qty || 0)); if (!q) return { parked, qty: 0 };
+  const m = parkedMap(parked); m[+goodsId] = (m[+goodsId] || 0) + q;
+  return { parked: normPark(m), qty: q };
+}
+/** 방치함에서 빼기. to가 숫자면 그 회차(to === trips.length 이면 새 회차)에 넣고, null이면 그냥 빼서 「회차에 안 담긴 교환」으로. */
+export function unparkItem(trips, parked, { goodsId, to = null, index }) {
+  const m = parkedMap(parked), q = m[+goodsId] || 0;
+  if (!q) return { trips, parked, qty: 0 };
+  delete m[+goodsId];
+  let out = trips;
+  if (to != null) {
+    out = trips.map(t => ({ ...t, items: (t.items || []).map(x => ({ ...x })) }));
+    if (to === out.length) out.push({ items: [], customized: true });
+    const dst = out[to]; if (!dst) return { trips, parked, qty: 0 };
+    const ex = dst.items.find(x => String(x.goodsId) === String(goodsId));
+    if (ex) ex.qty = (+ex.qty || 0) + q;
+    else { const at = index == null ? dst.items.length : Math.max(0, Math.min(+index, dst.items.length)); dst.items.splice(at, 0, { goodsId: +goodsId, qty: q }); }
+    dst.customized = true;
+  }
+  return { trips: out, parked: normPark(m), qty: q };
+}
+/** 남은 수량을 회차에 넣기 (드래그). */
+export function placeLeft(trips, { goodsId, qty, to, index }) {
+  const q = Math.max(0, Math.floor(+qty || 0)); if (!q) return trips;
+  const out = trips.map(t => ({ ...t, items: (t.items || []).map(x => ({ ...x })) }));
+  if (to === out.length) out.push({ items: [], customized: true });
+  const dst = out[to]; if (!dst) return trips;
+  const ex = dst.items.find(x => String(x.goodsId) === String(goodsId));
+  if (ex) ex.qty = (+ex.qty || 0) + q;
+  else { const at = index == null ? dst.items.length : Math.max(0, Math.min(+index, dst.items.length)); dst.items.splice(at, 0, { goodsId: +goodsId, qty: q }); }
+  dst.customized = true;
+  return out;
+}
