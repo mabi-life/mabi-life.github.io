@@ -312,9 +312,24 @@ $('eList').onclick=e=>{const t=e.target.closest('tr.r');if(!t)return;const r=E[+
 let C=null,CH={},CS={},cCo='',cLv=0;
 const CCL={레드:'#ff7b7b',블루:'#7cc8ff',옐로:'#ffd96b',실버:'#d8dbe6',블랙:'#9a93b8'};
 const cK=r=>r.c+'|'+r.a+'|'+r.l;
+// 2026-11-12 정식 서버 패치: 「하이드라 연성 마법 보호 감소 수치」 최대 Lv 20→10, Lv당 0.5→1 (보유 에코스톤은 기존 Lv의 1/2 올림)
+// API에 남은 예전 Lv(11~20) 매물·체결을 ceil(Lv/2)로 옮겨 합치고 효과 수치는 Lv×1로 표시
+const CFIX='하이드라 연성 마법 보호 감소 수치';
+function cFix(){const M={},hm={},out=[],srt=(x,y)=>x[0]-y[0]||x[1]-y[1]||x[2]-y[2];
+ C.forEach(r=>{if(r.a!==CFIX){out.push(r);return}
+  const l=r.l>10?Math.ceil(r.l/2):r.l,ok=cK(r),k=r.c+'|'+r.a+'|'+l;
+  if(CH[ok]){(hm[k]=hm[k]||[]).push(...CH[ok]);if(ok!==k)delete CH[ok]}
+  let m=M[k];if(!m){m=M[k]={c:r.c,a:r.a,l,v:l,min:null,n:0,g30:0,_L:[],_r:[]};out.push(m)}
+  m.n+=r.n||0;m.g30+=r.g30||0;if(r.L)m._L.push(...r.L);else if(r.min)m._L.push([r.min,r.st||0,0]);if(r.t)m._r.push(r)});
+ Object.values(M).forEach(m=>{const L=m._L.sort(srt).slice(0,40),k=cK(m),h=(hm[k]||[]).sort((x,y)=>x[0]<y[0]?-1:x[0]>y[0]?1:x[1]-y[1]);
+  if(L.length){m.L=L;m.min=L[0][0];m.st=L[0][1]}
+  if(h.length){CH[k]=h;m.last=h[h.length-1][1];const rec=h.slice(-10).map(x=>x[1]);m.avg=Math.round(rec.reduce((a,b)=>a+b,0)/rec.length);m.t=h.length}
+  else if(m._r.length){const w=m._r.map(r=>Math.min(r.t,10)),ws=w.reduce((a,b)=>a+b,0);m.t=m._r.reduce((a,r)=>a+r.t,0);m.last=m._r[0].last;m.avg=Math.round(m._r.reduce((a,r,i)=>a+(r.avg||r.last||0)*w[i],0)/ws)}
+  delete m._L;delete m._r});
+ C=out}
 function cLoad(){if(C)return;C=[];
  $('cInfo').textContent='에코스톤 시세를 불러오는 중…';
- Promise.all([getJ(WD+'auction/echo_data.json'+WT()),getJ(WD+'auction/echo_history.json'+WT()).catch(()=>({t:{}}))]).then(([d,h])=>{C=d.rows;CH=h.t||{};CS=d.stat||{};
+ Promise.all([getJ(WD+'auction/echo_data.json'+WT()),getJ(WD+'auction/echo_history.json'+WT()).catch(()=>({t:{}}))]).then(([d,h])=>{C=d.rows;CH=h.t||{};CS=d.stat||{};cFix();
   const cn={};C.forEach(r=>cn[r.c]=(cn[r.c]||0)+r.n);
   $('cCo').innerHTML='<button data-c="" class="on">색 전체</button>'+['레드','블루','옐로','실버','블랙'].map(c=>`<button data-c="${c}" title="고유 능력: ${CS[c]||''}"><span style="color:${CCL[c]}">●</span> ${c} <small>${(CS[c]||'').replace('생명력, 마나, 스태미나','생·마·스')} · ${cn[c]||0}</small></button>`).join('');
   $('cInfo').innerHTML=`에코스톤 매물 <b>${d.listings.toLocaleString()}</b>건 · 각성 능력·Lv <b>${C.filter(r=>r.n).length}</b>종 · 갱신 ${new Date(d.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}`;cDraw()}).catch(()=>{loadErr($('cInfo'),'에코스톤 시세를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.',()=>{C=null;cLoad()})})}
