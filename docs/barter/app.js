@@ -293,8 +293,38 @@ function tqTown(l){const t=tqN(String(l).replace(/\d.*$/,''));if(!t)return null;
  for(const[k,i]of TQ_AL)if(k.length>=3)for(let j=0;j+k.length<=t.length;j++)if(tqLev(t.substr(j,k.length),k)<=1)return TOWNS[i];return null}
 function tqPrepCanvas(src,f,thr){const c=document.createElement('canvas');c.width=Math.round(src.width*f);c.height=Math.round(src.height*f);const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(src,0,0,c.width,c.height);
  const d=x.getImageData(0,0,c.width,c.height),A=d.data;for(let i=0;i<A.length;i+=4){let v=0.3*A[i]+0.59*A[i+1]+0.11*A[i+2];v=thr?(v<thr?0:255):Math.max(0,Math.min(255,(v-128)*1.6+128));A[i]=A[i+1]=A[i+2]=v}x.putImageData(d,0,0);return c}
+// 시세창 왼쪽 마차 인벤에서 밝은 테두리(선택된 칸)를 찾고, 교역품 아이콘과 맞춰 품목을 고른다. 애매하면 기존 방식 유지.
+function tqIsGold(r,g,b){return r>180&&g>140&&b<170&&r>b+50&&g>b+20&&r>=g-15}
+function tqIsHi(r,g,b){return Math.min(r,g,b)>=175&&Math.max(r,g,b)-Math.min(r,g,b)<=55}
+function tqIsAnn(r,g,b){return r>200&&g<60&&b<60}
+function tqRuns(p,minV,minGap,minLen){const R=[];let s=-1;for(let i=0;i<=p.length;i++){const on=i<p.length&&p[i]>=minV;if(on&&s<0)s=i;if(!on&&s>=0){if(i-s>=3)R.push([s,i-1]);s=-1}}
+ const M=[];for(const a of R){if(M.length&&a[0]-M[M.length-1][1]-1<=minGap)M[M.length-1][1]=a[1];else M.push(a.slice())}return M.filter(([a,b])=>b-a+1>=minLen)}
+function tqInvSplit(A,W,H){const gx=new Uint16Array(W);for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=(y*W+x)*4;if(tqIsGold(A[i],A[i+1],A[i+2]))gx[x]++}
+ let end=-1;for(let x=0;x<W*0.75;x++)if(gx[x]>H*0.05)end=x;if(end<0)return Math.round(W*0.55);
+ for(let x=end;x<Math.min(W-1,end+40);x++){let d=0;for(let y=0;y<H;y++){const i=(y*W+x)*4,r=A[i],g=A[i+1],b=A[i+2];if(r<80&&b>=r-5&&g<100)d++}if(d>H*0.3)return x}return Math.min(W,end+8)}
+function tqInvCells(A,W,H){const split=tqInvSplit(A,W,H),gold=new Uint8Array(W*H),gx=new Uint16Array(W),gy=new Uint16Array(H);
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(x>=split)continue;const i=(y*W+x)*4,r=A[i],g=A[i+1],b=A[i+2];if(tqIsAnn(r,g,b)||!tqIsGold(r,g,b))continue;gold[y*W+x]=1;gx[x]++;gy[y]++}
+ const xr=tqRuns(gx,Math.max(3,H*0.03),Math.max(3,W*0.01),Math.max(8,W*0.03)),yr=tqRuns(gy,Math.max(3,(split||W)*0.03),Math.max(3,H*0.01),Math.max(8,H*0.04)),cells=[];
+ for(const[y0,y1]of yr)for(const[x0,x1]of xr){const w=x1-x0+1,h=y1-y0+1,ar=w/h;if(w<10||h<10||ar<0.7||ar>1.35)continue;
+  const ring=Math.max(2,Math.round(Math.min(w,h)*0.08));let ng=0,nr=0;for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(x-x0<ring||x1-x<ring||y-y0<ring||y1-y<ring){nr++;if(gold[y*W+x])ng++}
+  if(nr&&ng/nr>=0.08)cells.push({x0,y0,x1,y1,w,h})}return cells}
+function tqHiScore(A,W,H,c){const ring=Math.max(2,Math.round(Math.min(c.w,c.h)*0.12));let n=0,hi=0;
+ for(let y=c.y0;y<=c.y1;y++)for(let x=c.x0;x<=c.x1;x++){if(!(x-c.x0<ring||c.x1-x<ring||y-c.y0<ring||c.y1-y<ring))continue;const i=(y*W+x)*4,r=A[i],g=A[i+1],b=A[i+2];if(tqIsAnn(r,g,b))continue;n++;if(tqIsHi(r,g,b))hi++}return n?hi/n:0}
+function tqPickCell(A,W,H){const cells=tqInvCells(A,W,H);if(cells.length<2)return null;const sc=cells.map(c=>tqHiScore(A,W,H,c));let b=0,s=1;if(sc[1]>sc[0]){b=1;s=0}
+ for(let i=2;i<sc.length;i++){if(sc[i]>sc[b]){s=b;b=i}else if(sc[i]>sc[s])s=i}const fb=sc[b],fs=sc[s];return(fb>=0.12&&fb>=fs*2&&fb-fs>=0.08)?cells[b]:null}
+let TQ_GT=null;
+async function tqGoodTpl(){if(TQ_GT)return TQ_GT;const T=[];await Promise.all(D.goods.map(async g=>{const ic=ICONS[g.name];if(!ic)return;let im;try{im=await invImgLoad('/assets/icons/orig/'+ic.id+'.png')}catch(e){return}
+ const c=invCv(48,48),x=c.getContext('2d');x.fillStyle='#dcb946';x.fillRect(0,0,48,48);x.drawImage(im,0,0,48,48);T.push({id:g.id,nm:g.name,d:x.getImageData(0,0,48,48).data})}));return TQ_GT=T}
+async function tqMatchGood(src,A,W,H,cell){const T=await tqGoodTpl();if(!T.length)return null;const pad=Math.max(2,Math.floor(Math.min(cell.w,cell.h)*0.14)),c=invCv(48,48),x=c.getContext('2d');x.imageSmoothingQuality='high';
+ x.drawImage(src,cell.x0+pad,cell.y0+pad,Math.max(1,cell.w-2*pad),Math.max(1,cell.h-2*pad),0,0,48,48);const cd=x.getImageData(0,0,48,48).data;
+ const score=t=>{let best=1e9;for(let oy=-3;oy<=3;oy++)for(let ox=-3;ox<=3;ox++){let e=0,n=0;for(let y=0;y<48;y++)for(let p=0;p<48;p++){if(y<8&&p<18)continue;const sy=y+oy,sx=p+ox;if(sy<0||sx<0||sy>=48||sx>=48)continue;const i=(y*48+p)*4,j=(sy*48+sx)*4;e+=Math.abs(cd[i]-t[j])+Math.abs(cd[i+1]-t[j+1])+Math.abs(cd[i+2]-t[j+2]);n++}const d=e/(n*3);if(d<best)best=d}return best};
+ const rank=list=>list.map(t=>({t,d:score(t.d)})).sort((a,b)=>a.d-b.d);
+ const pick=r=>{if(!r.length)return null;const m=r.length>1?r[1].d-r[0].d:99;return((r[0].d<=34&&m>=2)||(r[0].d<=28&&m>=1.5))?r[0]:null};
+ const done=T.filter(t=>doneOf({id:t.id})>0);if(done.length){const p=pick(rank(done));if(p)return p.t.id}
+ const p=pick(rank(T));return p?p.t.id:null}
+async function tqPickSel(I){if(!I||!ICONS||!Object.keys(ICONS).length)return null;const cell=tqPickCell(I.A,I.W,I.H);return cell?tqMatchGood(I.c,I.A,I.W,I.H,cell):null}
 async function tqOcr(fl){const st=$('#tqOcr');try{
- let I=await tqImgData(fl),rows=tqDigits(I.A,I.W,I.H),ok=rows.filter(r=>r.price).length;
+ let I=await tqImgData(fl),I0=I,rows=tqDigits(I.A,I.W,I.H),ok=rows.filter(r=>r.price).length;
  if(ok<10){const ys=rows.map(r=>r.y),d=[];for(let i=1;i<ys.length;i++)d.push(ys[i]-ys[i-1]);d.sort((a,b)=>a-b);const p=d[d.length>>1]||16;
   for(const f of[...new Set([16/p,0.5,2/3,0.8,1.25,1.5,2])]){if(!(f>0.3&&f<3)||Math.abs(f-1)<0.05)continue;const J=await tqImgData(fl,f),r2=tqDigits(J.A,J.W,J.H),o2=r2.filter(r=>r.price).length;if(o2>ok){ok=o2;rows=r2;I=J}if(ok>=10)break}}
  const pr={},pl=rows.filter(r=>r.price);let how='';
@@ -306,9 +336,16 @@ async function tqOcr(fl){const st=$('#tqOcr');try{
   how=pl.length?'숫자 '+pl.length+'줄 + 글자 인식':'글자 인식'}
  const rg=new Set(tqGoods().L.map(x=>x.g.id)),gs=[...D.goods].sort((x,y)=>(rg.has(y.id)-rg.has(x.id))||(y.name.length-x.name.length));let gid=null;
  for(const l of tl){const t=tqN(l);if(t.length<2)continue;const g=gs.find(g=>tqFind(t,tqN(g.name)));if(g){gid=g.id;break}}
+ const sel=await tqPickSel(I0);if(sel){gid=sel;how=(how?how+' · ':'')+'선택 칸 아이콘'}
  TQO={gid:gid||(TQ._last&&tqGoods().L.find(x=>!TQ[x.g.id])||{g:{}}).g.id||null,pr,how,raw:tl.filter(Boolean).join(' / ')+(pl.length?' ‖ 숫자: '+pl.map(r=>r.str).join(', '):'')};tqOcrShow()}catch(e){if(st)st.innerHTML='⚠ 자동 인식 실패 — 아래 표에 직접 입력해도 돼요. ('+esc(String(e.message||e))+')'}}
-function tqOcrShow(){const st=$('#tqOcr');if(!st||!TQO)return;const{gid,pr}=TQO,L=tqGoods().L,opts=[...L.map(x=>x.g),...D.goods.filter(g=>!L.some(x=>x.g.id===g.id))];
- st.innerHTML=`<div style="border:1px solid #4a3b6b;border-radius:8px;padding:8px;margin-top:4px;color:inherit;text-align:left"><b>🔎 인식 결과</b> — 품목과 숫자를 확인하고 담아 주세요<div style="margin:6px 0">품목 <select id="tqoG">${opts.map(g=>`<option value="${g.id}"${g.id===gid?' selected':''}>${esc(g.name)}${TQ[g.id]?' ✓':''}</option>`).join('')}</select></div>
+function tqOcrOpts(gid){const L=tqGoods().L,all=D.goods,inL=g=>L.some(x=>x.g.id===g.id),done=all.filter(g=>doneOf(g)>0);
+ if(!done.length)return{main:[...L.map(x=>x.g),...all.filter(g=>!inL(g))],rest:[]};
+ const main=[...L.map(x=>x.g).filter(g=>doneOf(g)>0),...done.filter(g=>!inL(g))];
+ if(gid&&!main.some(g=>g.id===gid)){const rec=all.find(g=>g.id===gid);if(rec)main.unshift(rec)}
+ return{main,rest:all.filter(g=>!main.some(m=>m.id===g.id))}}
+function tqOcrShow(){const st=$('#tqOcr');if(!st||!TQO)return;const{gid,pr}=TQO,{main,rest}=tqOcrOpts(gid);
+ const opt=g=>`<option value="${g.id}"${g.id===gid?' selected':''}>${esc(g.name)}${TQ[g.id]?' ✓':''}</option>`;
+ st.innerHTML=`<div style="border:1px solid #4a3b6b;border-radius:8px;padding:8px;margin-top:4px;color:inherit;text-align:left"><b>🔎 인식 결과</b> — 품목과 숫자를 확인하고 담아 주세요<div style="margin:6px 0">품목 <select id="tqoG">${main.map(opt).join('')}${rest.length?`<optgroup label="그 외 품목">${rest.map(opt).join('')}</optgroup>`:''}</select></div>
  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px">${TOWNS.map(t=>`<label style="white-space:nowrap">${esc(t)} <input class="n tqop" data-t="${esc(t)}" inputmode="numeric" style="width:70px" value="${pr[t]?pr[t]:''}"></label>`).join('')}</div>
  <div style="margin-top:6px"><button class="sm" data-tqocr="1">✅ 이 품목 시세 담기</button> <span class="mut">${Object.keys(pr).length}/12개 마을 시세 인식${TQO.how?' ('+esc(TQO.how)+')':''}</span></div><details style="margin-top:4px"><summary class="mut">인식 원문</summary><div class="mut" style="font-size:12.5px;max-height:90px;overflow:auto">${esc(TQO.raw)}</div></details></div>`}
 // ---- 재고체크: 인벤토리 캡처 → 아이콘 매칭 + 수량 숫자 인식, 확인 후 적용
@@ -326,9 +363,16 @@ function invShape(c,t,w,h){const dH=Math.round(h*8/INV_S),dW=Math.round(w*18/INV
  for(let j=0;j<h;j++)for(let i=0;i<w;i++){if(j<dH&&i<dW)continue;const o=(j*w+i)*4,fg=!invBlue(c[o],c[o+1],c[o+2]),ta=t[o+3]>12;pix++;if(fg)fgN++;if(ta)taN++;if(fg&&ta)inter++;if(fg||ta)union++;if(j>=mid){if(fg&&ta)bI++;if(fg||ta)bU++}}
  if(!union||!pix||!bU)return 0;return 0.35*(inter/union)*(1-Math.abs(fgN-taN)/pix)+0.65*(bI/bU)}
 function invImgLoad(src){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src})}
+function invFp(nat,im){const o=[[1,1]],[cw,ch]=nat;if(cw>=2&&ch>=2)o.push([2,2]);if(cw===1&&ch>=2)o.push([1,ch]);if(cw>=2&&ch===1)o.push([cw,1]);if(cw>=3&&ch>=3)o.push([cw,ch]);
+ if(im&&im.naturalWidth){const c=invCv(im.naturalWidth,im.naturalHeight),x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,c.width,c.height).data;let x0=c.width,y0=c.height,x1=-1,y1=-1;
+  for(let y=0;y<c.height;y++)for(let p=0;p<c.width;p++)if(d[(y*c.width+p)*4+3]>12){if(p<x0)x0=p;if(p>x1)x1=p;if(y<y0)y0=y;if(y>y1)y1=y}
+  if(x1>=0){const bw=x1-x0+1,bh=y1-y0+1;if(bw>bh*1.8)o.push([2,1]);if(bh>bw*1.8)o.push([1,2]);if(bh>bw*2.5)o.push([1,3])}}
+ const u=new Set;return o.filter(([a,b])=>!u.has(a+'x'+b)&&u.add(a+'x'+b))}
 async function invTemplates(st){if(INV_T&&INV_TS===INV_S)return INV_T;const T=[];const ns=D.materials.filter(m=>ICONS[m]);let k=0;
  await Promise.all(ns.map(async nm=>{const i=ICONS[nm];let im;try{im=await invImgLoad(`/assets/icons/orig/${i.id}.png`)}catch(e){return}
-  const fps=typeof i.id==='number'?[[Math.max(1,Math.round(i.w/24)),Math.max(1,Math.round(i.h/24))]]:[[1,1],[2,2],[1,2],[2,1]];
+  const nat=[Math.max(1,Math.round((i.w||24)/24)),Math.max(1,Math.round((i.h||24)/24))];
+  // 숫자 id는 메타 크기만. 문자열 id(spkuma 등)는 48×48이 1칸일 수도 있어 1×1도 시도하되, 정사각 아이콘을 1×2로 늘리지는 않는다.
+  const fps=typeof i.id==='number'?[nat]:invFp(nat,im);
   for(const[cw,ch]of fps){const c=invCv(INV_S*cw,INV_S*ch),x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);T.push({nm,cw,ch,d:x.getImageData(0,0,c.width,c.height).data})}
   if(st)st(`아이콘 불러오는 중… ${++k}/${ns.length}`)}));INV_TS=INV_S;return INV_T=T}
 // 빈 칸이 없어도: 칸 사이 밝은 파란 격자선(gutter)으로 칸 위치 찾기. 가방 창이 여러 개면 창마다 따로.
@@ -351,27 +395,28 @@ function invGutterGrid(A,W,H,ec){
   for(const yr of yrs){const ys=[...yr],X=[...xs];
    const th=Math.max(0.08,0.4*bgFrac(X[0]+1,ys[0]+1,X[X.length-1]-X[0]-1,ys[ys.length-1]-ys[0]-1));
    for(let n=0;n<2;n++){const ya=ys[0],yb=ys[ys.length-1],hh=yb-ya,xw=X[X.length-1]-X[0];
-    if(X[0]-P>=lo&&(bgFrac(X[0]-P+1,ya,P-1,hh)>th||hc(ys,X[0]-P+1)>0.4))X.unshift(X[0]-P);
-    if(X[X.length-1]+P<=hi&&(bgFrac(X[X.length-1]+1,ya,P-1,hh)>th||hc(ys,X[X.length-1]+1)>0.4))X.push(X[X.length-1]+P);
+    const leftVis=X[0]>=10,rightVis=X[X.length-1]+10<=W;
+    if((X[0]-P>=lo&&(bgFrac(X[0]-P+1,ya,P-1,hh)>th||hc(ys,X[0]-P+1)>0.4))||(X[0]-P<lo&&leftVis&&bgFrac(Math.max(0,X[0]-P+1),ya,X[0],hh)<0.55))X.unshift(X[0]-P);
+    if((X[X.length-1]+P<=hi&&(bgFrac(X[X.length-1]+1,ya,P-1,hh)>th||hc(ys,X[X.length-1]+1)>0.4))||(X[X.length-1]+P>hi&&rightVis&&bgFrac(X[X.length-1]+1,ya,Math.min(P-1,W-X[X.length-1]-1),hh)<0.55))X.push(X[X.length-1]+P);
     if(ya-P>=-1&&(bgFrac(X[0]+1,ya-P+1,xw,P-1)>th||vc(X.slice(1,-1),ya-P+1)>0.4))ys.unshift(ya-P);
     if(yb+P<=H&&(bgFrac(X[0]+1,yb+1,xw,P-1)>th||vc(X.slice(1,-1),yb+1)>0.4))ys.push(yb+P)}
-   const cells=[];for(let j=0;j+1<ys.length;j++)for(let i=0;i+1<X.length;i++){const x=X[i]+1,y=ys[j]+1;if(x>=0&&y>=0&&x+P-1<=W&&y+P-1<=H)cells.push([x,y])}
+   const cells=[];for(let j=0;j+1<ys.length;j++)for(let i=0;i+1<X.length;i++){const x=X[i]+1,y=ys[j]+1,vw=Math.min(W,x+P-1)-Math.max(0,x),vh=Math.min(H,y+P-1)-Math.max(0,y);if(vw>=10&&vh>=10)cells.push([x,y])}
    if(cells.length>=4){prevEnd=Math.max(prevEnd,X[X.length-1]);out.push({x:X[0],y:ys[0],cols:X.length-1,rows:ys.length-1,cells})}}}
  return out.length?{P,bags:out}:null}
 async function invRecognize(file,st,alive){
- const bm=await invImgLoad(URL.createObjectURL(file)),W=bm.naturalWidth,H=bm.naturalHeight,cv=invCv(W,H),cx=cv.getContext('2d');cx.drawImage(bm,0,0);const A=cx.getImageData(0,0,W,H).data;
+ const bm=await invImgLoad(URL.createObjectURL(file));let W=bm.naturalWidth,H=bm.naturalHeight,cv=invCv(W,H),cx=cv.getContext('2d');cx.drawImage(bm,0,0);let A=cx.getImageData(0,0,W,H).data;
  const T=await invTemplates(st);if(!alive())return null;st('칸 찾는 중…');
  // 빈 칸 색 = 가장 흔한 파란 계열 색
  const hist={};for(let i=0;i<A.length;i+=16){const r=A[i],g=A[i+1],b=A[i+2];if(b>g-10&&g>r+30&&b>r+40){const k=(r>>2)+','+(g>>2)+','+(b>>2);hist[k]=(hist[k]||0)+1}}
  const top=Object.entries(hist).sort((a,b)=>b[1]-a[1])[0];if(!top)return{items:[],why:'인벤토리 칸(파란 격자)을 못 찾았어요'};const ec=top[0].split(',').map(v=>v*4+2);
- const E=new Uint8Array(W*H);for(let p=0;p<W*H;p++){const i=p*4;if(Math.abs(A[i]-ec[0])<8&&Math.abs(A[i+1]-ec[1])<8&&Math.abs(A[i+2]-ec[2])<8)E[p]=1}
+ let E=new Uint8Array(W*H);for(let p=0;p<W*H;p++){const i=p*4;if(Math.abs(A[i]-ec[0])<8&&Math.abs(A[i+1]-ec[1])<8&&Math.abs(A[i+2]-ec[2])<8)E[p]=1}
  // 빈 칸 = 정사각 연결 영역
  const seen=new Uint8Array(W*H),cells=[];
  for(let p=0;p<W*H;p++){if(!E[p]||seen[p])continue;let x0=1e9,y0=1e9,x1=-1,y1=-1,cnt=0;const q=[p];seen[p]=1;
   while(q.length){const c=q.pop(),x=c%W,y=(c-x)/W;cnt++;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;for(const n of[c-1,c+1,c-W,c+W]){if(n>=0&&n<W*H&&E[n]&&!seen[n]&&Math.abs(n%W-x)<=1){seen[n]=1;q.push(n)}}}
   const w=x1-x0+1,h=y1-y0+1;if(w>=10&&w<=90&&Math.abs(w-h)<=2&&cnt>w*h*0.8)cells.push([x0,y0,w])}
  // 빈 칸이 3개 이상이면 빈 칸 간격으로, 아니면(꽉 찬 가방) 칸 사이 격자선으로 찾기
- const key=(x,y)=>x+','+y,grid=new Set();let P,IN,K,empty;
+ const key=(x,y)=>x+','+y;let grid=new Set(),P,IN,K,empty;
  if(cells.length>=3){
  const dx={};for(const a of cells)for(const b of cells){const d=b[0]-a[0];if(Math.abs(b[1]-a[1])<=1&&d>0&&d<120)dx[d]=(dx[d]||0)+1}
  P=+Object.entries(dx).sort((a,b)=>b[1]-a[1])[0][0];IN=Math.round(P*20/24);K=P/24;
@@ -384,22 +429,32 @@ async function invRecognize(file,st,alive){
  }
  if(!grid.size){const GG=invGutterGrid(A,W,H,ec);if(!GG)return{items:[],why:'칸 격자를 못 찾았어요 — 가방 창이 다른 UI에 가리지 않게, 가방 창 전체가 보이도록 캡처해 주세요(가방 하나만 크게 찍으면 더 잘 돼요)'};
   P=GG.P;IN=Math.round(P*20/24);K=P/24;empty=new Set();for(const b of GG.bags)for(const[x,y]of b.cells)grid.add(key(x,y))}
+ // 칸이 12px보다 작으면 격자는 그대로 두고 이미지만 키워 숫자·아이콘 비교가 잘 되게 한다.
+ const origK=K;if(K<0.85){const sc=24/P,W2=Math.round(W*sc),H2=Math.round(H*sc),cv2=invCv(W2,H2),t2=cv2.getContext('2d');t2.imageSmoothingEnabled=false;t2.drawImage(cv,0,0,W2,H2);
+  const scK=k=>k.split(',').map(Number).map(v=>Math.round(v*sc)).join(',');
+  const g2=new Set([...grid].map(scK)),e2=new Set([...empty].map(scK));
+  W=W2;H=H2;cv=cv2;cx=cv2.getContext('2d');A=cx.getImageData(0,0,W,H).data;P=P*sc;IN=Math.round(P*20/24);K=P/24;grid=g2;empty=e2;
+  E=new Uint8Array(W*H);for(let p=0;p<W*H;p++){const i=p*4;if(Math.abs(A[i]-ec[0])<8&&Math.abs(A[i+1]-ec[1])<8&&Math.abs(A[i+2]-ec[2])<8)E[p]=1}}
  const snap=(x,y)=>{if(grid.has(key(x,y)))return key(x,y);for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1]])if(grid.has(key(x+a,y+b)))return key(x+a,y+b);return null};
- const isOcc=(x,y)=>{const k=snap(x,y);if(!k||empty.has(k))return false;[x,y]=k.split(',').map(Number);let s=0;for(let j=0;j<IN;j++)for(let i=0;i<IN;i++)s+=E[(y+j)*W+x+i];return s<IN*IN*0.6};
+ const isOcc=(x,y)=>{const k=snap(x,y);if(!k||empty.has(k))return false;[x,y]=k.split(',').map(Number);let s=0,v=0;for(let j=0;j<IN;j++)for(let i=0;i<IN;i++){const xx=x+i,yy=y+j;if(xx<0||yy<0||xx>=W||yy>=H)continue;v++;s+=E[yy*W+xx]}return v?s<v*0.6:false};
  const occ=[...grid].map(k=>k.split(',').map(Number)).filter(([x,y])=>isOcc(x,y));
- const crop=(x,y,w,h,ow,oh)=>{const c=invCv(ow,oh),t=c.getContext('2d');t.drawImage(cv,x,y,w,h,0,0,ow,oh);return t.getImageData(0,0,ow,oh).data};
+ const crop=(x,y,w,h,ow,oh)=>{const c=invCv(ow,oh),t=c.getContext('2d');t.fillStyle=`rgb(${ec[0]|0},${ec[1]|0},${ec[2]|0})`;t.fillRect(0,0,ow,oh);t.drawImage(cv,x,y,w,h,0,0,ow,oh);return t.getImageData(0,0,ow,oh).data};
  const sigOf=(x,y,cw,ch)=>{const d=crop(x,y,P*cw-(P-IN),P*ch-(P-IN),8,8);let s='';for(let i=0;i<64;i++){const v=(d[i*4]+d[i*4+1]+d[i*4+2])/3;s+=Math.min(15,v>>4).toString(16)}return s};
+ const rgbD=(c,td,w,h)=>{let s=0,ws=0;for(let j=0;j<h;j++)for(let i=0;i<w;i++){if(j<INV_S/2&&i<INV_S*0.8)continue;const o=(j*w+i)*4,al=td[o+3]/255;if(al<0.05)continue;s+=al*(Math.abs(c[o]-td[o])+Math.abs(c[o+1]-td[o+1])+Math.abs(c[o+2]-td[o+2]))/3;ws+=al}return ws<w*h*0.15?1e9:s/ws};
  const LR=invLearnGet(),cand=[],shCands=[];let n=0;
  for(const[x,y]of occ){if(!alive())return null;if(++n%15===0){st(`아이콘 비교 중… ${n}/${occ.length}`);await new Promise(r=>setTimeout(r,0))}
   const fits=(cw,ch)=>{for(let i=0;i<cw;i++)for(let j=0;j<ch;j++)if(!isOcc(x+i*P,y+j*P))return false;return true};const cc={};
   for(const l of LR){if(!fits(l.cw,l.ch))continue;const sg=sigOf(x,y,l.cw,l.ch),dd=invSigD(sg,l.s);if(dd<=1.0)cand.push({d:dd,x,y,nm:l.n,cw:l.cw,ch:l.ch,lr:1})}
-  for(const t of T){if(!fits(t.cw,t.ch))continue;const fk=t.cw+'x'+t.ch,w=INV_S*t.cw,h=INV_S*t.ch,c=cc[fk]||(cc[fk]=crop(x,y,P*t.cw-(P-IN),P*t.ch-(P-IN),w,h));
-   let s=0,ws=0;for(let j=0;j<h;j++)for(let i=0;i<w;i++){if(j<INV_S/2&&i<INV_S*0.8)continue;const o=(j*w+i)*4,al=t.d[o+3]/255;if(al<0.05)continue;s+=al*(Math.abs(c[o]-t.d[o])+Math.abs(c[o+1]-t.d[o+1])+Math.abs(c[o+2]-t.d[o+2]))/3;ws+=al}
-   if(ws<w*h*0.15)continue;cand.push({d:s/ws,x,y,nm:t.nm,cw:t.cw,ch:t.ch});
-   if(skOf(t.nm)==='방직'){const ic=ICONS[t.nm],nat=ic&&Math.max(1,Math.round((ic.w||24)/24))===t.cw&&Math.max(1,Math.round((ic.h||24)/24))===t.ch;if(nat){const step=Math.max(1,Math.round(K));let best=0;for(let oy=-2*step;oy<=0;oy+=step)for(let ox=-2*step;ox<=0;ox+=step){const xx=x+ox,yy=y+oy;if(xx<0||yy<0)continue;const sw=Math.min(P*t.cw,W-xx),sh=Math.min(P*t.ch,H-yy);if(sw<8||sh<8)continue;const sk='s'+t.cw+'x'+t.ch+':'+ox+','+oy,cs=cc[sk]||(cc[sk]=crop(xx,yy,sw,sh,w,h)),iou=invShape(cs,t.d,w,h);if(iou>best)best=iou}if(best>=0.55)shCands.push({iou:best,x,y,nm:t.nm,cw:t.cw,ch:t.ch})}}}}
- cand.sort((a,b)=>a.d-b.d);const used=new Set(),hits=[];
- for(const c of cand){if(!c.lr&&c.d>26)break;const ks=[];for(let i=0;i<c.cw;i++)for(let j=0;j<c.ch;j++)ks.push(key(c.x+i*P,c.y+j*P));if(ks.some(k=>used.has(k)))continue;ks.forEach(k=>used.add(k));
-  c.q=invQty(cx,c.x,c.y,K);c.sig=sigOf(c.x,c.y,c.cw,c.ch);c.sure=c.lr||c.d<=20;hits.push(c)}
+  const step=Math.max(1,Math.round(K)),shft=origK>=0.85?[-2*step,0,2*step]:[0];
+  for(const t of T){if(!fits(t.cw,t.ch))continue;const w=INV_S*t.cw,h=INV_S*t.ch,sw0=P*t.cw-(P-IN),sh0=P*t.ch-(P-IN);
+   let best=1e9;for(const oy of shft)for(const ox of shft){const fk=t.cw+'x'+t.ch+':'+ox+','+oy,c=cc[fk]||(cc[fk]=crop(x+ox,y+oy,sw0,sh0,w,h)),d=rgbD(c,t.d,w,h);if(d<best)best=d}
+   if(best<1e9)cand.push({d:best,x,y,nm:t.nm,cw:t.cw,ch:t.ch});
+   if(skOf(t.nm)==='방직'){const ic=ICONS[t.nm],nat=ic&&Math.max(1,Math.round((ic.w||24)/24))===t.cw&&Math.max(1,Math.round((ic.h||24)/24))===t.ch;if(nat){let bestI=0;for(let oy=-2*step;oy<=0;oy+=step)for(let ox=-2*step;ox<=0;ox+=step){const xx=x+ox,yy=y+oy,sw=Math.min(P*t.cw,Math.max(0,W-xx)),sh=Math.min(P*t.ch,Math.max(0,H-yy));if(sw<8||sh<8)continue;const sk='s'+t.cw+'x'+t.ch+':'+ox+','+oy,cs=cc[sk]||(cc[sk]=crop(xx,yy,sw,sh,w,h)),iou=invShape(cs,t.d,w,h);if(iou>bestI)bestI=iou}if(bestI>=0.55)shCands.push({iou:bestI,x,y,nm:t.nm,cw:t.cw,ch:t.ch})}}}}
+ cand.sort((a,b)=>a.d-b.d||(b.cw*b.ch-a.cw*a.ch));const used=new Set(),hits=[];
+ for(const c of cand){if(!c.lr&&c.d>38)break;const ks=[];for(let i=0;i<c.cw;i++)for(let j=0;j<c.ch;j++)ks.push(key(c.x+i*P,c.y+j*P));if(ks.some(k=>used.has(k)))continue;
+  // 26~38이면서 2×2이고 2위와 차이가 크면 채택(탈틴 농장 아이콘처럼 캡처가 조금 흐려져도 모양은 분명한 경우). 1×1·1×2까지 열면 오탐이 많아진다.
+  if(!c.lr&&c.d>26){if(!(c.cw>=2&&c.ch>=2))continue;const second=cand.find(o=>o!==c&&o.x===c.x&&o.y===c.y&&o.cw===c.cw&&o.ch===c.ch&&o.nm!==c.nm);const margin=second?second.d-c.d:99;if(margin<8)continue;c.sure=false}else c.sure=c.lr||c.d<=20;
+  ks.forEach(k=>used.add(k));c.q=invQty(cx,c.x,c.y,K);c.sig=sigOf(c.x,c.y,c.cw,c.ch);hits.push(c)}
  // 방직: RGB가 실패한 칸은 실루엣(IoU)으로 재시도. 같은 모양·다른 색(고급/최고급 가죽끈 등)은 차이가 작으면 건너뛴다.
  shCands.sort((a,b)=>b.iou-a.iou);
  for(const c of shCands){if(c.iou<0.72)break;const ks=[];for(let i=0;i<c.cw;i++)for(let j=0;j<c.ch;j++)ks.push(key(c.x+i*P,c.y+j*P));if(ks.some(k=>used.has(k)))continue;
@@ -408,14 +463,16 @@ async function invRecognize(file,st,alive){
   if(margin<0.06){if(second&&((c.nm==='질긴 끈'&&second.nm==='튼튼한 고리')||(c.nm==='튼튼한 고리'&&second.nm==='질긴 끈'))){pick=c.nm==='질긴 끈'?c:second;margin=Math.abs(c.iou-second.iou)}else continue}
   ks.forEach(k=>used.add(k));pick.q=invQty(cx,pick.x,pick.y,K);pick.sig=sigOf(pick.x,pick.y,pick.cw,pick.ch);pick.d=26*(1-pick.iou);pick.sure=pick.iou>=0.70&&margin>=0.08;pick.shape=1;hits.push(pick)}
  return{items:hits,why:hits.length?'':occ.length?`칸 ${occ.length}개는 찾았지만 아는 재료 아이콘이 없어요(재료가 아닌 물건이거나 다른 UI에 가려졌을 수 있어요)`:'칸은 찾았지만 찬 칸이 없어요 — 재료가 든 칸이 보이게 캡처해 주세요'}}
-function invQty(cx,x,y,K){const w=Math.round(20*K),h=Math.round(8*K),X=Math.round(x-2*K),Y=Math.round(y-2*K);if(X<0||Y<0)return 1;
- let d;if(Math.abs(K-1)<0.05)d=cx.getImageData(X,Y,20,8).data;else{const c=invCv(20,8),t=c.getContext('2d');t.imageSmoothingEnabled=false;t.drawImage(cx.canvas,X,Y,w,h,0,0,20,8);d=t.getImageData(0,0,20,8).data}
+function invQtyAt(cx,x,y,K){const w=Math.round(20*K),h=Math.round(8*K),X=Math.round(x-2*K),Y=Math.round(y-2*K),W=cx.canvas.width,H=cx.canvas.height;if(X+w<=0||Y+h<=0||X>=W||Y>=H)return 1;
+ const sx=Math.max(0,X),sy=Math.max(0,Y),sw=Math.min(w,W-sx),sh=Math.min(h,H-sy);if(sw<4||sh<3)return 1;
+ let d;if(Math.abs(K-1)<0.05&&X>=0&&Y>=0&&X+20<=W&&Y+8<=H)d=cx.getImageData(X,Y,20,8).data;else{const c=invCv(20,8),t=c.getContext('2d');t.imageSmoothingEnabled=false;t.drawImage(cx.canvas,sx,sy,sw,sh,sx-X,sy-Y,sw*(20/w),sh*(8/h));d=t.getImageData(0,0,20,8).data}
  const M=(i,j)=>{const o=(j*20+i)*4,r=d[o],g=d[o+1],b=d[o+2];return Math.min(r,g,b)>170||(r>200&&g>170&&b<140)};
  let y0=-1,x0=-1;for(let j=0;j<4&&y0<0;j++)for(let i=0;i<5;i++)if(M(i,j)){y0=j;break}if(y0<0)return 1;
  for(let i=0;i<5&&x0<0;i++)for(let j=y0;j<y0+5;j++)if(M(i,j)){x0=i;break}if(x0<0)return 1;
  let s='';for(let gx=x0;gx+3<=20;gx+=4){let p='';for(let j=0;j<5;j++)for(let i=0;i<3;i++)p+=M(gx+i,y0+j)?'#':'.';
   let best=null,bd=9;for(const k in INV_DG){let e=0;for(let q=0;q<15;q++)if(k[q]!==p[q])e++;if(e<bd){bd=e;best=INV_DG[k]}}if(bd>1)break;s+=best}
  return s?+s:1}
+function invQty(cx,x,y,K){const q=invQtyAt(cx,x,y,K);if(q!==1)return q;const step=Math.max(1,Math.round(K));for(let oy=-2*step;oy<=2*step;oy+=step)for(let ox=-2*step;ox<=2*step;ox+=step){if(!ox&&!oy)continue;const q2=invQtyAt(cx,x+ox,y+oy,K);if(q2!==1)return q2}return 1}
 function invOpen(){let el=$('#invPop');if(!el){el=document.createElement('div');el.id='invPop';document.body.appendChild(el)}let run=0;
  el.innerHTML=`<div id="invMask" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:59"></div><div class="pop" style="position:fixed;top:50%;left:50%;right:auto;transform:translate(-50%,-50%);width:min(520px,94vw);max-height:88vh;overflow:auto;z-index:60">
  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0">📦 재고체크 </h3><button class="sm ghost" id="invX">✕</button></div>
