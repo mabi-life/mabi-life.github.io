@@ -126,7 +126,7 @@ function renderTarget(ctx){const R=ctx.R,q=ctx.qty,M=matsOf(R),S=stepsOf(R);cons
    L.prof[1]=[Math.min(l1,tx-CW),Math.max(r1,tx+CW)]}
   L.lines.push([0,nd.el._h,0,(lv.length?1:deep)*RY-VG/2,lc]);return L}
  const GN={el:g,open:!ctx.closed,kids};const T=lay(GN,true);
- if(!window[ctx.gxKey])window[ctx.gxKey]=Math.max(g._w/2,root.parentElement.parentElement.clientWidth/2);
+ {const host=root.closest('.scroll')||root.parentElement;const mid=Math.max(g._w/2,((host&&host.clientWidth)||0)/2);if(!window[ctx.gxKey]||window[ctx.gxKey]<mid*0.5)window[ctx.gxKey]=mid;}
  let minx=Math.min(...T.pos.map(p=>p[1]));const ox=Math.max(window[ctx.gxKey],-minx);
  const out={pos:T.pos.map(([e,x,r])=>[e,x+ox,r*RY]),lines:T.lines.map(l=>[l[0]+ox,l[1],l[2]+ox,l[3],l[4]||'#c9a24a',l[5]||1])};
  let mw=0,mh=0;out.pos.forEach(([e,x,y])=>{e.style.left=x+'px';e.style.top=y+'px';mw=Math.max(mw,x+e._w);mh=Math.max(mh,y+e._h)});
@@ -161,7 +161,7 @@ function attachCraftBar(el,n,kids,out){if(!el||!kids||!kids.length)return;const 
  unBtn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();undoCraft()});
  bar.append(inp,doBtn,unBtn,flash);el.appendChild(bar)}
 
-function render(){if(!RECIPES.length)return;renderTarget(mainCtx());renderMulti()}
+function render(){if(!RECIPES.length)return;renderTarget(mainCtx());renderAddedGoals();renderMulti()}
 function mainCtx(){st.open=st.open||{};return {R:RECIPES[gi()],qty:st.qty,root:$('root'),tot:$('tot'),cond:$('cond'),open:st.open,gid:'G',stepsId:'stepsIn',gxKey:'_gx',actKey:'main',get closed(){return !!st.closed},set closed(v){st.closed=!!v}}}
 function activeTargets(){const out=[];const R=RECIPES[gi()];if(R)out.push({R,qty:st.qty,ei:null});(st.extra||[]).forEach((ex,i)=>{const r=RECIPES[ex.goal];if(r)out.push({R:r,qty:Math.max(1,+ex.qty||1),ei:i})});return out}
 // 더스크 세트는 recipes.json 이름에서 유도. 몸통만 (남성용)/(여성용)이 있고 나머지 부위는 공용.
@@ -172,20 +172,17 @@ function duskSetInfo(){const sets={};RECIPES.forEach((r,i)=>{const m=/^더스크
 function duskSetItems(set,gender){const S=duskSetInfo()[set];if(!S||!S.body[gender])return[];const rank=n=>/헬멧|베레모|모자/.test(n)?0:/아머|수트|가드/.test(n)?1:/글러브|건틀렛/.test(n)?2:/부츠|슈즈|그리브/.test(n)?3:4;return S.parts.concat([S.body[gender]]).sort((a,b)=>rank(a.n)-rank(b.n)||a.i-b.i)}
 function isDuskGoal(idx){return /^더스크/.test((RECIPES[idx]||{}).n||'')}
 function syncSetBtn(btn,idx){if(!btn)return;btn.hidden=!isDuskGoal(idx)}
-function extraHTML(i,ex){const id=s=>s+'_e'+i;return `<div class="craftExtra" data-ei="${i}"><div class="bar"><label>나브 시리즈 <select id="${id('goalNav')}" data-ei="${i}" data-series="nav"></select></label><label>소울 시리즈 <select id="${id('goalSoul')}" data-ei="${i}" data-series="soul"></select></label><label>더스크 시리즈 <select id="${id('goalDusk')}" data-ei="${i}" data-series="dusk"></select></label><button type="button" class="btn setLoadBtn" data-ei="${i}" hidden>세트로 불러오기</button><label>목표 수량 <input type="number" id="${id('goalQty')}" data-ei="${i}" min="1" value="${Math.max(1,+ex.qty||1)}"></label><button type="button" class="rmGoal" data-ei="${i}" title="이 목표 삭제" aria-label="이 목표 삭제">✕</button></div><div class="totals" id="${id('tot')}"></div><div class="cond" id="${id('cond')}"></div><div class="scroll"><div class="tree" id="${id('tree')}"><div id="${id('root')}"></div></div></div></div>`}
-function fillExtraSelects(i,ex){const opt=re=>RECIPES.map((r,j)=>re.test(r.n)?`<option value="${j}">${r.n}</option>`:'').join('');const E='<option value="">— 선택 —</option>';const nav=$('goalNav_e'+i),soul=$('goalSoul_e'+i),dusk=$('goalDusk_e'+i);if(!nav)return;nav.innerHTML=E+opt(/^나이트브링어/);soul.innerHTML=E+opt(/^소울/);dusk.innerHTML=E+opt(/^더스크/);const n=(RECIPES[ex.goal]||{}).n||'',k=/^나이트브링어/.test(n)?'nav':/^소울/.test(n)?'soul':/^더스크/.test(n)?'dusk':'';nav.value=k==='nav'?ex.goal:'';soul.value=k==='soul'?ex.goal:'';dusk.value=k==='dusk'?ex.goal:'';syncSetBtn(document.querySelector('.setLoadBtn[data-ei="'+i+'"]'),ex.goal)}
-function extraCtx(i,ex){const R=RECIPES[ex.goal];if(!R)return null;ex.open=ex.open||{};return {R,qty:Math.max(1,+ex.qty||1),root:$('root_e'+i),tot:$('tot_e'+i),cond:$('cond_e'+i),open:ex.open,gid:'G_e'+i,stepsId:'stepsIn_e'+i,gxKey:'_gx_e'+i,actKey:'e'+i,get closed(){return !!ex.closed},set closed(v){ex.closed=!!v}}}
+function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+function extraHTML(i,ex){const R=RECIPES[ex.goal],name=R?R.n:'목표',qty=Math.max(1,+ex.qty||1);return `<div class="craftExtra" data-ei="${i}"><div class="extraHead"><span class="extraTitle">${esc(name)} ×${qty}</span><button type="button" class="rmGoal" data-ei="${i}" title="이 목표 삭제" aria-label="이 목표 삭제">✕</button></div><div class="scroll"><div class="tree"><div id="root_e${i}" class="treeRoot"></div></div></div></div>`}
+function extraCtx(i,ex){const R=RECIPES[ex.goal];if(!R)return null;ex.open=ex.open||{};return {R,qty:Math.max(1,+ex.qty||1),root:$('root_e'+i),tot:null,cond:null,open:ex.open,gid:'G_e'+i,stepsId:'stepsIn_e'+i,gxKey:'_gx_e'+i,actKey:'e'+i,get closed(){return !!ex.closed},set closed(v){ex.closed=!!v}}}
+function renderAddedGoals(){const tot=$('tot');if(!tot)return;let box=$('addedGoals');if(!box){box=document.createElement('div');box.id='addedGoals';box.className='addedGoals';tot.appendChild(box)}
+ const rows=(st.extra||[]).map((ex,i)=>{const R=RECIPES[ex.goal];if(!R)return '';const qty=Math.max(1,+ex.qty||1);return `<div class="addedGoal" data-ei="${i}"><span class="addedLab">${i?'':'추가된 목표'}</span><span class="addedName">${esc(R.n)} ×${qty}</span><span class="addedPrice">경매장 시세 ${gpx(R.n)}</span><button type="button" class="rmGoal" data-ei="${i}" title="이 목표 삭제" aria-label="이 목표 삭제">✕</button></div>`}).filter(Boolean);
+ box.hidden=!rows.length;box.innerHTML=rows.join('')}
 function renderMulti(){st.extra=Array.isArray(st.extra)?st.extra:[];const box=$('extraGoals');if(!box)return;
- const n=st.extra.length;
- if(box.children.length!==n){box.innerHTML=st.extra.map((ex,i)=>extraHTML(i,ex)).join('')}
- st.extra.forEach((ex,i)=>{
-  if(!box.children[i])return;
-  fillExtraSelects(i,ex);
-  const qty=$('goalQty_e'+i);if(qty)qty.value=Math.max(1,+ex.qty||1);
-  const ctx=extraCtx(i,ex);
-  if(ctx){const ph=box.children[i].querySelector('.extraEmpty');if(ph)ph.remove();renderTarget(ctx)}
-  else{const root=$('root_e'+i);if(root)root.innerHTML='';const tot=$('tot_e'+i);if(tot)tot.innerHTML='<span>시리즈를 선택하면 트리가 이 아래에 추가돼요</span>';const cond=$('cond_e'+i);if(cond)cond.innerHTML='';}
- });
+ const sig=st.extra.map(e=>e.goal+':'+(e.qty||1)).join(',');
+ if(box._sig!==sig){box.innerHTML=st.extra.map((ex,i)=>extraHTML(i,ex)).join('');box._sig=sig}
+ st.extra.forEach((ex,i)=>{const ctx=extraCtx(i,ex);if(ctx)renderTarget(ctx)});
+ renderAddedGoals();
  renderCombined();
 }
 function combinedMatRows(tgs){const map=new Map();tgs.forEach(t=>{matsOf(t.R).forEach(c=>{const n=c[0],z=nodeCost(c,t.qty),row=map.get(n)||{n,all:0,c};row.all+=z.all;row.c=c;map.set(n,row)})});
@@ -200,9 +197,14 @@ function renderCombined(){const el=$('combinedMats');if(!el)return;const tgs=act
 <div class="sum"><span>최저 재료비 <b>${fg(matTot)}</b>${miss?` · 시세 없는 재료 ${miss}종 제외`:''}</span><span class="gmk">경매장 완성품 합계 <b>${aucMiss&&!auc?'매물 없음':fg(auc)}</b>${aucMiss?` · 시세 없는 목표 ${aucMiss}종 제외`:''}</span></div>
 <div class="cond" style="margin:8px 0 0">${bits.join(' · ')}</div>`;
  el.querySelectorAll('input[data-n]').forEach(i=>{i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render();syncCoin()}})}
-function addGoal(){st.extra=st.extra||[];st.extra.push({goal:-1,qty:1,closed:false,open:{}});save();render();syncCoin();const i=st.extra.length-1;const s=$('goalDusk_e'+i)||$('goalNav_e'+i);s&&s.focus()}
+function addGoal(){st.extra=st.extra||[];const idx=gi();if(!(idx>=0&&RECIPES[idx]))return;const qty=Math.max(1,+st.qty||1);
+ if(st.extra.some(e=>e.goal===idx))return;
+ if(_prevGoal!=null&&_prevGoal!==idx&&_prevGoal>=0){st.extra.push({goal:idx,qty,closed:false,open:{}});st.goal=_prevGoal;st.qty=Math.max(1,+_prevQty||1);_prevGoal=null;const q=$('goalQty');if(q)q.value=st.qty;fillGoals()}
+ else if(idx!==st.goal){st.extra.push({goal:idx,qty,closed:false,open:{}})}
+ else return;
+ save();render();syncCoin()}
 function rmGoal(i){if(!st.extra||i<0||i>=st.extra.length)return;st.extra.splice(i,1);save();render();syncCoin()}
-function setExtraGoal(i,val){if(!st.extra[i])return;st.extra[i].goal=val===''||val==null?-1:+val;save();fillExtraSelects(i,st.extra[i]);render();syncCoin()}
+function setExtraGoal(i,val){if(!st.extra[i])return;st.extra[i].goal=val===''||val==null?-1:+val;save();render();syncCoin()}
 function loadDuskSet(set,gender){const items=duskSetItems(set,gender);if(!items.length)return;const want=items.map(x=>x.i);const info=duskSetInfo()[set];
  if(info){const bodies=Object.values(info.body||{});if(bodies.some(b=>b.i===st.goal)&&!want.includes(st.goal))st.goal=info.body[gender].i}
  const have=new Set([st.goal,...(st.extra||[]).map(e=>e.goal)]);
@@ -238,13 +240,13 @@ function fillGoals(){const G=gi();const opt=re=>RECIPES.map((r,i)=>re.test(r.n)?
  const nb=opt(/^나이트브링어/),so=opt(/^소울/),du=opt(/^더스크/),E='<option value="">— 선택 —</option>';
  $('goalNav').innerHTML=E+nb;$('goalSoul').innerHTML=E+so;$('goalDusk').innerHTML=E+du;
  const n=(RECIPES[gi()]||{}).n||'',k=/^나이트브링어/.test(n)?'goalNav':/^소울/.test(n)?'goalSoul':/^더스크/.test(n)?'goalDusk':'';['goalNav','goalSoul','goalDusk'].forEach(x=>$(x).value=x===k?G:'');$('goalSel').innerHTML=nb+so+du;$('goalSel').value=G;syncSetBtn($('loadSetBtn'),gi())}
-['goalNav','goalSoul','goalDusk'].forEach(k=>$(k).addEventListener('change',e=>{if(e.target.value==='')return;st.goal=+e.target.value;fillGoals();save();render();syncCoin()}));
+let _prevGoal=null,_prevQty=null;['goalNav','goalSoul','goalDusk'].forEach(k=>$(k).addEventListener('change',e=>{if(e.target.value==='')return;_prevGoal=st.goal;_prevQty=st.qty;st.goal=+e.target.value;fillGoals();save();render();syncCoin()}));
 // 제작 목표 ↔ 코인 탭 연동: 목표 재료 중 구슬 상점 재료의 (부족 수량 × 교환 코인) 합계
 window.craftCoinNeed=function(){const tgs=typeof activeTargets==='function'?activeTargets():[];const R=RECIPES[gi()];if(!R)return null;
  if(tgs.length<=1){const o={};matsOf(R).forEach(c=>{const cn=MC.COST[c[0]];if(!cn)return;const z=nodeCost(c,st.qty);const t=o[cn.tab]=o[cn.tab]||{total:0,list:[]};t.total+=z.need*cn.cost;t.list.push({n:c[0],qty:z.need,cost:cn.cost})});return {goal:R.n,qty:st.qty,tabs:o,tab:/^소울/.test(R.n)?'bri':/^더스크/.test(R.n)?'tala':(Object.keys(o)[0]||null)}}
  const o={};(typeof combinedMatRows==='function'?combinedMatRows(tgs):[]).forEach(row=>{const cn=MC.COST[row.n];if(!cn)return;const t=o[cn.tab]=o[cn.tab]||{total:0,list:[]};t.total+=row.need*cn.cost;t.list.push({n:row.n,qty:row.need,cost:cn.cost})});const tabs=Object.keys(o).sort((a,b)=>o[b].total-o[a].total);return {goal:tgs.map(t=>t.R.n).join(', '),qty:1,tabs:o,tab:tabs[0]||null}};
 function syncCoin(){const nv=/^나이트브링어/.test((RECIPES[gi()]||{}).n||''),vc=document.getElementById('vCoin');if(vc)vc.hidden=nv;const N=window.craftCoinNeed();if(N&&N.tab){const b=document.querySelector('#tabs button[data-k="'+N.tab+'"]');if(b&&!b.classList.contains('on'))b.click()}document.dispatchEvent(new Event('craftneed'))}fillGoals();$('goalQty').value=st.qty;
-$('goalSel').onchange=e=>{st.goal=+e.target.value;save();render();syncCoin()};$('goalQty').onchange=e=>{st.qty=Math.max(1,+e.target.value||1);e.target.value=st.qty;save();render();syncCoin()};
+$('goalSel').onchange=e=>{_prevGoal=st.goal;_prevQty=st.qty;st.goal=+e.target.value;save();render();syncCoin()};$('goalQty').onchange=e=>{st.qty=Math.max(1,+e.target.value||1);e.target.value=st.qty;save();render();syncCoin()};
 $('resetBtn').onclick=()=>{st.own={};st.open={};craftUndo=[];save();render();syncCoin()};
 render();
 fetch('https://mabi-data.mabilife.workers.dev/prices.json?t='+Date.now()).then(r=>r.json()).then(j=>{P=j.prices||{};const t=Object.values(P).map(v=>v.t).filter(Boolean).sort().pop();PT=t?t.slice(0,16).replace('T',' '):'';reBeads();render()}).catch(()=>{});
