@@ -176,6 +176,9 @@ agg, total = {}, 0
 coins = []
 coin_opt_type, coin_opt_sub, coin_lines, coin_kept = Counter(), Counter(), Counter(), Counter()
 coin_sample = None
+coin_raw_keys = Counter()
+coin_display_diff = []
+coin_raw_by_kind = {}
 for x in walk('list', 100):
     name, p = x.get('item_name'), x.get('auction_price_per_unit')
     if not name or not p:
@@ -202,9 +205,31 @@ for x in walk('list', 100):
         if exp:
             rec['e'] = exp
         coins.append(rec)
+        for k in x:
+            coin_raw_keys[k] += 1
+        dn = x.get('item_display_name') or ''
+        if dn and dn != name:
+            coin_display_diff.append({'name': name, 'display': dn, 'p': p})
+        kind = rec['c'] or '?'
+        # 종류별 1건 + 인게임 캡처와 같은 연금 2억4000만 매물이 있으면 그 원본을 남김
+        want_raw = (kind not in coin_raw_by_kind) or (p == 240_000_000 and kind == '연금')
+        if want_raw:
+            coin_raw_by_kind[kind if p != 240_000_000 else '연금240M'] = {
+                'keys': sorted(x.keys()),
+                'item_name': name,
+                'item_display_name': dn,
+                'item_count': x.get('item_count'),
+                'auction_item_category': x.get('auction_item_category'),
+                'auction_price_per_unit': p,
+                'date_auction_expire': exp,
+                'item_option': x.get('item_option'),
+                'other': {k: x.get(k) for k in x if k not in (
+                    'item_name','item_display_name','item_count','auction_item_category',
+                    'auction_price_per_unit','date_auction_expire','item_option')},
+            }
         if coin_sample is None:
-            coin_sample = {'name': name, 'options': [
-                {k: o.get(k) for k in ('option_type', 'option_sub_type', 'option_value', 'option_value2', 'option_desc') if o.get(k) not in (None, '')}
+            coin_sample = {'name': name, 'display': dn, 'item_count': x.get('item_count'), 'options': [
+                {k: o.get(k) for k in ('option_type', 'option_sub_type', 'option_value', 'option_value2', 'option_desc')}
                 for o in (x.get('item_option') or [])
             ], 'date_auction_expire': exp}
         continue
@@ -375,3 +400,6 @@ print('coin option subtypes', dict(coin_opt_sub), file=sys.stderr)
 print('coin option lines (all / keep-types)', dict(coin_lines), dict(coin_kept), file=sys.stderr)
 if coin_sample:
     print('coin sample', json.dumps(coin_sample, ensure_ascii=False), file=sys.stderr)
+print('coin raw keys', dict(coin_raw_keys), file=sys.stderr)
+print('coin display_name != item_name', len(coin_display_diff), json.dumps(coin_display_diff[:5], ensure_ascii=False), file=sys.stderr)
+print('coin raw by kind', json.dumps(coin_raw_by_kind, ensure_ascii=False), file=sys.stderr)
