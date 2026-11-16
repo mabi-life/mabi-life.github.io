@@ -141,6 +141,14 @@ html[data-theme=light] .setPick{background:#f4f6fa;color:#222}
 .btnGhost{background:transparent;border-color:var(--line);color:var(--mu);font-weight:600}
 .craftExtra .bar .rmGoal{margin-left:auto}
 .extraEmpty{color:var(--mu);font-size:14px;padding:8px 2px 18px}
+
+.craftAct{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:4px;flex-wrap:wrap;white-space:nowrap}
+.craftAct input[type=number]{width:40px;padding:1px 3px;font-size:12px;text-align:center}
+.craftAct button{font:inherit;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid rgba(247,217,139,.4);background:rgba(232,198,106,.16);color:#f7d98b;cursor:pointer;line-height:1.4}
+.craftAct button:disabled{opacity:.4;cursor:not-allowed}
+.craftAct button.undo{background:transparent;border-color:var(--line);color:var(--mu);font-weight:600}
+.craftAct .craftFlash{color:#7fd99a;font-size:11.5px;font-weight:700}
+html[data-theme=light] .craftAct button{color:#7a5a10;background:rgba(232,198,106,.28)}
 </style>
 </head><body><div class="wrap">
 <nav class="siteNav" aria-label="도우미 이동"><a href="/">홈</a><a href="/alba/">알바</a><a href="/barter/">물교</a><a href="/dungeon/">던전</a><a href="/schedule/">스케줄</a><a href="/bunbae/">분배</a><span class="on" aria-current="page">제작</span><a href="/auction/">경매장</a><a href="/horn/">뿔피리</a></nav>
@@ -199,7 +207,7 @@ html[data-theme=light] .setPick{background:#f4f6fa;color:#222}
 
 <footer class="siteFoot"><span class="gold" aria-hidden="true"></span>Data based on NEXON Open API<br>시세는 10분 단위로 갱신되고 있습니다.<br>구슬 시세는 거대한 외침의 뿔피리 원문을 자동 파싱한 참고값입니다.<br>마비노기 제작·구슬 계산기 · 재료 부족분과 정가 코인 가성비를 봐요.<br>© 위즈니의 마비노기 생활도우미<br>운영: 하프서버 위즈니 · 문의: <a href="mailto:forgetwulf@gmail.com">forgetwulf@gmail.com</a><br><a href="/about/">사이트 소개</a> · <a href="/terms/">이용약관</a> · <a href="/privacy/">개인정보처리방침</a></footer>
 <script src="/coin/core.js?v=5"></script>
-<script src="app.js?v=3.16"></script>
+<script src="app.js?v=3.17"></script>
 <script src="/coin/app.js?v=1.12"></script>
 <script src="views.js?v=2"></script>
 </body></html>
