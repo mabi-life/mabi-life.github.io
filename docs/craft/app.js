@@ -199,7 +199,7 @@ function renderCombined(){const el=$('combinedMats');if(!el)return;const tgs=act
 <div class="cond" style="margin:8px 0 0">${bits.join(' · ')}</div>`;
  el.querySelectorAll('input[data-n]').forEach(i=>{i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render();syncCoin()}})}
 function addGoal(){st.extra=st.extra||[];const idx=gi();if(!(idx>=0&&RECIPES[idx])||!isDuskGoal(idx))return;const qty=Math.max(1,+st.qty||1);
- if(st.extra.some(e=>e.goal===idx))return;
+ {const dup=st.extra.find(e=>+e.goal===idx);if(dup){dup.qty=Math.max(1,+dup.qty||1)+qty;if(_prevGoal!=null&&_prevGoal>=0&&_prevGoal!==idx){st.goal=_prevGoal;st.qty=Math.max(1,+_prevQty||1);_prevGoal=null;const q=$('goalQty');if(q)q.value=st.qty;fillGoals()}save();render();syncCoin();return}}
  if(_prevGoal!=null&&_prevGoal!==idx&&_prevGoal>=0){st.extra.push({goal:idx,qty,closed:false,open:{}});st.goal=_prevGoal;st.qty=Math.max(1,+_prevQty||1);_prevGoal=null;const q=$('goalQty');if(q)q.value=st.qty;fillGoals()}
  else if(idx!==st.goal){st.extra.push({goal:idx,qty,closed:false,open:{}})}
  else return;
@@ -208,8 +208,8 @@ function rmGoal(i){if(!st.extra||i<0||i>=st.extra.length)return;st.extra.splice(
 function setExtraGoal(i,val){if(!st.extra[i])return;st.extra[i].goal=val===''||val==null?-1:+val;save();render();syncCoin()}
 function loadDuskSet(set,gender){const items=duskSetItems(set,gender);if(!items.length)return;const want=items.map(x=>x.i);const info=duskSetInfo()[set];
  if(info){const bodies=Object.values(info.body||{});if(bodies.some(b=>b.i===st.goal)&&!want.includes(st.goal))st.goal=info.body[gender].i}
- const have=new Set([st.goal,...(st.extra||[]).map(e=>e.goal)]);
- want.forEach(idx=>{if(have.has(idx))return;const empty=(st.extra||[]).find(e=>e.goal==null||e.goal<0||e.goal==='');if(empty){empty.goal=idx;empty.qty=empty.qty||1;have.add(idx);return}st.extra=st.extra||[];st.extra.push({goal:idx,qty:1,closed:false,open:{}});have.add(idx)});
+ const have=new Set([+gi(),+st.goal,...(st.extra||[]).map(e=>+e.goal)]);
+ want.forEach(idx=>{idx=+idx;if(have.has(idx))return;const empty=(st.extra||[]).find(e=>e.goal==null||e.goal<0||e.goal==='');if(empty){empty.goal=idx;empty.qty=empty.qty||1;have.add(idx);return}st.extra=st.extra||[];st.extra.push({goal:idx,qty:1,closed:false,open:{}});have.add(idx)});
  save();fillGoals();render();syncCoin()}
 function preselectSet(idx){const n=(RECIPES[idx]||{}).n||'';const m=/^더스크바운드 (비고러스|이지스|에테리얼)/.exec(n);const g=/\(남성용\)/.test(n)?'남성용':/\(여성용\)/.test(n)?'여성용':'';const dlg=$('setPick');if(!dlg)return;if(m){const r=dlg.querySelector('input[name="dset"][value="'+m[1]+'"]');if(r)r.checked=true}if(g){const r=dlg.querySelector('input[name="dgender"][value="'+g+'"]');if(r)r.checked=true}}
 function openSetPick(ei){window._setFromEi=ei;const idx=ei==null?gi():(st.extra[ei]&&st.extra[ei].goal);preselectSet(idx);const dlg=$('setPick');if(dlg.showModal)dlg.showModal();else dlg.setAttribute('open','')}
