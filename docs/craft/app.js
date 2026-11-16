@@ -237,6 +237,11 @@ function toggle(id,el){if(busy)return;const root=el.parentElement;const open=(ro
   const sv=root.querySelector('svg.lines');sv&&sv.animate([{opacity:1},{opacity:0}],{duration:180,fill:'forwards'});
   setTimeout(()=>{busy=0;Object.keys(open).forEach(k=>{if(k===id||k.startsWith(id+'/'))delete open[k]});window._act={id,open:0,dep,k:root._mctx&&root._mctx.actKey};save();render()},180)}
  else{el.classList.add('press');busy=1;setTimeout(()=>{busy=0;open[id]=1;window._act={id,open:1,dep,k:root._mctx&&root._mctx.actKey};save();render()},110)}}
+const SERIES_RE={nav:/^나이트브링어/,soul:/^소울/,dusk:/^더스크/};
+function seriesNames(kind){const re=SERIES_RE[kind],acc=new Set();if(!re)return acc;const walk=c=>{if(!c||!c[0])return;acc.add(c[0]);if(c[2]&&c[2].c)c[2].c.forEach(walk)};RECIPES.forEach(R=>{if(!re.test(R.n||''))return;acc.add(R.n);(R.c||[]).forEach(walk);(R.fin||[]).forEach(a=>(a||[]).forEach(walk))});return acc}
+function clearSeriesMats(kind){const names=seriesNames(kind);if(!names.size)return;names.forEach(n=>{delete st.own[n]});
+ craftUndo=craftUndo.filter(u=>!(u&&((u.n&&names.has(u.n))||(u.deltas&&Object.keys(u.deltas).some(k=>names.has(k))))));
+ if(window._craftFlash&&names.has(window._craftFlash.n))window._craftFlash=null;save();render();syncCoin()}
 function fillGoals(){const G=gi();const opt=re=>RECIPES.map((r,i)=>re.test(r.n)?`<option value="${i}">${r.n}</option>`:'').join('');
  const nb=opt(/^나이트브링어/),so=opt(/^소울/),du=opt(/^더스크/),E='<option value="">— 선택 —</option>';
  $('goalNav').innerHTML=E+nb;$('goalSoul').innerHTML=E+so;$('goalDusk').innerHTML=E+du;
@@ -249,6 +254,7 @@ window.craftCoinNeed=function(){const tgs=typeof activeTargets==='function'?acti
 function syncCoin(){const nv=/^나이트브링어/.test((RECIPES[gi()]||{}).n||''),vc=document.getElementById('vCoin');if(vc)vc.hidden=nv;const N=window.craftCoinNeed();if(N&&N.tab){const b=document.querySelector('#tabs button[data-k="'+N.tab+'"]');if(b&&!b.classList.contains('on'))b.click()}document.dispatchEvent(new Event('craftneed'))}fillGoals();$('goalQty').value=st.qty;
 $('goalSel').onchange=e=>{_prevGoal=st.goal;_prevQty=st.qty;st.goal=+e.target.value;save();render();syncCoin()};$('goalQty').onchange=e=>{st.qty=Math.max(1,+e.target.value||1);e.target.value=st.qty;save();render();syncCoin()};
 $('resetBtn').onclick=()=>{st.own={};st.open={};craftUndo=[];save();render();syncCoin()};
+document.querySelectorAll('.seriesClear').forEach(b=>{b.onclick=e=>{e.preventDefault();clearSeriesMats(b.dataset.series)}});
 render();
 fetch('https://mabi-data.mabilife.workers.dev/prices.json?t='+Date.now()).then(r=>r.json()).then(j=>{P=j.prices||{};const t=Object.values(P).map(v=>v.t).filter(Boolean).sort().pop();PT=t?t.slice(0,16).replace('T',' '):'';reBeads();render()}).catch(()=>{});
 
