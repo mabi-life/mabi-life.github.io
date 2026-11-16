@@ -59,8 +59,8 @@ html[data-theme=light] .setPick{background:#f4f6fa;color:#222}
 .setPick fieldset label{display:inline-flex;gap:6px;align-items:center;margin:4px 14px 4px 0;font-size:15px;cursor:pointer}
 .setPickActs{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
 .btnGhost{background:transparent;border-color:var(--line);color:var(--mu);font-weight:600}
-.bar label{display:inline-flex;align-items:center;gap:6px}
-.seriesClear{padding:4px 10px;font-size:12.5px}
+#combinedMats h2{display:flex;align-items:center;gap:8px}
+.totClear{margin-left:auto;padding:4px 12px;font-size:12.5px}
 .craftExtra .bar .rmGoal{margin-left:auto}
 .extraEmpty{color:var(--mu);font-size:14px;padding:8px 2px 18px}
 
@@ -78,7 +78,7 @@ html[data-theme=light] .craftAct button{color:#7a5a10;background:rgba(232,198,10
 
 <div class="head"><h1>제작 도우미<!-- v0.10 --></h1><p id="craftDesc">마비노기 제작 재료 트리에서 목표 아이템과 필요한 재료를 확인하세요. 카드를 클릭하면 펼치기·접기. 보유 수량을 입력하면 부족분만 계산합니다. 정가 코인 교환·구슬 가성비도 아래에서 비교할 수 있습니다.</p></div>
 <section id="vCraft">
-<div class="bar"><label>나브 시리즈 <select id="goalNav"></select><button type="button" class="btn btnGhost seriesClear" data-series="nav" title="나브 시리즈 재료의 보유 수량과 제작 기록만 비워요">재료 비우기</button></label><label>소울 시리즈 <select id="goalSoul"></select><button type="button" class="btn btnGhost seriesClear" data-series="soul" title="소울 시리즈 재료의 보유 수량과 제작 기록만 비워요">재료 비우기</button></label><label>더스크 시리즈 <select id="goalDusk"></select><button type="button" class="btn btnGhost seriesClear" data-series="dusk" title="더스크 시리즈 재료의 보유 수량과 제작 기록만 비워요">재료 비우기</button></label><select id="goalSel" hidden></select><button type="button" class="btn setLoadBtn" id="loadSetBtn" hidden>세트로 불러오기</button><button type="button" class="btn" id="addGoalBtn">목표 추가</button><label>목표 수량 <input type="number" id="goalQty" min="1" value="1"></label>
+<div class="bar"><label>나브 시리즈 <select id="goalNav"></select></label><label>소울 시리즈 <select id="goalSoul"></select></label><label>더스크 시리즈 <select id="goalDusk"></select></label><select id="goalSel" hidden></select><button type="button" class="btn setLoadBtn" id="loadSetBtn" hidden>세트로 불러오기</button><button type="button" class="btn" id="addGoalBtn">목표 추가</button><label>목표 수량 <input type="number" id="goalQty" min="1" value="1"></label>
 <button class="btn" id="resetBtn">보유 수량 초기화</button></div>
 <div class="totals" id="tot"></div>
 <div class="cond" id="cond"></div>
