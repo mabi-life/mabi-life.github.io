@@ -1,7 +1,7 @@
 // 제작 재료 계산기 v0.3 test — 레시피 트리 (재귀, 최대 깊이 6)
 // 노드: [이름, 개수, (제작 가능하면) {skill, out(1회 산출량), c:[하위]}]
 let RECIPES=[{n:"소울 리버레이트 힐링 원드",skill:"매직 크래프트",tool:"벼락맞은 떡갈나무 지팡이 (소모 X)",fac:"마법의 가마솥",c:[["브리 레흐의 코어",5],["브리 레흐의 정수",10],["강렬한 기억의 결정",10,{"skill":"힐웬 공학","out":1,"c":[["초록빛 기억의 조각",3],["바리사이트",10],["마력이 깃든 융합제",5],["퓨어 젬스톤",2,{"skill":"매직 크래프트","out":1,"c":[["마력이 깃든 융합제",3],["젬스톤 파우더",30],["티어드롭 젬스톤",30],["순도 높은 강화제",10]]}]]}],["마력이 충만한 마력석",2,{"skill":"매직 크래프트","out":1,"c":[["브리 레흐의 기운이 깃든 문장",3],["오묘한 마력석",10],["마력이 깃든 융합제",3],["강화된 실리엔",3,{"skill":"매직 크래프트","out":1,"c":[["온전한 실리엔",70,{"skill":"매직 크래프트","out":1,"c":[["실리엔",1,{"skill":"매직 크래프트","out":1,"c":[["실리엔 결정",5]]}],["신비한 허브 가루",3,{"skill":"매직 크래프트","out":1,"c":[["블러디 허브",1],["마나 허브",1],["포이즌 허브",1]]}]],"alt":2}],["순도 높은 강화제",30],["각성된 힘의 가루",10]]}]]}],["순도 높은 융합의 실리엔",2,{"skill":"매직 크래프트","out":1,"c":[["순도 높은 마력의 결정",10],["순도 높은 힘의 결정",5,{"skill":"매직 크래프트","out":1,"c":[["마력이 깃든 융합제",3],["각성된 힘의 조각",10],["각성된 힘의 결정",10],["깨어난 힘의 정수",20],["각성된 힘의 가루",10]]}],["마력이 깃든 융합제",1],["온전한 실리엔",100,{"skill":"매직 크래프트","out":1,"c":[["실리엔",1,{"skill":"매직 크래프트","out":1,"c":[["실리엔 결정",5]]}],["신비한 허브 가루",3,{"skill":"매직 크래프트","out":1,"c":[["블러디 허브",1],["마나 허브",1],["포이즌 허브",1]]}]],"alt":2}]]}],["마력이 담긴 마력석",10,{"skill":"매직 크래프트","out":1,"c":[["텅 빈 마력석",5],["마력이 깃든 융합제",1],["퓨어 젬스톤",1,{"skill":"매직 크래프트","out":1,"c":[["마력이 깃든 융합제",3],["젬스톤 파우더",30],["티어드롭 젬스톤",30],["순도 높은 강화제",10]]}],["침식된 광물 조각",6]]}],["마력이 깃든 마법사의 보석",24,{"skill":"매직 크래프트","out":1,"c":[["녹음이 깃든 마법사의 보석",7],["마력석",20],["젬스톤 파우더",20],["각성된 힘의 가루",10]]}],["재생의 가루",100]]}];
-const LS='mabiCraft.v0';const st=Object.assign({goal:0,qty:1,own:{}},JSON.parse(localStorage.getItem(LS)||'{}'));
+const LS='mabiCraft.v0';const st=Object.assign({goal:0,qty:1,own:{},extra:[]},JSON.parse(localStorage.getItem(LS)||'{}'));if(!Array.isArray(st.extra))st.extra=[];st.extra=st.extra.map(e=>({goal:e&&e.goal>=0?+e.goal:-1,qty:Math.max(1,+(e&&e.qty)||1),closed:!!(e&&e.closed),open:(e&&e.open&&typeof e.open==='object')?e.open:{}}));
 const save=()=>{try{localStorage.setItem(LS,JSON.stringify(st))}catch(e){}};
 // 저장된 goal 인덱스는 recipes.json(44개) 로드 전 내장 1개 레시피 기준으로 0으로 덮어쓰지 않음
 const gi=()=>(st.goal>=0&&st.goal<RECIPES.length)?st.goal:0;
@@ -89,19 +89,19 @@ function tip(c,z,kind,q){const [n,,r,fz,ps,S]=c;const own=+st.own[n]||0;const no
  document.addEventListener('mousemove',e=>{if(t.style.display==='none')return;const w=t.offsetWidth,h=t.offsetHeight;t.style.left=Math.max(6,Math.min(e.clientX+14,innerWidth-w-6))+'px';t.style.top=Math.max(6,e.clientY+h+20>innerHeight?e.clientY-h-10:e.clientY+16)+'px'})})();
 const AVG=R=>Math.ceil(100/R.pct);const stepsOf=R=>R.pct?Math.max(1,+(st.steps||{})[R.n]||AVG(R)):1;
 const matsOf=R=>{const s=stepsOf(R);return R.c.map(c=>[c[0],c[1]*s,c[2],0,R.pct?c[1]:0,s]).concat(((R.fin||[])[0]||[]).map(x=>[x[0],x[1],null,1]))};
-function render(){const R=RECIPES[gi()],q=st.qty,M=matsOf(R),S=stepsOf(R);const root=$('root');
+function renderTarget(ctx){const R=ctx.R,q=ctx.qty,M=matsOf(R),S=stepsOf(R);const root=ctx.root;if(!R||!root)return;root._mctx=ctx;
  const old={};root.querySelectorAll('.nd').forEach(e=>old[e.dataset.id]={x:parseFloat(e.style.left),y:parseFloat(e.style.top)});
- root.innerHTML='';st.open=st.open||{};
+ root.innerHTML='';ctx.open=ctx.open||{};
  let tot=0,miss=0;M.forEach(c=>{const z=nodeCost(c,q);tot+=z.best;miss+=z.miss});const gp=pr(R.n);
  const card=(id,cls,html,title)=>{const e=document.createElement('div');e.className='bal nd '+cls;e.dataset.id=id;e.innerHTML=html;if(title)e.title=title;root.appendChild(e);return e};
  const BC=['#4fc3f7','#ff8a65','#81c784','#ba68c8','#ffd54f','#f06292','#4db6ac','#9575cd','#aed581','#e57373'];
- const mk=(c,mult,pid,dep,bi)=>{const [n,k,r,fz,ps,S]=c;const kind=r?'제작':(z0=>z0.p?'구매':(z0.cn?'코인':'채집'))(nodeCost(c,mult));const z=nodeCost(c,mult);const id=pid+'/'+n;const open=!!(r&&st.open[id]);
+ const mk=(c,mult,pid,dep,bi)=>{const [n,k,r,fz,ps,S]=c;const kind=r?'제작':(z0=>z0.p?'구매':(z0.cn?'코인':'채집'))(nodeCost(c,mult));const z=nodeCost(c,mult);const id=pid+'/'+n;const open=!!(r&&ctx.open[id]);
   const el=card(id,(r?'craft':'')+(open?' open':'')+((+st.own[n]||0)>=z.all&&z.all>0?' done':''),bal(n,z.all,+st.own[n]||0,kind,(ps?`<small style="opacity:.65;margin-left:4px">${f(ps)}×${S}회</small>`:'')+(r?`<span class="chev">${open?'▾':'▸'}</span>`:'')+(fz?'<span class="tag" style="color:#ffb74d;border-color:#ffb74d55;margin-left:4px">마감재</span>':''),z),'');el.dataset.rc=tip(c,z,fz?'마감재':kind,mult);
-  el.dataset.dep=dep;const nd={id,el,open,dep,craft:!!r,col:BC[bi%BC.length],kids:open?r.c.map(x=>mk(x,z.sub.runs,id,dep+1,bi)):null};
+  el.dataset.dep=dep;if(r&&r.c)attachCraftBar(el,n,r.c,r.out||1);const nd={id,el,open,dep,craft:!!r,col:BC[bi%BC.length],kids:open?r.c.map(x=>mk(x,z.sub.runs,id,dep+1,bi)):null};
   if(r)el.onclick=()=>toggle(id,el);return nd};
- const g=card('G','goal craft'+((+st.own[R.n]||0)>=q&&q>0?' done':''),bal(R.n,q,+st.own[R.n]||0,'제작',`<small style="margin-left:8px;font-size:13px;color:${gp?'#f7d98b':'#8f8aa8'};white-space:nowrap" title="경매장 최저가">경매장 ${gp?'<img src="/assets/icons/2x/2000.png" alt="G" style="width:1.1em;height:1.1em;vertical-align:-.2em;margin-right:1px">'+fg(gp)+'':'매물 없음'}</small><span class="chev">${st.closed?'▸':'▾'}</span>`),'');{const gown=+st.own[R.n]||0;const gn=Math.max(0,q-gown);g.dataset.rc=tipCard({n:R.n,kind:'목표',sub:`${R.skill||'제작'} · ${q}개 목표${R.pct?` · ${S}회 공정 기준`:''}`,all:q,own:gown,need:gn,p:gp,craft:{tot,miss},kids:M.map(c=>[c,nodeCost(c,q)]),notes:R.pct?[`1단계 재료 = 공정 1회분 × <b>${S}회</b>로 잡았어요`]:[],foot:'클릭하면 전체 펼치기/접기'})}
- g.onclick=()=>{st.closed=!st.closed;save();render()};
- const kids=st.closed?[]:M.map((c,i)=>{const k=mk(c,q,'',1,i);return k});
+ const g=card(ctx.gid,'goal craft'+((+st.own[R.n]||0)>=q&&q>0?' done':''),bal(R.n,q,+st.own[R.n]||0,'제작',`<small style="margin-left:8px;font-size:13px;color:${gp?'#f7d98b':'#8f8aa8'};white-space:nowrap" title="경매장 최저가">경매장 ${gp?'<img src="/assets/icons/2x/2000.png" alt="G" style="width:1.1em;height:1.1em;vertical-align:-.2em;margin-right:1px">'+fg(gp)+'':'매물 없음'}</small><span class="chev">${ctx.closed?'▸':'▾'}</span>`),'');{const gown=+st.own[R.n]||0;const gn=Math.max(0,q-gown);g.dataset.rc=tipCard({n:R.n,kind:'목표',sub:`${R.skill||'제작'} · ${q}개 목표${R.pct?` · ${S}회 공정 기준`:''}`,all:q,own:gown,need:gn,p:gp,craft:{tot,miss},kids:M.map(c=>[c,nodeCost(c,q)]),notes:R.pct?[`1단계 재료 = 공정 1회분 × <b>${S}회</b>로 잡았어요`]:[],foot:'클릭하면 전체 펼치기/접기'})}attachCraftBar(g,R.n,M.map(x=>[x[0],x[1]]),1);
+ g.onclick=()=>{ctx.closed=!ctx.closed;save();render()};
+ const kids=ctx.closed?[]:M.map((c,i)=>{const k=mk(c,q,'',1,i);return k});
  const paint=(n)=>{n.el.style.borderColor=n.col;n.el.style.boxShadow='inset 3px 0 0 '+n.col;n.el.style.setProperty('--ac',n.col);(n.kids||[]).forEach(paint)};kids.forEach(paint);
  const all=[...root.querySelectorAll('.nd')];all.forEach(e=>{e._w=e.offsetWidth;e._h=e.offsetHeight});
  const GAP=6,VG=22,RH=Math.max(...all.map(e=>e._h)),RY=RH+VG;
@@ -125,45 +125,127 @@ function render(){const R=RECIPES[gi()],q=st.qty,M=matsOf(R),S=stepsOf(R);const 
    L.lines.push([Math.min(0,tx,...c1),y1,Math.max(0,tx,...c1),y1,lc],[Math.min(tx,...c2),y2,Math.max(tx,...c2),y2,lc],[tx,y1,tx,y2,lc,2]);
    L.prof[1]=[Math.min(l1,tx-CW),Math.max(r1,tx+CW)]}
   L.lines.push([0,nd.el._h,0,(lv.length?1:deep)*RY-VG/2,lc]);return L}
- const GN={el:g,open:!st.closed,kids};const T=lay(GN,true);
- if(!window._gx)window._gx=Math.max(g._w/2,root.parentElement.parentElement.clientWidth/2);
- let minx=Math.min(...T.pos.map(p=>p[1]));const ox=Math.max(window._gx,-minx);
+ const GN={el:g,open:!ctx.closed,kids};const T=lay(GN,true);
+ if(!window[ctx.gxKey])window[ctx.gxKey]=Math.max(g._w/2,root.parentElement.parentElement.clientWidth/2);
+ let minx=Math.min(...T.pos.map(p=>p[1]));const ox=Math.max(window[ctx.gxKey],-minx);
  const out={pos:T.pos.map(([e,x,r])=>[e,x+ox,r*RY]),lines:T.lines.map(l=>[l[0]+ox,l[1],l[2]+ox,l[3],l[4]||'#c9a24a',l[5]||1])};
  let mw=0,mh=0;out.pos.forEach(([e,x,y])=>{e.style.left=x+'px';e.style.top=y+'px';mw=Math.max(mw,x+e._w);mh=Math.max(mh,y+e._h)});
  root.style.width=mw+'px';root.style.height=mh+4+'px';
  const sv=document.createElementNS('http://www.w3.org/2000/svg','svg');sv.setAttribute('class','lines');sv.setAttribute('width',mw);sv.setAttribute('height',mh+4);
  {const bc={};out.lines.forEach(l=>{const k=l[4]+'|'+l[5];(bc[k]=bc[k]||[]).push(l)});sv.innerHTML=Object.entries(bc).map(([k,ls])=>{const [c,w]=k.split('|');const o=w>1?0:.5;return `<path d="${ls.map(l=>`M${Math.round(l[0])+o} ${Math.round(l[1])+o}L${Math.round(l[2])+o} ${Math.round(l[3])+o}`).join('')}" stroke="${c}" stroke-opacity="${w>1?.95:.85}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="square" fill="none"/>`}).join('')}root.prepend(sv);
- const A=window._act;window._act=null;
+ const A=(window._act&&(!window._act.k||window._act.k===ctx.actKey))?window._act:null;if(A)window._act=null;
  if(A){let moved=0;sv.animate([{opacity:0},{opacity:0,offset:.55},{opacity:1}],{duration:620,easing:'ease-out'});
-  out.pos.forEach(([e,x,y])=>{const o=old[e.dataset.id];if(e.dataset.id==='G')return;
+  out.pos.forEach(([e,x,y])=>{const o=old[e.dataset.id];if(e.dataset.id===ctx.gid)return;
    if(o){const dx=o.x-x,dy=o.y-y;if(Math.abs(dx)+Math.abs(dy)<.5)return;const me=e.dataset.id===A.id;
     e.animate(me?(A.open?[{transform:`translate(${dx}px,${dy}px) scale(.92)`,easing:'cubic-bezier(.5,0,.2,1)'},{transform:'translate(0,6px) scale(1.06,.95)',offset:.6,easing:'cubic-bezier(.3,1.6,.5,1)'},{transform:'translate(0,-2px) scale(.98,1.02)',offset:.82},{transform:'none'}]
      :[{transform:`translate(${dx}px,${dy}px)`,easing:'cubic-bezier(.5,0,.2,1)'},{transform:'translate(0,-5px) scale(1.04,.96)',offset:.65,easing:'cubic-bezier(.3,1.6,.5,1)'},{transform:'translate(0,1px)',offset:.85},{transform:'none'}])
      :[{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:me?(A.open?560:480):480,easing:me?undefined:'cubic-bezier(.34,1.3,.64,1)'})}
    else{const d=e.dataset.id.startsWith(A.id+'/')?(+e.dataset.dep-A.dep-1):0;e.animate([{opacity:0,transform:'translateY(-18px) scale(.94)'},{opacity:1,transform:'none'}],{duration:420,delay:280+d*90+(moved++%12)*18,fill:'backwards',easing:'cubic-bezier(.34,1.56,.64,1)'})}})}
  root.querySelectorAll('input[data-n]').forEach(i=>{i.onclick=e=>e.stopPropagation();i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render();syncCoin()}});
- $('tot').innerHTML=`<span>목표 <b>${R.n}</b> ×${q}</span><span>1단계 재료 ${R.c.length}종${R.fin?` + 마감재 ${(R.fin[0]||[]).length}종`:''}</span>${R.pct?`<span>공정 횟수 <input id="stepsIn" type="number" min="1" value="${S}" style="width:4em" title="기본값 = ${AVG(R)}회 (공정 1회 성공 시 최대 ${R.pct}% 기준 이론 최소 횟수 · 실패 많으면 직접 늘려 입력)">회 <small>(1단계 재료 수량 = 1회분 × ${S}회 기준)</small></span>`:''}<span>최저 재료비 <b>${fg(tot)}</b>${miss?` · 시세 없는 재료 ${miss}종 제외`:''}</span><span class="gmk">경매장 시세 ${gpx(R.n)}</span>`;
- $('cond').innerHTML=`제작 조건 · 스킬 <b>${R.skill}</b> · 도구 <b>${R.tool}</b> · 시설 <b>${R.fac}</b>${R.pct?` · 공정 1회당 최대 <b>${R.pct}%</b> (공정 성공 시 ${R.pct/2}~${R.pct}% · 대성공 시 최대 ${R.pct*1.5}% · 실패 시 0~${R.pct/2}% 랜덤) → 기본 <b>${AVG(R)}회</b> 기준 (공정 성공 시 최대 ${R.pct}% 기준 이론 최소 · 실패·대실패가 섞이면 더 늘어나므로 위 입력칸에서 조정), 대성공만 나면 최소 ${Math.ceil(100/(R.pct*1.5))}회 · 매 공정 재료 1세트 소모, 재료비 ×${S} 반영<br><small>공정률 증가: 해당 스킬 파티(풀파티일수록↑), 레인캐스팅(천옷)만 적용 · 월요일·풍년가·세공은 성공률/품질만</small>`:''}${R.fin?`<br>마감 재료 · ${R.fin.map((t,i)=>`[타입${i+1}] `+t.map(x=>`${x[0]} <b>×${x[1]}</b>`).join(', ')).join(' / ')} <small>(100% 완성 후 마감 1회 · 재료비 포함)</small>`:''} · 시세 ${PT||'—'}<br>구슬 시세 · ${Object.keys(MC.SHOPS||{}).map(t=>`<a href="#coin-${t}">${MC.SHOPS[t].name}</a> <b>${BP[t]?'<img src="/assets/icons/2x/2000.png" alt="G" style="width:1.1em;height:1.1em;vertical-align:-.2em;margin-right:1px">'+fg(Math.round(BP[t].p))+'':'—'}</b>`).join(' · ')} <small>(아래 정가 코인 섹션의 직접 입력값 공유 · 탈라 가흐는 교환 재료 경매가÷구슬 수 역산 중앙값 · 브리 레흐는 거뿔 중앙값과 재료 역산의 평균 · 재료비는 경매/코인/제작 중 최저)</small>`}
-$('tot').addEventListener('change',e=>{if(e.target.id!=='stepsIn')return;const R=RECIPES[gi()];st.steps=st.steps||{};st.steps[R.n]=Math.max(1,+e.target.value||1);save();render();syncCoin()});
+ if(ctx.tot)ctx.tot.innerHTML=`<span>목표 <b>${R.n}</b> ×${q}</span><span>1단계 재료 ${R.c.length}종${R.fin?` + 마감재 ${(R.fin[0]||[]).length}종`:''}</span>${R.pct?`<span>공정 횟수 <input id="${ctx.stepsId}" data-rname="${R.n}" type="number" min="1" value="${S}" style="width:4em" title="기본값 = ${AVG(R)}회 (공정 1회 성공 시 최대 ${R.pct}% 기준 이론 최소 횟수 · 실패 많으면 직접 늘려 입력)">회 <small>(1단계 재료 수량 = 1회분 × ${S}회 기준)</small></span>`:''}<span>최저 재료비 <b>${fg(tot)}</b>${miss?` · 시세 없는 재료 ${miss}종 제외`:''}</span><span class="gmk">경매장 시세 ${gpx(R.n)}</span>`;
+ if(ctx.cond)ctx.cond.innerHTML=`제작 조건 · 스킬 <b>${R.skill}</b> · 도구 <b>${R.tool}</b> · 시설 <b>${R.fac}</b>${R.pct?` · 공정 1회당 최대 <b>${R.pct}%</b> (공정 성공 시 ${R.pct/2}~${R.pct}% · 대성공 시 최대 ${R.pct*1.5}% · 실패 시 0~${R.pct/2}% 랜덤) → 기본 <b>${AVG(R)}회</b> 기준 (공정 성공 시 최대 ${R.pct}% 기준 이론 최소 · 실패·대실패가 섞이면 더 늘어나므로 위 입력칸에서 조정), 대성공만 나면 최소 ${Math.ceil(100/(R.pct*1.5))}회 · 매 공정 재료 1세트 소모, 재료비 ×${S} 반영<br><small>공정률 증가: 해당 스킬 파티(풀파티일수록↑), 레인캐스팅(천옷)만 적용 · 월요일·풍년가·세공은 성공률/품질만</small>`:''}${R.fin?`<br>마감 재료 · ${R.fin.map((t,i)=>`[타입${i+1}] `+t.map(x=>`${x[0]} <b>×${x[1]}</b>`).join(', ')).join(' / ')} <small>(100% 완성 후 마감 1회 · 재료비 포함)</small>`:''} · 시세 ${PT||'—'}<br>구슬 시세 · ${Object.keys(MC.SHOPS||{}).map(t=>`<a href="#coin-${t}">${MC.SHOPS[t].name}</a> <b>${BP[t]?'<img src="/assets/icons/2x/2000.png" alt="G" style="width:1.1em;height:1.1em;vertical-align:-.2em;margin-right:1px">'+fg(Math.round(BP[t].p))+'':'—'}</b>`).join(' · ')} <small>(아래 정가 코인 섹션의 직접 입력값 공유 · 탈라 가흐는 교환 재료 경매가÷구슬 수 역산 중앙값 · 브리 레흐는 거뿔 중앙값과 재료 역산의 평균 · 재료비는 경매/코인/제작 중 최저)</small>`}
+
+
+let craftUndo=[];let _craftFlashTimer=0;
+function kidsNeed(kids){const m=new Map();(kids||[]).forEach(c=>{const k=+c[1]||0;if(!c[0]||k<=0)return;m.set(c[0],(m.get(c[0])||0)+k)});return[...m.entries()]}
+function maxCrafts(kids){const ks=kidsNeed(kids);if(!ks.length)return 0;let m=Infinity;ks.forEach(([n,k])=>{m=Math.min(m,Math.floor((+st.own[n]||0)/k))});return(Number.isFinite(m)&&m>0)?m:0}
+function applyCraft(n,kids,out,count){const ks=kidsNeed(kids);const max=maxCrafts(ks);count=Math.max(0,Math.min(max,count|0));if(count<1)return;out=out||1;const deltas={};ks.forEach(([cn,k])=>{deltas[cn]=(deltas[cn]||0)-count*k});deltas[n]=(deltas[n]||0)+count*out;Object.keys(deltas).forEach(k=>{st.own[k]=Math.max(0,(+st.own[k]||0)+deltas[k])});craftUndo.push({n,count,deltas});window._craftFlash={n,count};clearTimeout(_craftFlashTimer);_craftFlashTimer=setTimeout(()=>{if(window._craftFlash&&window._craftFlash.n===n){window._craftFlash=null;document.querySelectorAll('.craftFlash').forEach(e=>{e.hidden=true})}},1800);save();render();syncCoin()}
+function undoCraft(){const u=craftUndo.pop();if(!u)return;window._craftFlash=null;Object.keys(u.deltas).forEach(k=>{st.own[k]=Math.max(0,(+st.own[k]||0)-u.deltas[k])});save();render();syncCoin()}
+function attachCraftBar(el,n,kids,out){if(!el||!kids||!kids.length)return;const max=maxCrafts(kids);const bar=document.createElement('div');bar.className='craftAct';bar.addEventListener('click',e=>e.stopPropagation());bar.addEventListener('pointerdown',e=>e.stopPropagation());
+ const inp=document.createElement('input');inp.type='number';inp.min=max?1:0;inp.max=max;inp.step=1;inp.value=max||0;inp.disabled=!max;inp.title='제작 횟수 · 지금은 '+max+'회까지 가능';inp.setAttribute('aria-label','제작 횟수');
+ const doBtn=document.createElement('button');doBtn.type='button';doBtn.textContent='제작';doBtn.disabled=!max;
+ const unBtn=document.createElement('button');unBtn.type='button';unBtn.textContent='되돌리기';unBtn.className='undo';unBtn.disabled=!craftUndo.length;unBtn.title=craftUndo.length?'마지막 제작을 되돌립니다':'되돌릴 제작이 없어요';
+ const flash=document.createElement('span');flash.className='craftFlash';if(window._craftFlash&&window._craftFlash.n===n){flash.textContent='제작함 ×'+window._craftFlash.count;flash.hidden=false}else flash.hidden=true;
+ inp.addEventListener('click',e=>e.stopPropagation());inp.addEventListener('change',()=>{let v=+inp.value||0;inp.value=max?Math.max(1,Math.min(max,v)):0});
+ doBtn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();applyCraft(n,kids,out,+inp.value||0)});
+ unBtn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();undoCraft()});
+ bar.append(inp,doBtn,unBtn,flash);el.appendChild(bar)}
+
+function render(){if(!RECIPES.length)return;renderTarget(mainCtx());renderMulti()}
+function mainCtx(){st.open=st.open||{};return {R:RECIPES[gi()],qty:st.qty,root:$('root'),tot:$('tot'),cond:$('cond'),open:st.open,gid:'G',stepsId:'stepsIn',gxKey:'_gx',actKey:'main',get closed(){return !!st.closed},set closed(v){st.closed=!!v}}}
+function activeTargets(){const out=[];const R=RECIPES[gi()];if(R)out.push({R,qty:st.qty,ei:null});(st.extra||[]).forEach((ex,i)=>{const r=RECIPES[ex.goal];if(r)out.push({R:r,qty:Math.max(1,+ex.qty||1),ei:i})});return out}
+// 더스크 세트는 recipes.json 이름에서 유도. 몸통만 (남성용)/(여성용)이 있고 나머지 부위는 공용.
+// 비고러스: 레더 헬멧, 아머(남/여), 글러브, 부츠
+// 이지스: 헬멧, 가드(남/여), 건틀렛, 그리브
+// 에테리얼: 튜더 베레모, 수트(남/여), 글러브, 슈즈
+function duskSetInfo(){const sets={};RECIPES.forEach((r,i)=>{const m=/^더스크바운드 (비고러스|이지스|에테리얼) (.+)$/.exec(r.n||'');if(!m)return;const set=m[1],rest=m[2];const g=/\(남성용\)/.test(rest)?'남성용':/\(여성용\)/.test(rest)?'여성용':null;const S=sets[set]=sets[set]||{name:set,body:{},parts:[]};if(g)S.body[g]={i,n:r.n};else S.parts.push({i,n:r.n})});return sets}
+function duskSetItems(set,gender){const S=duskSetInfo()[set];if(!S||!S.body[gender])return[];const rank=n=>/헬멧|베레모|모자/.test(n)?0:/아머|수트|가드/.test(n)?1:/글러브|건틀렛/.test(n)?2:/부츠|슈즈|그리브/.test(n)?3:4;return S.parts.concat([S.body[gender]]).sort((a,b)=>rank(a.n)-rank(b.n)||a.i-b.i)}
+function isDuskGoal(idx){return /^더스크/.test((RECIPES[idx]||{}).n||'')}
+function syncSetBtn(btn,idx){if(!btn)return;btn.hidden=!isDuskGoal(idx)}
+function extraHTML(i,ex){const id=s=>s+'_e'+i;return `<div class="craftExtra" data-ei="${i}"><div class="bar"><label>나브 시리즈 <select id="${id('goalNav')}" data-ei="${i}" data-series="nav"></select></label><label>소울 시리즈 <select id="${id('goalSoul')}" data-ei="${i}" data-series="soul"></select></label><label>더스크 시리즈 <select id="${id('goalDusk')}" data-ei="${i}" data-series="dusk"></select></label><button type="button" class="btn setLoadBtn" data-ei="${i}" hidden>세트로 불러오기</button><label>목표 수량 <input type="number" id="${id('goalQty')}" data-ei="${i}" min="1" value="${Math.max(1,+ex.qty||1)}"></label><button type="button" class="rmGoal" data-ei="${i}" title="이 목표 삭제" aria-label="이 목표 삭제">✕</button></div><div class="totals" id="${id('tot')}"></div><div class="cond" id="${id('cond')}"></div><div class="scroll"><div class="tree" id="${id('tree')}"><div id="${id('root')}"></div></div></div></div>`}
+function fillExtraSelects(i,ex){const opt=re=>RECIPES.map((r,j)=>re.test(r.n)?`<option value="${j}">${r.n}</option>`:'').join('');const E='<option value="">— 선택 —</option>';const nav=$('goalNav_e'+i),soul=$('goalSoul_e'+i),dusk=$('goalDusk_e'+i);if(!nav)return;nav.innerHTML=E+opt(/^나이트브링어/);soul.innerHTML=E+opt(/^소울/);dusk.innerHTML=E+opt(/^더스크/);const n=(RECIPES[ex.goal]||{}).n||'',k=/^나이트브링어/.test(n)?'nav':/^소울/.test(n)?'soul':/^더스크/.test(n)?'dusk':'';nav.value=k==='nav'?ex.goal:'';soul.value=k==='soul'?ex.goal:'';dusk.value=k==='dusk'?ex.goal:'';syncSetBtn(document.querySelector('.setLoadBtn[data-ei="'+i+'"]'),ex.goal)}
+function extraCtx(i,ex){const R=RECIPES[ex.goal];if(!R)return null;ex.open=ex.open||{};return {R,qty:Math.max(1,+ex.qty||1),root:$('root_e'+i),tot:$('tot_e'+i),cond:$('cond_e'+i),open:ex.open,gid:'G_e'+i,stepsId:'stepsIn_e'+i,gxKey:'_gx_e'+i,actKey:'e'+i,get closed(){return !!ex.closed},set closed(v){ex.closed=!!v}}}
+function renderMulti(){st.extra=Array.isArray(st.extra)?st.extra:[];const box=$('extraGoals');if(!box)return;
+ const n=st.extra.length;
+ if(box.children.length!==n){box.innerHTML=st.extra.map((ex,i)=>extraHTML(i,ex)).join('')}
+ st.extra.forEach((ex,i)=>{
+  if(!box.children[i])return;
+  fillExtraSelects(i,ex);
+  const qty=$('goalQty_e'+i);if(qty)qty.value=Math.max(1,+ex.qty||1);
+  const ctx=extraCtx(i,ex);
+  if(ctx){const ph=box.children[i].querySelector('.extraEmpty');if(ph)ph.remove();renderTarget(ctx)}
+  else{const root=$('root_e'+i);if(root)root.innerHTML='';const tot=$('tot_e'+i);if(tot)tot.innerHTML='<span>시리즈를 선택하면 트리가 이 아래에 추가돼요</span>';const cond=$('cond_e'+i);if(cond)cond.innerHTML='';}
+ });
+ renderCombined();
+}
+function combinedMatRows(tgs){const map=new Map();tgs.forEach(t=>{matsOf(t.R).forEach(c=>{const n=c[0],z=nodeCost(c,t.qty),row=map.get(n)||{n,all:0,c};row.all+=z.all;row.c=c;map.set(n,row)})});
+ return[...map.values()].map(row=>{const z=nodeCost([row.n,row.all,row.c[2]],1);return {n:row.n,all:row.all,own:+st.own[row.n]||0,need:z.need,via:z.via,best:z.best,miss:z.miss}})}
+function renderCombined(){const el=$('combinedMats');if(!el)return;const tgs=activeTargets();if(tgs.length<2){el.hidden=true;el.innerHTML='';return}
+ const rows=combinedMatRows(tgs);let matTot=0,miss=0;rows.forEach(r=>{matTot+=r.best;miss+=r.miss});
+ let auc=0,aucMiss=0;const bits=tgs.map(t=>{const need=Math.max(0,t.qty-(+st.own[t.R.n]||0)),p=pr(t.R.n);if(!need)return t.R.n+' 보유로 충분';if(p){auc+=p*need;return t.R.n+' '+fg(p*need)}aucMiss++;return t.R.n+' 매물 없음'});
+ const via={구매:'경매장',코인:'구슬',제작:'제작'};
+ el.hidden=false;
+ el.innerHTML=`<h2>합친 재료 <small style="font-weight:600;color:var(--mu)">목표 ${tgs.length}개</small></h2>
+<table><thead><tr><th>재료</th><th>필요</th><th>보유</th><th>부족</th><th>구매처</th><th>필요분 값</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${IC[r.n]?`<img class="ic im" src="/assets/icons/2x/${IC[r.n].id}.png" alt="" style="width:1.15em;height:1.15em;vertical-align:-.2em;margin-right:4px">`:''}${r.n}</td><td>${f(r.all)}</td><td><input type="number" min="0" data-n="${r.n}" value="${r.own||''}"></td><td>${f(r.need)}</td><td class="via">${via[r.via]||'—'}</td><td>${r.need? (r.miss? '시세 없음': fg(r.best)) : '—'}</td></tr>`).join('')}</tbody></table>
+<div class="sum"><span>최저 재료비 <b>${fg(matTot)}</b>${miss?` · 시세 없는 재료 ${miss}종 제외`:''}</span><span class="gmk">경매장 완성품 합계 <b>${aucMiss&&!auc?'매물 없음':fg(auc)}</b>${aucMiss?` · 시세 없는 목표 ${aucMiss}종 제외`:''}</span></div>
+<div class="cond" style="margin:8px 0 0">${bits.join(' · ')}</div>`;
+ el.querySelectorAll('input[data-n]').forEach(i=>{i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render();syncCoin()}})}
+function addGoal(){st.extra=st.extra||[];st.extra.push({goal:-1,qty:1,closed:false,open:{}});save();render();syncCoin();const i=st.extra.length-1;const s=$('goalDusk_e'+i)||$('goalNav_e'+i);s&&s.focus()}
+function rmGoal(i){if(!st.extra||i<0||i>=st.extra.length)return;st.extra.splice(i,1);save();render();syncCoin()}
+function setExtraGoal(i,val){if(!st.extra[i])return;st.extra[i].goal=val===''||val==null?-1:+val;save();fillExtraSelects(i,st.extra[i]);render();syncCoin()}
+function loadDuskSet(set,gender){const items=duskSetItems(set,gender);if(!items.length)return;const want=items.map(x=>x.i);const info=duskSetInfo()[set];
+ if(info){const bodies=Object.values(info.body||{});if(bodies.some(b=>b.i===st.goal)&&!want.includes(st.goal))st.goal=info.body[gender].i}
+ const have=new Set([st.goal,...(st.extra||[]).map(e=>e.goal)]);
+ want.forEach(idx=>{if(have.has(idx))return;const empty=(st.extra||[]).find(e=>e.goal==null||e.goal<0||e.goal==='');if(empty){empty.goal=idx;empty.qty=empty.qty||1;have.add(idx);return}st.extra=st.extra||[];st.extra.push({goal:idx,qty:1,closed:false,open:{}});have.add(idx)});
+ save();fillGoals();render();syncCoin()}
+function preselectSet(idx){const n=(RECIPES[idx]||{}).n||'';const m=/^더스크바운드 (비고러스|이지스|에테리얼)/.exec(n);const g=/\(남성용\)/.test(n)?'남성용':/\(여성용\)/.test(n)?'여성용':'';const dlg=$('setPick');if(!dlg)return;if(m){const r=dlg.querySelector('input[name="dset"][value="'+m[1]+'"]');if(r)r.checked=true}if(g){const r=dlg.querySelector('input[name="dgender"][value="'+g+'"]');if(r)r.checked=true}}
+function openSetPick(ei){window._setFromEi=ei;const idx=ei==null?gi():(st.extra[ei]&&st.extra[ei].goal);preselectSet(idx);const dlg=$('setPick');if(dlg.showModal)dlg.showModal();else dlg.setAttribute('open','')}
+function bindMulti(){const root=$('vCraft');if(!root||root._multiBound)return;root._multiBound=1;
+ root.addEventListener('click',e=>{
+  if(e.target.closest('#addGoalBtn')){e.preventDefault();addGoal();return}
+  const rm=e.target.closest('.rmGoal');if(rm){e.preventDefault();rmGoal(+rm.dataset.ei);return}
+  const sb=e.target.closest('.setLoadBtn');if(sb){e.preventDefault();openSetPick(sb.id==='loadSetBtn'?null:(sb.dataset.ei==null?null:+sb.dataset.ei));return}
+ });
+ root.addEventListener('change',e=>{
+  const t=e.target;if(!t)return;
+  if(t.matches('select[data-ei][data-series]')){if(t.value==='')return;setExtraGoal(+t.dataset.ei,+t.value);return}
+  if(t.matches('input[data-ei][type=number]')&&t.id&&t.id.indexOf('goalQty_e')===0){const i=+t.dataset.ei;if(!st.extra[i])return;st.extra[i].qty=Math.max(1,+t.value||1);t.value=st.extra[i].qty;save();render();syncCoin()}
+ });
+ const dlg=$('setPick');
+ if(dlg&&!dlg._bound){dlg._bound=1;dlg.addEventListener('close',()=>{if(dlg.returnValue!=='ok')return;const set=(dlg.querySelector('input[name=dset]:checked')||{}).value;const g=(dlg.querySelector('input[name=dgender]:checked')||{}).value;if(!set||!g)return;loadDuskSet(set,g)});
+  dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close('cancel')})}
+}
+bindMulti();
+$('vCraft').addEventListener('change',e=>{const t=e.target;if(!(t&&(t.id==='stepsIn'||t.getAttribute&&t.getAttribute('data-rname'))))return;if(t.tagName!=='INPUT')return;const name=t.getAttribute('data-rname')||((RECIPES[gi()]||{}).n);if(!name)return;st.steps=st.steps||{};st.steps[name]=Math.max(1,+t.value||1);save();render();syncCoin()});
 let busy=0;
-function toggle(id,el){if(busy)return;const root=$('root');const dep=+el.dataset.dep;
- if(st.open[id]){busy=1;const sub=[...root.querySelectorAll('.nd')].filter(e=>e.dataset.id.startsWith(id+'/'));
+function toggle(id,el){if(busy)return;const root=el.parentElement;const open=(root._mctx&&root._mctx.open)||st.open;const dep=+el.dataset.dep;
+ if(open[id]){busy=1;const sub=[...root.querySelectorAll('.nd')].filter(e=>e.dataset.id.startsWith(id+'/'));
   sub.forEach(e=>e.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translateY(-14px) scale(.96)'}],{duration:180,easing:'cubic-bezier(.5,0,.75,0)',fill:'forwards'}));
   const sv=root.querySelector('svg.lines');sv&&sv.animate([{opacity:1},{opacity:0}],{duration:180,fill:'forwards'});
-  setTimeout(()=>{busy=0;Object.keys(st.open).forEach(k=>{if(k===id||k.startsWith(id+'/'))delete st.open[k]});window._act={id,open:0,dep};save();render()},180)}
- else{el.classList.add('press');busy=1;setTimeout(()=>{busy=0;st.open[id]=1;window._act={id,open:1,dep};save();render()},110)}}
+  setTimeout(()=>{busy=0;Object.keys(open).forEach(k=>{if(k===id||k.startsWith(id+'/'))delete open[k]});window._act={id,open:0,dep,k:root._mctx&&root._mctx.actKey};save();render()},180)}
+ else{el.classList.add('press');busy=1;setTimeout(()=>{busy=0;open[id]=1;window._act={id,open:1,dep,k:root._mctx&&root._mctx.actKey};save();render()},110)}}
 function fillGoals(){const G=gi();const opt=re=>RECIPES.map((r,i)=>re.test(r.n)?`<option value="${i}">${r.n}</option>`:'').join('');
  const nb=opt(/^나이트브링어/),so=opt(/^소울/),du=opt(/^더스크/),E='<option value="">— 선택 —</option>';
  $('goalNav').innerHTML=E+nb;$('goalSoul').innerHTML=E+so;$('goalDusk').innerHTML=E+du;
- const n=(RECIPES[gi()]||{}).n||'',k=/^나이트브링어/.test(n)?'goalNav':/^소울/.test(n)?'goalSoul':/^더스크/.test(n)?'goalDusk':'';['goalNav','goalSoul','goalDusk'].forEach(x=>$(x).value=x===k?G:'');$('goalSel').innerHTML=nb+so+du;$('goalSel').value=G}
+ const n=(RECIPES[gi()]||{}).n||'',k=/^나이트브링어/.test(n)?'goalNav':/^소울/.test(n)?'goalSoul':/^더스크/.test(n)?'goalDusk':'';['goalNav','goalSoul','goalDusk'].forEach(x=>$(x).value=x===k?G:'');$('goalSel').innerHTML=nb+so+du;$('goalSel').value=G;syncSetBtn($('loadSetBtn'),gi())}
 ['goalNav','goalSoul','goalDusk'].forEach(k=>$(k).addEventListener('change',e=>{if(e.target.value==='')return;st.goal=+e.target.value;fillGoals();save();render();syncCoin()}));
 // 제작 목표 ↔ 코인 탭 연동: 목표 재료 중 구슬 상점 재료의 (부족 수량 × 교환 코인) 합계
-window.craftCoinNeed=function(){const R=RECIPES[gi()];if(!R)return null;const o={};
- matsOf(R).forEach(c=>{const cn=MC.COST[c[0]];if(!cn)return;const z=nodeCost(c,st.qty);const t=o[cn.tab]=o[cn.tab]||{total:0,list:[]};t.total+=z.need*cn.cost;t.list.push({n:c[0],qty:z.need,cost:cn.cost})});
- return {goal:R.n,qty:st.qty,tabs:o,tab:/^소울/.test(R.n)?'bri':/^더스크/.test(R.n)?'tala':(Object.keys(o)[0]||null)}};
+window.craftCoinNeed=function(){const tgs=typeof activeTargets==='function'?activeTargets():[];const R=RECIPES[gi()];if(!R)return null;
+ if(tgs.length<=1){const o={};matsOf(R).forEach(c=>{const cn=MC.COST[c[0]];if(!cn)return;const z=nodeCost(c,st.qty);const t=o[cn.tab]=o[cn.tab]||{total:0,list:[]};t.total+=z.need*cn.cost;t.list.push({n:c[0],qty:z.need,cost:cn.cost})});return {goal:R.n,qty:st.qty,tabs:o,tab:/^소울/.test(R.n)?'bri':/^더스크/.test(R.n)?'tala':(Object.keys(o)[0]||null)}}
+ const o={};(typeof combinedMatRows==='function'?combinedMatRows(tgs):[]).forEach(row=>{const cn=MC.COST[row.n];if(!cn)return;const t=o[cn.tab]=o[cn.tab]||{total:0,list:[]};t.total+=row.need*cn.cost;t.list.push({n:row.n,qty:row.need,cost:cn.cost})});const tabs=Object.keys(o).sort((a,b)=>o[b].total-o[a].total);return {goal:tgs.map(t=>t.R.n).join(', '),qty:1,tabs:o,tab:tabs[0]||null}};
 function syncCoin(){const nv=/^나이트브링어/.test((RECIPES[gi()]||{}).n||''),vc=document.getElementById('vCoin');if(vc)vc.hidden=nv;const N=window.craftCoinNeed();if(N&&N.tab){const b=document.querySelector('#tabs button[data-k="'+N.tab+'"]');if(b&&!b.classList.contains('on'))b.click()}document.dispatchEvent(new Event('craftneed'))}fillGoals();$('goalQty').value=st.qty;
 $('goalSel').onchange=e=>{st.goal=+e.target.value;save();render();syncCoin()};$('goalQty').onchange=e=>{st.qty=Math.max(1,+e.target.value||1);e.target.value=st.qty;save();render();syncCoin()};
-$('resetBtn').onclick=()=>{st.own={};st.open={};save();render();syncCoin()};
+$('resetBtn').onclick=()=>{st.own={};st.open={};craftUndo=[];save();render();syncCoin()};
 render();
 fetch('https://mabi-data.mabilife.workers.dev/prices.json?t='+Date.now()).then(r=>r.json()).then(j=>{P=j.prices||{};const t=Object.values(P).map(v=>v.t).filter(Boolean).sort().pop();PT=t?t.slice(0,16).replace('T',' '):'';reBeads();render()}).catch(()=>{});
 
