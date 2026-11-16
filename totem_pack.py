@@ -33,6 +33,10 @@ def series(name):
         return '두근두근'
     if '브리 레흐' in name:
         return '브리 레흐'
+    # Official Nov 12, 2026 patch notice (id=4893919): [탈라 가흐의 주화] is
+    # 물리 / 마법 / 연금 / 지원 토템, 4 types. Series key matches the UI chip.
+    if '탈라 가흐' in name or '탈라가흐' in name:
+        return '탈라가흐'
     if '왕립' in name:
         return '왕립'
     if '특산품' in name:

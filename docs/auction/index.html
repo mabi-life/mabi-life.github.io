@@ -126,7 +126,8 @@ td.eLoc{white-space:normal}.loc{display:inline-block;max-width:none;overflow:vis
 <p class="eNote" style="margin-top:8px">· 같은 각성 능력·Lv라도 고유 능력 수치(최대 105 안팎)·등급에 따라 값이 다를 수 있어요. 「최저가 매물 고유」는 최저가 매물의 고유 능력 수치입니다.</p></div>
 <div id="pT" hidden><div class="head"><h2>경매장 도우미 · 토템</h2><p>토템 이름·효과 수치별 경매장 최저가 · 매물 수 · 거래 시세</p></div>
 <div class="eBar eBox"><div class="eRow eSrch"><input id="tq" type="search" placeholder="토템 이름 검색 (예: 냥토템, 브리 레흐, 올 스탯)"><label class="eChk"><input type="checkbox" id="tHas" checked>매물 있는 것만</label></div>
-<div class="eRow"><span class="eLb">시리즈</span><div class="eSeg" id="tSe"><button data-s="" class="on">시리즈 전체</button><button data-s="두근두근">두근두근</button><button data-s="브리 레흐">브리 레흐</button><button data-s="왕립">왕립</button><button data-s="특산품">특산품</button><button data-s="기타">기타</button></div></div>
+<div class="eRow"><span class="eLb">시리즈</span><div class="eSeg" id="tSe"><button data-s="" class="on">시리즈 전체</button><button data-s="두근두근">두근두근</button><button data-s="브리 레흐">브리 레흐</button><button data-s="탈라가흐">탈라가흐</button><button data-s="왕립">왕립</button><button data-s="특산품">특산품</button><button data-s="기타">기타</button></div></div>
+<div class="eRow" id="tCoinRow" hidden><span class="eLb">종류</span><div class="eSeg" id="tCoin"><button data-c="" class="on">전체</button><button data-c="물리">물리</button><button data-c="마법">마법</button><button data-c="연금">연금</button><button data-c="지원">지원</button></div></div>
 <div class="eRow"><span class="eLb">효과 종류</span><div class="eSeg" id="tKd"><button data-k="" class="on">효과 전체</button></div></div>
 <div class="eRow"><span class="eLb">정렬</span><div class="eSeg"></div><select id="tSo"><option value="name">이름순</option><option value="min">최저가 낮은순</option><option value="minD">최저가 높은순</option><option value="n" selected>매물 많은순</option><option value="h">최근체결 높은순</option></select></div>
 </div>
@@ -382,9 +383,11 @@ function tLoad(){if(T)return;T=[];
   $('tInfo').innerHTML=`토템 매물 <b>${(d.listings||0).toLocaleString()}</b>건 · 이름·효과 <b>${T.filter(r=>r.n).length}</b>종 · 갱신 ${up}`;
   tDraw();
  }).catch(()=>{loadErr($('tInfo'),'토템 시세를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.',()=>{T=null;tLoad()})})}
-function tDraw(){if(!T)return;const q=$('tq').value.trim().replace(/\s/g,''),has=$('tHas').checked,so=$('tSo').value,se=document.querySelector('#tSe button.on')?.dataset.s||'',kd=document.querySelector('#tKd button.on')?.dataset.k||'',I=1e15,hv=r=>r.avg||r.last||0;
+function tCoinKind(name){const m=(name||'').match(/\((물리|마법|연금|지원)\s*토템\)/);return m?m[1]:''}
+function tSyncCoinRow(){const se=document.querySelector('#tSe button.on')?.dataset.s||'',show=se==='브리 레흐'||se==='탈라가흐';$('tCoinRow').hidden=!show;if(!show)[...$('tCoin').children].forEach(x=>x.className=x.dataset.c===''?'on':'')}
+function tDraw(){if(!T)return;tSyncCoinRow();const q=$('tq').value.trim().replace(/\s/g,''),has=$('tHas').checked,so=$('tSo').value,se=document.querySelector('#tSe button.on')?.dataset.s||'',coin=$('tCoinRow').hidden?'':(document.querySelector('#tCoin button.on')?.dataset.c||''),kd=document.querySelector('#tKd button.on')?.dataset.k||'',I=1e15,hv=r=>r.avg||r.last||0;
  const nq=s=>(s||'').replace(/\s/g,'');
- let a=T.filter(r=>(!q||nq(r.name).includes(q))&&(!se||r.s===se)&&(!kd||(r.fx||[]).some(o=>o.k===kd))&&(!has||r.n));
+ let a=T.filter(r=>(!q||nq(r.name).includes(q))&&(!se||r.s===se)&&(!coin||tCoinKind(r.name)===coin)&&(!kd||(r.fx||[]).some(o=>o.k===kd))&&(!has||r.n));
  a.sort(so==='min'?(x,y)=>(x.min??I)-(y.min??I):so==='minD'?(x,y)=>(y.min??-1)-(x.min??-1):so==='n'?(x,y)=>y.n-x.n||x.name.localeCompare(y.name,'ko'):so==='h'?(x,y)=>hv(y)-hv(x): (x,y)=>x.name.localeCompare(y.name,'ko')||(x.min??I)-(y.min??I));
  const sh=a.slice(0,400);
  $('tList').innerHTML=sh.map(r=>{
@@ -393,10 +396,11 @@ function tDraw(){if(!T)return;const q=$('tq').value.trim().replace(/\s/g,''),has
   const valH=fx.length?`<div class="tVal">${fx.map(o=>`<span>${tEsc(o.v||'-')}${o.v2?' / '+tEsc(o.v2):''}</span>`).join('')}</div>`:'<span class="no">-</span>';
   const price=r.out?`<td class="num out">${r.min?man(r.min):'<span class="no">-</span>'}<span class="warn">이상 고가</span><div class="eEff">시세로 보지 마세요</div></td>`:`<td class="num p${pg(r.min,r.avg||r.last,r.t)}">${r.min?man(r.min):'<span class="no">-</span>'}</td>`;
   return `<tr class="r" data-i="${T.indexOf(r)}"><td>${tEsc(r.name)}${r.s?`<span class="kd">${tEsc(r.s)}</span>`:''}${extra.length?`<div class="eEff">추가 옵션 ${extra.length}줄</div>`:''}</td><td>${fxH}</td><td class="num">${valH}</td>${price}<td class="num">${r.n||'<span class="no">0</span>'}</td><td class="num h hm">${r.avg?man(r.avg)+(r.t>1?` <small class="no">(${Math.min(r.t,10)}건 평균)</small>`:''):'<span class="no">-</span>'}</td></tr>`;
- }).join('')||'<tr><td colspan="6" class="no" style="text-align:center;padding:30px">검색 결과가 없습니다.</td></tr>';
+ }).join('')||`<tr><td colspan="6" class="no" style="text-align:center;padding:30px">${!q&&se?'지금은 매물이 없어요':'검색 결과가 없습니다.'}</td></tr>`;
  if(a.length>sh.length)$('tList').innerHTML+=`<tr><td colspan="6" class="no" style="text-align:center">상위 ${sh.length}개만 표시 (총 ${a.length}개) — 검색으로 좁혀 보세요.</td></tr>`}
 ['tq','tSo','tHas'].forEach(id=>$(id).addEventListener('input',tDraw));
-$('tSe').onclick=e=>{const b=e.target.closest('button');if(!b)return;[...$('tSe').children].forEach(x=>x.className=x===b?'on':'');tDraw()};
+$('tSe').onclick=e=>{const b=e.target.closest('button');if(!b)return;[...$('tSe').children].forEach(x=>x.className=x===b?'on':'');[...$('tCoin').children].forEach(x=>x.className=x.dataset.c===''?'on':'');tSyncCoinRow();tDraw()};
+$('tCoin').onclick=e=>{const b=e.target.closest('button');if(!b)return;[...$('tCoin').children].forEach(x=>x.className=x===b?'on':'');tDraw()};
 $('tKd').onclick=e=>{const b=e.target.closest('button');if(!b)return;[...$('tKd').children].forEach(x=>x.className=x===b?'on':'');tDraw()};
 $('tList').onclick=e=>{const tr=e.target.closest('tr.r');if(!tr)return;const r=T[+tr.dataset.i];if(!r)return;CW=0;const fx=(r.fx||[]).map(o=>`${o.k||o.t} ${o.v||''}`).join(' · ');TOPL=(r.L||(r.min?[r.min]:[])).slice(0,3).map(x=>Array.isArray(x)?[x[0]]:[x]);popH(`${r.name}${fx?' · '+fx:''}`,THI[tK(r)]||[])};
 
