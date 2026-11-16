@@ -33,9 +33,11 @@ jobs:
         env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
       - run: python echo_pack.py || true
         env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
+      - run: python totem_pack.py || true
+        env: {NEXON_API_KEY: '${{ secrets.NEXON_API_KEY }}'}
       - name: Push to mabi-data (prices branch, single commit)
         run: |
-          FILES="prices.json history_roll.json pyeollin_history.json auction/data.json auction/history.json auction/enchant_data.json auction/enchant_history.json auction/warranty_data.json auction/warranty_history.json auction/echo_data.json auction/echo_history.json auction/idea_data.json auction/idea_history.json"
+          FILES="prices.json history_roll.json pyeollin_history.json auction/data.json auction/history.json auction/enchant_data.json auction/enchant_history.json auction/warranty_data.json auction/warranty_history.json auction/echo_data.json auction/echo_history.json auction/idea_data.json auction/idea_history.json auction/totem_data.json auction/totem_history.json"
           cd _data
           for f in $FILES; do [ -f "../docs/$f" ] && mkdir -p "$(dirname $f)" && cp "../docs/$f" "$f"; done
           git config user.name "github-actions[bot]"

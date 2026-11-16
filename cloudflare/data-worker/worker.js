@@ -18,6 +18,8 @@ const FILES = {
   'auction/enchant_history.json': ['prices', 300],
   'auction/echo_data.json': ['prices', 300],
   'auction/echo_history.json': ['prices', 300],
+  'auction/totem_data.json': ['prices', 300],
+  'auction/totem_history.json': ['prices', 300],
   'auction/warranty_data.json': ['prices', 300],
   'horn_beads.json': ['horn', 120],
 };
