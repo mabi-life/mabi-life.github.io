@@ -293,8 +293,38 @@ function tqTown(l){const t=tqN(String(l).replace(/\d.*$/,''));if(!t)return null;
  for(const[k,i]of TQ_AL)if(k.length>=3)for(let j=0;j+k.length<=t.length;j++)if(tqLev(t.substr(j,k.length),k)<=1)return TOWNS[i];return null}
 function tqPrepCanvas(src,f,thr){const c=document.createElement('canvas');c.width=Math.round(src.width*f);c.height=Math.round(src.height*f);const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(src,0,0,c.width,c.height);
  const d=x.getImageData(0,0,c.width,c.height),A=d.data;for(let i=0;i<A.length;i+=4){let v=0.3*A[i]+0.59*A[i+1]+0.11*A[i+2];v=thr?(v<thr?0:255):Math.max(0,Math.min(255,(v-128)*1.6+128));A[i]=A[i+1]=A[i+2]=v}x.putImageData(d,0,0);return c}
+// 시세창 왼쪽 마차 인벤에서 밝은 테두리(선택된 칸)를 찾고, 교역품 아이콘과 맞춰 품목을 고른다. 애매하면 기존 방식 유지.
+function tqIsGold(r,g,b){return r>180&&g>140&&b<170&&r>b+50&&g>b+20&&r>=g-15}
+function tqIsHi(r,g,b){return Math.min(r,g,b)>=175&&Math.max(r,g,b)-Math.min(r,g,b)<=55}
+function tqIsAnn(r,g,b){return r>200&&g<60&&b<60}
+function tqRuns(p,minV,minGap,minLen){const R=[];let s=-1;for(let i=0;i<=p.length;i++){const on=i<p.length&&p[i]>=minV;if(on&&s<0)s=i;if(!on&&s>=0){if(i-s>=3)R.push([s,i-1]);s=-1}}
+ const M=[];for(const a of R){if(M.length&&a[0]-M[M.length-1][1]-1<=minGap)M[M.length-1][1]=a[1];else M.push(a.slice())}return M.filter(([a,b])=>b-a+1>=minLen)}
+function tqInvSplit(A,W,H){const gx=new Uint16Array(W);for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=(y*W+x)*4;if(tqIsGold(A[i],A[i+1],A[i+2]))gx[x]++}
+ let end=-1;for(let x=0;x<W*0.75;x++)if(gx[x]>H*0.05)end=x;if(end<0)return Math.round(W*0.55);
+ for(let x=end;x<Math.min(W-1,end+40);x++){let d=0;for(let y=0;y<H;y++){const i=(y*W+x)*4,r=A[i],g=A[i+1],b=A[i+2];if(r<80&&b>=r-5&&g<100)d++}if(d>H*0.3)return x}return Math.min(W,end+8)}
+function tqInvCells(A,W,H){const split=tqInvSplit(A,W,H),gold=new Uint8Array(W*H),gx=new Uint16Array(W),gy=new Uint16Array(H);
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(x>=split)continue;const i=(y*W+x)*4,r=A[i],g=A[i+1],b=A[i+2];if(tqIsAnn(r,g,b)||!tqIsGold(r,g,b))continue;gold[y*W+x]=1;gx[x]++;gy[y]++}
+ const xr=tqRuns(gx,Math.max(3,H*0.03),Math.max(3,W*0.01),Math.max(8,W*0.03)),yr=tqRuns(gy,Math.max(3,(split||W)*0.03),Math.max(3,H*0.01),Math.max(8,H*0.04)),cells=[];
+ for(const[y0,y1]of yr)for(const[x0,x1]of xr){const w=x1-x0+1,h=y1-y0+1,ar=w/h;if(w<10||h<10||ar<0.7||ar>1.35)continue;
+  const ring=Math.max(2,Math.round(Math.min(w,h)*0.08));let ng=0,nr=0;for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(x-x0<ring||x1-x<ring||y-y0<ring||y1-y<ring){nr++;if(gold[y*W+x])ng++}
+  if(nr&&ng/nr>=0.08)cells.push({x0,y0,x1,y1,w,h})}return cells}
+function tqHiScore(A,W,H,c){const ring=Math.max(2,Math.round(Math.min(c.w,c.h)*0.12));let n=0,hi=0;
+ for(let y=c.y0;y<=c.y1;y++)for(let x=c.x0;x<=c.x1;x++){if(!(x-c.x0<ring||c.x1-x<ring||y-c.y0<ring||c.y1-y<ring))continue;const i=(y*W+x)*4,r=A[i],g=A[i+1],b=A[i+2];if(tqIsAnn(r,g,b))continue;n++;if(tqIsHi(r,g,b))hi++}return n?hi/n:0}
+function tqPickCell(A,W,H){const cells=tqInvCells(A,W,H);if(cells.length<2)return null;const sc=cells.map(c=>tqHiScore(A,W,H,c));let b=0,s=1;if(sc[1]>sc[0]){b=1;s=0}
+ for(let i=2;i<sc.length;i++){if(sc[i]>sc[b]){s=b;b=i}else if(sc[i]>sc[s])s=i}const fb=sc[b],fs=sc[s];return(fb>=0.12&&fb>=fs*2&&fb-fs>=0.08)?cells[b]:null}
+let TQ_GT=null;
+async function tqGoodTpl(){if(TQ_GT)return TQ_GT;const T=[];await Promise.all(D.goods.map(async g=>{const ic=ICONS[g.name];if(!ic)return;let im;try{im=await invImgLoad('/assets/icons/orig/'+ic.id+'.png')}catch(e){return}
+ const c=invCv(48,48),x=c.getContext('2d');x.fillStyle='#dcb946';x.fillRect(0,0,48,48);x.drawImage(im,0,0,48,48);T.push({id:g.id,nm:g.name,d:x.getImageData(0,0,48,48).data})}));return TQ_GT=T}
+async function tqMatchGood(src,A,W,H,cell){const T=await tqGoodTpl();if(!T.length)return null;const pad=Math.max(2,Math.floor(Math.min(cell.w,cell.h)*0.14)),c=invCv(48,48),x=c.getContext('2d');x.imageSmoothingQuality='high';
+ x.drawImage(src,cell.x0+pad,cell.y0+pad,Math.max(1,cell.w-2*pad),Math.max(1,cell.h-2*pad),0,0,48,48);const cd=x.getImageData(0,0,48,48).data;
+ const score=t=>{let best=1e9;for(let oy=-3;oy<=3;oy++)for(let ox=-3;ox<=3;ox++){let e=0,n=0;for(let y=0;y<48;y++)for(let p=0;p<48;p++){if(y<8&&p<18)continue;const sy=y+oy,sx=p+ox;if(sy<0||sx<0||sy>=48||sx>=48)continue;const i=(y*48+p)*4,j=(sy*48+sx)*4;e+=Math.abs(cd[i]-t[j])+Math.abs(cd[i+1]-t[j+1])+Math.abs(cd[i+2]-t[j+2]);n++}const d=e/(n*3);if(d<best)best=d}return best};
+ const rank=list=>list.map(t=>({t,d:score(t.d)})).sort((a,b)=>a.d-b.d);
+ const pick=r=>{if(!r.length)return null;const m=r.length>1?r[1].d-r[0].d:99;return((r[0].d<=34&&m>=2)||(r[0].d<=28&&m>=1.5))?r[0]:null};
+ const done=T.filter(t=>doneOf({id:t.id})>0);if(done.length){const p=pick(rank(done));if(p)return p.t.id}
+ const p=pick(rank(T));return p?p.t.id:null}
+async function tqPickSel(I){if(!I||!ICONS||!Object.keys(ICONS).length)return null;const cell=tqPickCell(I.A,I.W,I.H);return cell?tqMatchGood(I.c,I.A,I.W,I.H,cell):null}
 async function tqOcr(fl){const st=$('#tqOcr');try{
- let I=await tqImgData(fl),rows=tqDigits(I.A,I.W,I.H),ok=rows.filter(r=>r.price).length;
+ let I=await tqImgData(fl),I0=I,rows=tqDigits(I.A,I.W,I.H),ok=rows.filter(r=>r.price).length;
  if(ok<10){const ys=rows.map(r=>r.y),d=[];for(let i=1;i<ys.length;i++)d.push(ys[i]-ys[i-1]);d.sort((a,b)=>a-b);const p=d[d.length>>1]||16;
   for(const f of[...new Set([16/p,0.5,2/3,0.8,1.25,1.5,2])]){if(!(f>0.3&&f<3)||Math.abs(f-1)<0.05)continue;const J=await tqImgData(fl,f),r2=tqDigits(J.A,J.W,J.H),o2=r2.filter(r=>r.price).length;if(o2>ok){ok=o2;rows=r2;I=J}if(ok>=10)break}}
  const pr={},pl=rows.filter(r=>r.price);let how='';
@@ -306,9 +336,16 @@ async function tqOcr(fl){const st=$('#tqOcr');try{
   how=pl.length?'숫자 '+pl.length+'줄 + 글자 인식':'글자 인식'}
  const rg=new Set(tqGoods().L.map(x=>x.g.id)),gs=[...D.goods].sort((x,y)=>(rg.has(y.id)-rg.has(x.id))||(y.name.length-x.name.length));let gid=null;
  for(const l of tl){const t=tqN(l);if(t.length<2)continue;const g=gs.find(g=>tqFind(t,tqN(g.name)));if(g){gid=g.id;break}}
+ const sel=await tqPickSel(I0);if(sel){gid=sel;how=(how?how+' · ':'')+'선택 칸 아이콘'}
  TQO={gid:gid||(TQ._last&&tqGoods().L.find(x=>!TQ[x.g.id])||{g:{}}).g.id||null,pr,how,raw:tl.filter(Boolean).join(' / ')+(pl.length?' ‖ 숫자: '+pl.map(r=>r.str).join(', '):'')};tqOcrShow()}catch(e){if(st)st.innerHTML='⚠ 자동 인식 실패 — 아래 표에 직접 입력해도 돼요. ('+esc(String(e.message||e))+')'}}
-function tqOcrShow(){const st=$('#tqOcr');if(!st||!TQO)return;const{gid,pr}=TQO,L=tqGoods().L,opts=[...L.map(x=>x.g),...D.goods.filter(g=>!L.some(x=>x.g.id===g.id))];
- st.innerHTML=`<div style="border:1px solid #4a3b6b;border-radius:8px;padding:8px;margin-top:4px;color:inherit;text-align:left"><b>🔎 인식 결과</b> — 품목과 숫자를 확인하고 담아 주세요<div style="margin:6px 0">품목 <select id="tqoG">${opts.map(g=>`<option value="${g.id}"${g.id===gid?' selected':''}>${esc(g.name)}${TQ[g.id]?' ✓':''}</option>`).join('')}</select></div>
+function tqOcrOpts(gid){const L=tqGoods().L,all=D.goods,inL=g=>L.some(x=>x.g.id===g.id),done=all.filter(g=>doneOf(g)>0);
+ if(!done.length)return{main:[...L.map(x=>x.g),...all.filter(g=>!inL(g))],rest:[]};
+ const main=[...L.map(x=>x.g).filter(g=>doneOf(g)>0),...done.filter(g=>!inL(g))];
+ if(gid&&!main.some(g=>g.id===gid)){const rec=all.find(g=>g.id===gid);if(rec)main.unshift(rec)}
+ return{main,rest:all.filter(g=>!main.some(m=>m.id===g.id))}}
+function tqOcrShow(){const st=$('#tqOcr');if(!st||!TQO)return;const{gid,pr}=TQO,{main,rest}=tqOcrOpts(gid);
+ const opt=g=>`<option value="${g.id}"${g.id===gid?' selected':''}>${esc(g.name)}${TQ[g.id]?' ✓':''}</option>`;
+ st.innerHTML=`<div style="border:1px solid #4a3b6b;border-radius:8px;padding:8px;margin-top:4px;color:inherit;text-align:left"><b>🔎 인식 결과</b> — 품목과 숫자를 확인하고 담아 주세요<div style="margin:6px 0">품목 <select id="tqoG">${main.map(opt).join('')}${rest.length?`<optgroup label="그 외 품목">${rest.map(opt).join('')}</optgroup>`:''}</select></div>
  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px">${TOWNS.map(t=>`<label style="white-space:nowrap">${esc(t)} <input class="n tqop" data-t="${esc(t)}" inputmode="numeric" style="width:70px" value="${pr[t]?pr[t]:''}"></label>`).join('')}</div>
  <div style="margin-top:6px"><button class="sm" data-tqocr="1">✅ 이 품목 시세 담기</button> <span class="mut">${Object.keys(pr).length}/12개 마을 시세 인식${TQO.how?' ('+esc(TQO.how)+')':''}</span></div><details style="margin-top:4px"><summary class="mut">인식 원문</summary><div class="mut" style="font-size:12.5px;max-height:90px;overflow:auto">${esc(TQO.raw)}</div></details></div>`}
 // ---- 재고체크: 인벤토리 캡처 → 아이콘 매칭 + 수량 숫자 인식, 확인 후 적용
