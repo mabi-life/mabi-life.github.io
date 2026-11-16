@@ -319,6 +319,12 @@ function invLearnGet(){try{return JSON.parse(localStorage.getItem(INV_LS)||'[]')
 function invLearn(sig,cw,ch,n){if(!sig)return;const a=invLearnGet().filter(x=>!(x.cw===cw&&x.ch===ch&&invSigD(x.s,sig)<=0.6));a.push({s:sig,cw,ch,n});while(a.length>400)a.shift();localStorage.setItem(INV_LS,JSON.stringify(a))}
 function invSigD(a,b){let d=0;for(let i=0;i<64;i++)d+=Math.abs(parseInt(a[i],16)-parseInt(b[i],16));return d/64}
 function invCv(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
+// 방직 재료는 묶음(염색)마다 아이콘 색이 달라 RGB 비교가 실패함. 인벤 청록 배경으로 실루엣만 맞춰 색을 무시한다.
+function invBlue(r,g,b){return b>g-10&&g>r+30&&b>r+40}
+// 수량 숫자는 칸 왼쪽 위(~8×18px)만 가리므로 그 영역만 제외한다. 질긴 끈과 튼튼한 고리는 하단이 다르다(끈은 y≈13–16에서 가닥 사이 구멍이 남고 왼쪽 아래로 더 길다, 고리는 그 구간에서 타원이 먼저 막힌다). 숫자와 안 겹치는 하단에 가중치를 둔다.
+function invShape(c,t,w,h){const dH=Math.round(h*8/INV_S),dW=Math.round(w*18/INV_S),mid=h>>1;let inter=0,union=0,fgN=0,taN=0,pix=0,bI=0,bU=0;
+ for(let j=0;j<h;j++)for(let i=0;i<w;i++){if(j<dH&&i<dW)continue;const o=(j*w+i)*4,fg=!invBlue(c[o],c[o+1],c[o+2]),ta=t[o+3]>12;pix++;if(fg)fgN++;if(ta)taN++;if(fg&&ta)inter++;if(fg||ta)union++;if(j>=mid){if(fg&&ta)bI++;if(fg||ta)bU++}}
+ if(!union||!pix||!bU)return 0;return 0.35*(inter/union)*(1-Math.abs(fgN-taN)/pix)+0.65*(bI/bU)}
 function invImgLoad(src){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src})}
 async function invTemplates(st){if(INV_T&&INV_TS===INV_S)return INV_T;const T=[];const ns=D.materials.filter(m=>ICONS[m]);let k=0;
  await Promise.all(ns.map(async nm=>{const i=ICONS[nm];let im;try{im=await invImgLoad(`/assets/icons/orig/${i.id}.png`)}catch(e){return}
@@ -383,16 +389,24 @@ async function invRecognize(file,st,alive){
  const occ=[...grid].map(k=>k.split(',').map(Number)).filter(([x,y])=>isOcc(x,y));
  const crop=(x,y,w,h,ow,oh)=>{const c=invCv(ow,oh),t=c.getContext('2d');t.drawImage(cv,x,y,w,h,0,0,ow,oh);return t.getImageData(0,0,ow,oh).data};
  const sigOf=(x,y,cw,ch)=>{const d=crop(x,y,P*cw-(P-IN),P*ch-(P-IN),8,8);let s='';for(let i=0;i<64;i++){const v=(d[i*4]+d[i*4+1]+d[i*4+2])/3;s+=Math.min(15,v>>4).toString(16)}return s};
- const LR=invLearnGet(),cand=[];let n=0;
+ const LR=invLearnGet(),cand=[],shCands=[];let n=0;
  for(const[x,y]of occ){if(!alive())return null;if(++n%15===0){st(`아이콘 비교 중… ${n}/${occ.length}`);await new Promise(r=>setTimeout(r,0))}
   const fits=(cw,ch)=>{for(let i=0;i<cw;i++)for(let j=0;j<ch;j++)if(!isOcc(x+i*P,y+j*P))return false;return true};const cc={};
   for(const l of LR){if(!fits(l.cw,l.ch))continue;const sg=sigOf(x,y,l.cw,l.ch),dd=invSigD(sg,l.s);if(dd<=1.0)cand.push({d:dd,x,y,nm:l.n,cw:l.cw,ch:l.ch,lr:1})}
   for(const t of T){if(!fits(t.cw,t.ch))continue;const fk=t.cw+'x'+t.ch,w=INV_S*t.cw,h=INV_S*t.ch,c=cc[fk]||(cc[fk]=crop(x,y,P*t.cw-(P-IN),P*t.ch-(P-IN),w,h));
    let s=0,ws=0;for(let j=0;j<h;j++)for(let i=0;i<w;i++){if(j<INV_S/2&&i<INV_S*0.8)continue;const o=(j*w+i)*4,al=t.d[o+3]/255;if(al<0.05)continue;s+=al*(Math.abs(c[o]-t.d[o])+Math.abs(c[o+1]-t.d[o+1])+Math.abs(c[o+2]-t.d[o+2]))/3;ws+=al}
-   if(ws<w*h*0.15)continue;cand.push({d:s/ws,x,y,nm:t.nm,cw:t.cw,ch:t.ch})}}
+   if(ws<w*h*0.15)continue;cand.push({d:s/ws,x,y,nm:t.nm,cw:t.cw,ch:t.ch});
+   if(skOf(t.nm)==='방직'){const ic=ICONS[t.nm],nat=ic&&Math.max(1,Math.round((ic.w||24)/24))===t.cw&&Math.max(1,Math.round((ic.h||24)/24))===t.ch;if(nat){const step=Math.max(1,Math.round(K));let best=0;for(let oy=-2*step;oy<=0;oy+=step)for(let ox=-2*step;ox<=0;ox+=step){const xx=x+ox,yy=y+oy;if(xx<0||yy<0)continue;const sw=Math.min(P*t.cw,W-xx),sh=Math.min(P*t.ch,H-yy);if(sw<8||sh<8)continue;const sk='s'+t.cw+'x'+t.ch+':'+ox+','+oy,cs=cc[sk]||(cc[sk]=crop(xx,yy,sw,sh,w,h)),iou=invShape(cs,t.d,w,h);if(iou>best)best=iou}if(best>=0.55)shCands.push({iou:best,x,y,nm:t.nm,cw:t.cw,ch:t.ch})}}}}
  cand.sort((a,b)=>a.d-b.d);const used=new Set(),hits=[];
  for(const c of cand){if(!c.lr&&c.d>26)break;const ks=[];for(let i=0;i<c.cw;i++)for(let j=0;j<c.ch;j++)ks.push(key(c.x+i*P,c.y+j*P));if(ks.some(k=>used.has(k)))continue;ks.forEach(k=>used.add(k));
   c.q=invQty(cx,c.x,c.y,K);c.sig=sigOf(c.x,c.y,c.cw,c.ch);c.sure=c.lr||c.d<=20;hits.push(c)}
+ // 방직: RGB가 실패한 칸은 실루엣(IoU)으로 재시도. 같은 모양·다른 색(고급/최고급 가죽끈 등)은 차이가 작으면 건너뛴다.
+ shCands.sort((a,b)=>b.iou-a.iou);
+ for(const c of shCands){if(c.iou<0.72)break;const ks=[];for(let i=0;i<c.cw;i++)for(let j=0;j<c.ch;j++)ks.push(key(c.x+i*P,c.y+j*P));if(ks.some(k=>used.has(k)))continue;
+  const second=shCands.find(o=>o!==c&&o.x===c.x&&o.y===c.y&&o.cw===c.cw&&o.ch===c.ch&&o.nm!==c.nm&&!used.has(key(o.x,o.y)));
+  let pick=c,margin=second?c.iou-second.iou:1;
+  if(margin<0.06){if(second&&((c.nm==='질긴 끈'&&second.nm==='튼튼한 고리')||(c.nm==='튼튼한 고리'&&second.nm==='질긴 끈'))){pick=c.nm==='질긴 끈'?c:second;margin=Math.abs(c.iou-second.iou)}else continue}
+  ks.forEach(k=>used.add(k));pick.q=invQty(cx,pick.x,pick.y,K);pick.sig=sigOf(pick.x,pick.y,pick.cw,pick.ch);pick.d=26*(1-pick.iou);pick.sure=pick.iou>=0.70&&margin>=0.08;pick.shape=1;hits.push(pick)}
  return{items:hits,why:hits.length?'':occ.length?`칸 ${occ.length}개는 찾았지만 아는 재료 아이콘이 없어요(재료가 아닌 물건이거나 다른 UI에 가려졌을 수 있어요)`:'칸은 찾았지만 찬 칸이 없어요 — 재료가 든 칸이 보이게 캡처해 주세요'}}
 function invQty(cx,x,y,K){const w=Math.round(20*K),h=Math.round(8*K),X=Math.round(x-2*K),Y=Math.round(y-2*K);if(X<0||Y<0)return 1;
  let d;if(Math.abs(K-1)<0.05)d=cx.getImageData(X,Y,20,8).data;else{const c=invCv(20,8),t=c.getContext('2d');t.imageSmoothingEnabled=false;t.drawImage(cx.canvas,X,Y,w,h,0,0,20,8);d=t.getImageData(0,0,20,8).data}
@@ -461,5 +475,5 @@ const feedTime=u=>{const d=new Date(u);return isNaN(d)?'?':d.toLocaleString('ko-
 async function loadPrices(){const ms0=Object.keys(need([...routeGoods(D.routes[0]),...routeGoods(D.routes[1])],false));
  try{const j=await loadFeed();const res={};for(const m of ms0){const e=j.prices[m];if(e&&e.min!=null)res[m]={p:e.min,count:e.count,volume:e.volume,volume24:e.volume24,trades:e.trades,trades24:e.trades24}}if(!Object.keys(res).length)throw new Error('empty');const t=Date.parse(j.updated)||Date.now();if(j.hotMinVolume!=null)feedHotMin=j.hotMinVolume;
   return mut(()=>{for(const[m,v]of Object.entries(res))S.prices[m]={p:v.p,src:'feed',t,count:v.count,volume:v.volume,volume24:v.volume24,trades:v.trades,trades24:v.trades24}},`공유 시세 ${Object.keys(res).length}종 (${feedTime(j.updated)} 기준)`)}catch(x){return toast('공유 시세를 불러오지 못했습니다 · 잠시 후 다시 시도하세요')}}
-window.__barter={get S(){return S},plan,weekKey,render,exchange,parsePaste,migrate,setOpen:id=>{open=id;render()},setLayer,route,get UI(){return UI},HOT_MIN,get feedHotMin(){return feedHotMin},hotIcon,hotMat,hotMetric};
+window.__barter={get S(){return S},plan,weekKey,render,exchange,parsePaste,migrate,setOpen:id=>{open=id;render()},setLayer,route,get UI(){return UI},HOT_MIN,get feedHotMin(){return feedHotMin},hotIcon,hotMat,hotMetric,invRecognize,invOpen};
 render();
