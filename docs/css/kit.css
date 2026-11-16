@@ -59,3 +59,7 @@ nav.siteNav a.navDiscord{margin-left:auto!important;display:inline-flex!importan
 nav.siteNav a.navDiscord:hover{background:rgba(88,101,242,.2)!important;color:#fff!important}
 nav.siteNav a.navDiscord svg{display:block;flex:0 0 auto}
 body.kit-narrow nav.siteNav a.navDiscord{margin-left:auto!important}
+
+/* 사용법 안내 끝 블로그 사용기 링크 (주소가 있을 때만 표시) */
+.toolAbout .toolBlogLink{margin:16px 0 0;padding-top:12px;border-top:1px dashed #3a3424}
+.toolAbout .toolBlogLink[hidden]{display:none!important}

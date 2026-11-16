@@ -1,11 +1,40 @@
 (function(){var C={"홈":"#f7d98b","알바":"#d98bb8","물교":"#c8b46a","던전":"#e0a458","스케줄":"#5fc9b9","분배":"#6fb7ff","제작":"#7cc49a","경매장":"#9a8cf0","뿔피리":"#e8b86a","가이드":"#e6a3c8"},
 I={"홈":"<img src=\"/img/logo.svg?v=5\" alt=\"\" style=\"width:1.2em;height:1.2em;vertical-align:-.25em\">","알바":"⏱","물교":"⚖","던전":"🗡","스케줄":"📅","분배":"🧮","제작":"🔨","경매장":"🔍","뿔피리":"📯","가이드":"📘"},
 P={"/":["홈","00",""],"/alba/":["알바","01"],"/barter/":["물교","02"],"/dungeon/":["던전","03","캐릭터별 던전 보상·전재산 기록"],"/schedule/":["스케줄","03b","파티 약속·고정 일정 체크"],"/bunbae/":["분배","04"],"/craft/":["제작","05"],"/auction/":["경매장","06"],"/horn/":["뿔피리","07"],"/guide/":["가이드","08"],"/guide/craft/":["가이드","08"],"/guide/alba/":["가이드","08"],"/guide/barter/":["가이드","08"],"/guide/dungeon/":["가이드","08"],"/guide/schedule/":["가이드","08"],"/guide/bunbae/":["가이드","08"],"/guide/auction/":["가이드","08"],"/guide/horn/":["가이드","08"]};
+
+/* 도구별 블로그 사용기 주소. 값을 채우면 사용법 안내 끝에 링크가 보여요. 비우면 숨깁니다. */
+var TOOL_BLOG={
+  alba:"https://blog.naver.com/forgetwulf/224473288199",
+  barter:"https://blog.naver.com/forgetwulf/224479329911",
+  dungeon:"",
+  schedule:"",
+  bunbae:"",
+  craft:"",
+  auction:"",
+  horn:""
+};
+var TOOL_BLOG_LABEL="이 도구로 직접 해 본 이야기는 블로그에 있어요 →";
+function applyToolBlog(path){
+  var m=path.match(/^\/([a-z]+)\/?$/);
+  if(!m||!(m[1] in TOOL_BLOG))return;
+  var box=document.querySelector("details.toolGuide > section.toolAbout");
+  if(!box)return;
+  var p=box.querySelector("p.toolBlogLink");
+  if(!p){p=document.createElement("p");p.className="toolBlogLink";box.appendChild(p)}
+  var url=TOOL_BLOG[m[1]];
+  if(url){
+    p.hidden=false;
+    p.innerHTML='<a href="'+url+'" target="_blank" rel="noopener">'+TOOL_BLOG_LABEL+"</a>";
+  }else{
+    p.hidden=true;
+    p.innerHTML='<a target="_blank" rel="noopener">'+TOOL_BLOG_LABEL+"</a>";
+  }
+}
 function go(){var path=location.pathname.replace(/index\.html$/,"");var pg=P[path]||P["/"];var b=document.body;
 b.style.setProperty("--kit",C[pg[0]]);
 document.querySelectorAll("nav.siteNav a,nav.siteNav span").forEach(function(e){var t=e.textContent.trim();if(!C[t])return;e.style.setProperty("--c",C[t]);e.innerHTML=I[t]+" "+t});
 var nav=document.querySelector("nav.siteNav");if(!nav)return;if(!nav.querySelector("a.navDiscord")){var dc=document.createElement("a");dc.className="navDiscord";dc.href="https://discord.gg/bmgq8hAgBN";dc.target="_blank";dc.rel="noopener noreferrer";dc.setAttribute("aria-label","위즈니의 마비라이프 디스코드");dc.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.317 4.37a19.8 19.8 0 0 0-4.885-1.515.07.07 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.3 18.3 0 0 0-5.487 0 12.6 12.6 0 0 0-.617-1.25.08.08 0 0 0-.079-.037A19.7 19.7 0 0 0 3.677 4.37a.1.1 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.08.08 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.08.08 0 0 0 .084-.027 14 14 0 0 0 1.226-1.994.07.07 0 0 0-.041-.098 13.1 13.1 0 0 1-1.872-.892.08.08 0 0 1-.008-.132c.125-.094.25-.192.368-.291a.07.07 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.07.07 0 0 1 .078.01c.12.099.243.198.368.291a.08.08 0 0 1-.006.132 12.3 12.3 0 0 1-1.873.892.08.08 0 0 0-.041.099c.36.698.772 1.362 1.225 1.993a.08.08 0 0 0 .084.028 19.8 19.8 0 0 0 6.002-3.03.08.08 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg> 디스코드';nav.appendChild(dc);}var wrap=nav.parentElement;if(wrap&&wrap.clientWidth&&wrap.clientWidth<760)b.classList.add("kit-narrow");var mk=document.createElement("i");mk.style.display="none";nav.before(mk);var bar=document.createElement("div");bar.className="kitBar";b.insertBefore(bar,b.firstChild);bar.appendChild(nav);b.classList.add("kit-bar");var fit=function(){bar.style.marginLeft="0px";var l=bar.getBoundingClientRect().left+scrollX;bar.style.marginLeft=(-l)+"px";bar.style.width=document.documentElement.clientWidth+"px"};fit();addEventListener("resize",fit);addEventListener("load",fit);new ResizeObserver(fit).observe(document.documentElement);
-if(path=="/alba/"||path=="/barter/")return;
+applyToolBlog(path);if(path=="/alba/"||path=="/barter/")return;
 var hd=document.querySelector(".head:not(.coinHead)")||document.querySelector(".wrap>.hd");if(!hd)return;
 var h1=hd.querySelector("h1"),p=hd.querySelector("p");var d=document.createElement("div");d.className="kitHd";
 d.innerHTML='<span class="ki">'+I[pg[0]]+'</span><div><b></b><div class="kp"></div></div>';
