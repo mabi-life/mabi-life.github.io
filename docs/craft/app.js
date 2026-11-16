@@ -38,13 +38,15 @@ function tipCard(o){// o:{n,kind,sub,all,own,need,p,cn,cg,craft:{tot,miss},kids:
  if(!o.need)H.push(`<div class="rec"><div class="verdict">이미 다 모았어요</div></div>`);
  else{const op=[];if(A!=null||o.craft)op.push(['경매장에서 '+(o.craft?'완성품':'구매'),A,'A']);if(B!=null)op.push(['구슬 교환',B,'B']);if(o.craft)op.push(['하위 재료로 제작',C,'C']);
   const ok=op.filter(x=>x[1]!=null).sort((a,b)=>a[1]-b[1]);const best=ok[0];
-  let vd,sv='';if(!best)vd=o.craft?`시세 없는 하위 재료가 ${o.craft.miss}종 있어서 비교가 어려워요`:'경매장 매물이 없어요';
+  const suspect=A!=null&&C!=null&&A<C*0.25;
+  let vd,sv='',pick=best;if(!best)vd=o.craft?`시세 없는 하위 재료가 ${o.craft.miss}종 있어서 비교가 어려워요`:'경매장 매물이 없어요';
+  else if(suspect&&best[2]==='A'){vd='가격 확인 필요';pick=null;sv=''}
   else{vd=best[2]==='C'?'지금은 직접 만드는 게 더 이득이에요':best[2]==='B'?'지금은 구슬 교환이 더 이득이에요':'지금은 경매장이 더 이득이에요';
    if(ok[1])sv=best[2]==='A'&&ok[1][2]==='C'?`경매가 ${fg(Math.round(ok[1][1]-best[1]))} 더 저렴해요`:`${fg(Math.round(ok[1][1]-best[1]))} 더 저렴해요`;
    else if(o.craft&&A==null)sv='경매장 매물이 없어서 직접 만들어야 해요';else if(o.craft&&C==null)sv=`하위 시세 ${o.craft.miss}종이 없어서 경매가만 볼 수 있어요`}
-  const cells=op.map(([l,v,k])=>`<div class="opt${best&&k===best[2]&&ok.length>1?' pick':''}"><span class="ok">${l}${best&&k===best[2]&&ok.length>1?'<span class="badge">추천</span>':''}</span><span class="ov">${v!=null?tg(v):'<span class="na">매물 없음</span>'}</span></div>`).join('');
+  const cells=op.map(([l,v,k])=>`<div class="opt${pick&&k===pick[2]&&ok.length>1?' pick':''}"><span class="ok">${l}${pick&&k===pick[2]&&ok.length>1?'<span class="badge">추천</span>':''}</span><span class="ov">${v!=null?tg(v):'<span class="na">매물 없음</span>'}</span></div>`).join('');
   let ex='';if(o.craft&&K&&K.auc!=null&&C!=null&&Math.round(K.auc)!==Math.round(C)){const d=A!=null?K.auc-A:0;ex=`<div class="ex">1단계 재료를 다 경매로 사면 ${fg(Math.round(K.auc))}${A!=null?(d>0?` · 완성품보다 ${fg(Math.round(d))} 비싸요`:d<0?` · 완성품보다 ${fg(Math.round(-d))} 싸요`:''):''}</div>`}
-  H.push(`<div class="rec">${best&&ok.length>1?'<div class="lab">추천</div>':''}<div class="verdict">${vd}</div>${op.length?`<div class="opts${op.length>2?' o3':''}">${cells}</div>`:''}${sv?`<div class="save">${sv}</div>`:''}${ex}</div>`)}
+  H.push(`<div class="rec">${pick&&ok.length>1?'<div class="lab">추천</div>':''}<div class="verdict">${vd}</div>${op.length?`<div class="opts${op.length>2?' o3':''}">${cells}</div>`:''}${sv?`<div class="save">${sv}</div>`:''}${ex}</div>`)}
  if(K)H.push(K.html);if(o.foot)H.push(`<div class="foot">${o.foot}</div>`);return H.join('')}
 function tip(c,z,kind,q){const [n,,r,fz,ps,S]=c;const own=+st.own[n]||0;const notes=[];
  if(ps)notes.push(`공정 1회당 <b>×${f(ps)}</b> · <b>${S}회 공정</b>${q>1?` · ${q}개`:''} 기준이라 <b>${f(z.all)}</b>개 필요해요`);

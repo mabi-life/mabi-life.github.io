@@ -12,6 +12,7 @@ prices.json에 같이 넣는다.
 한계(의도적 근사):
   - 워커가 멈추거나 주기가 1시간을 넘기면 그 사이 체결은 유실될 수 있음
   - 부분일치로 섞인 동명/유사명은 item_name 정확 일치로 걸러 냄
+  - 아이템명·표시명·옵션에 '(미완성)'이 있으면 완성품 시세·체결에서 제외
   - 24h는 '수집된 고유 체결'이지 넥슨이 보장하는 공식 일일 통계가 아님
   - HOT 임계값(hotMinVolume)은 이번 피드 volume24의 대략 p80 (재료 알바/물교용)
 
@@ -84,6 +85,18 @@ def get_list(name):
 def get_hist(name):
     return api_get('auction/history?item_name=' + urllib.parse.quote(name))
 
+def unfinished(row):
+    """미완성 매물: item_name은 완성품과 같고 item_display_name에 (미완성)이 붙는 경우가 많음."""
+    for k in ('item_name', 'item_display_name'):
+        if '(미완성)' in str(row.get(k) or '') or '미완성' in str(row.get(k) or ''):
+            return True
+    for opt in row.get('item_option') or []:
+        for k in ('option_type', 'option_sub_type', 'option_value', 'option_value2', 'option_desc'):
+            if '미완성' in str((opt or {}).get(k) or ''):
+                return True
+    return False
+
+
 def parse_buy_ts(s):
     """Nexon date_auction_buy → aware UTC datetime, or None."""
     if not s: return None
@@ -150,9 +163,11 @@ for i, n in enumerate(names):
         continue
     entry = dict(old.get(n) or {})
     list_ok = False
+    cleared_unfin = False
     try:
-        its = [x for x in (get_list(n).get('auction_item') or [])
-               if x.get('item_name') == n and x.get('auction_price_per_unit')]
+        raw = get_list(n).get('auction_item') or []
+        its = [x for x in raw
+               if x.get('item_name') == n and x.get('auction_price_per_unit') and not unfinished(x)]
         if its:
             entry['min'] = min(x['auction_price_per_unit'] for x in its)
             entry['count'] = sum(x.get('item_count', 1) for x in its)
@@ -160,7 +175,12 @@ for i, n in enumerate(names):
             ok += 1; streak = 0; list_ok = True
         else:
             empty += 1; streak = 0
-            # keep previous min/count if any
+            # 완성품은 없고 미완성만 있으면, 예전에 미완성 가격이 들어간 min을 남기지 않음
+            if any(x.get('item_name') == n and unfinished(x) for x in raw):
+                entry.pop('min', None)
+                entry.pop('count', None)
+                cleared_unfin = True
+            # 그 외(매물 없음)는 이전 min/count 유지
     except Exception as e:
         fail += 1; streak += 1
         print(f'fail list {n}: {type(e).__name__} {getattr(e, "code", "")}', file=sys.stderr)
@@ -169,7 +189,7 @@ for i, n in enumerate(names):
     try:
         time.sleep(GAP)
         hist = [x for x in (get_hist(n).get('auction_history') or [])
-                if x.get('item_name') == n]
+                if x.get('item_name') == n and not unfinished(x)]
         trades = len(hist)
         volume = sum(int(x.get('item_count') or 1) for x in hist)
         entry['trades'] = trades
@@ -192,12 +212,13 @@ for i, n in enumerate(names):
             entry['trades24'] = t24
             entry['volume24'] = v24
 
-    if entry.get('min') is not None or n in old:
-        # ensure we don't store empty husks without min from nowhere
-        if entry.get('min') is not None:
-            prices[n] = entry
-        elif n in old:
-            prices[n] = old[n]
+    if entry.get('min') is not None:
+        prices[n] = entry
+    elif cleared_unfin:
+        # 미완성만 있던 항목: min 없이 체결 정보만 남김 (이전 미완성 최저가 폐기)
+        prices[n] = entry
+    elif n in old:
+        prices[n] = old[n]
 
     print(f'[{i+1}/{len(names)}] {n}: min={prices.get(n, {}).get("min")} vol={prices.get(n, {}).get("volume")} vol24={prices.get(n, {}).get("volume24")}')
     time.sleep(GAP)
