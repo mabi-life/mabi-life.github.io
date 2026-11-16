@@ -193,10 +193,11 @@ function renderCombined(){const el=$('combinedMats');if(!el)return;const tgs=act
  let auc=0,aucMiss=0;const bits=tgs.map(t=>{const need=Math.max(0,t.qty-(+st.own[t.R.n]||0)),p=pr(t.R.n);if(!need)return t.R.n+' 보유로 충분';if(p){auc+=p*need;return t.R.n+' '+fg(p*need)}aucMiss++;return t.R.n+' 매물 없음'});
  const via={구매:'경매장',코인:'구슬',제작:'제작'};
  el.hidden=false;
- el.innerHTML=`<h2>총 재료 <small style="font-weight:600;color:var(--mu)">목표 ${tgs.length}개</small></h2>
+ el.innerHTML=`<h2>총 재료 <small style="font-weight:600;color:var(--mu)">목표 ${tgs.length}개</small><button type="button" class="btn btnGhost totClear" title="지금 보이는 목표 재료의 보유 수량과 제작 기록만 비워요">재료 비우기</button></h2>
 <table><thead><tr><th>재료</th><th>필요</th><th>보유</th><th>부족</th><th>구매처</th><th>필요분 값</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${IC[r.n]?`<img class="ic im" src="/assets/icons/2x/${IC[r.n].id}.png" alt="" style="width:1.15em;height:1.15em;vertical-align:-.2em;margin-right:4px">`:''}${r.n}</td><td>${f(r.all)}</td><td><input type="number" min="0" data-n="${r.n}" value="${r.own||''}"></td><td>${f(r.need)}</td><td class="via">${via[r.via]||'—'}</td><td>${r.need? (r.miss? '시세 없음': fg(r.best)) : '—'}</td></tr>`).join('')}</tbody></table>
 <div class="sum"><span>최저 재료비 <b>${fg(matTot)}</b>${miss?` · 시세 없는 재료 ${miss}종 제외`:''}</span><span class="gmk">경매장 완성품 합계 <b>${aucMiss&&!auc?'매물 없음':fg(auc)}</b>${aucMiss?` · 시세 없는 목표 ${aucMiss}종 제외`:''}</span></div>
 <div class="cond" style="margin:8px 0 0">${bits.join(' · ')}</div>`;
+ {const cb=el.querySelector('.totClear');if(cb)cb.onclick=e=>{e.preventDefault();clearActiveMats()}}
  el.querySelectorAll('input[data-n]').forEach(i=>{i.onchange=()=>{st.own[i.dataset.n]=Math.max(0,+i.value||0);save();render();syncCoin()}})}
 function addGoal(){st.extra=st.extra||[];const idx=gi();if(!(idx>=0&&RECIPES[idx])||!isDuskGoal(idx))return;const qty=Math.max(1,+st.qty||1);
  {const dup=st.extra.find(e=>+e.goal===idx);if(dup){dup.qty=Math.max(1,+dup.qty||1)+qty;if(_prevGoal!=null&&_prevGoal>=0&&_prevGoal!==idx){st.goal=_prevGoal;st.qty=Math.max(1,+_prevQty||1);_prevGoal=null;const q=$('goalQty');if(q)q.value=st.qty;fillGoals()}save();render();syncCoin();return}}
@@ -237,6 +238,10 @@ function toggle(id,el){if(busy)return;const root=el.parentElement;const open=(ro
   const sv=root.querySelector('svg.lines');sv&&sv.animate([{opacity:1},{opacity:0}],{duration:180,fill:'forwards'});
   setTimeout(()=>{busy=0;Object.keys(open).forEach(k=>{if(k===id||k.startsWith(id+'/'))delete open[k]});window._act={id,open:0,dep,k:root._mctx&&root._mctx.actKey};save();render()},180)}
  else{el.classList.add('press');busy=1;setTimeout(()=>{busy=0;open[id]=1;window._act={id,open:1,dep,k:root._mctx&&root._mctx.actKey};save();render()},110)}}
+function activeMatNames(){const acc=new Set();const walk=c=>{if(!c||!c[0])return;acc.add(c[0]);if(c[2]&&c[2].c)c[2].c.forEach(walk)};activeTargets().forEach(t=>{const R=t.R;acc.add(R.n);(R.c||[]).forEach(walk);(R.fin||[]).forEach(x=>(x||[]).forEach(walk))});return acc}
+function clearActiveMats(){const names=activeMatNames();if(!names.size)return;names.forEach(n=>{delete st.own[n]});
+ craftUndo=craftUndo.filter(u=>!(u&&((u.n&&names.has(u.n))||(u.deltas&&Object.keys(u.deltas).some(k=>names.has(k))))));
+ if(window._craftFlash&&names.has(window._craftFlash.n))window._craftFlash=null;save();render();syncCoin()}
 function fillGoals(){const G=gi();const opt=re=>RECIPES.map((r,i)=>re.test(r.n)?`<option value="${i}">${r.n}</option>`:'').join('');
  const nb=opt(/^나이트브링어/),so=opt(/^소울/),du=opt(/^더스크/),E='<option value="">— 선택 —</option>';
  $('goalNav').innerHTML=E+nb;$('goalSoul').innerHTML=E+so;$('goalDusk').innerHTML=E+du;
