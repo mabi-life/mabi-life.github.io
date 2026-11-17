@@ -1,4 +1,4 @@
-/* mabi-life theme v3 — 기본 다크, 화이트 모드 토글(localStorage "mabi-theme").
+/* mabi-life theme v4 — 기본 다크, 화이트 모드 토글(localStorage "mabi-theme").
    기존 CSS/인라인 색을 고치지 않고, 화이트 모드일 때만 색을 밝은 톤으로 변환해 덧씌움.
    변환은 원본에만 한 번 적용(재적용하면 다시 어두워짐). observer는 자기 쓰기·정규화된 값을 무시하고, 프레임당 상한을 둔다. */
 (function(){
@@ -78,17 +78,25 @@ function conv(rules){var out="";for(var i=0;i<rules.length;i++){var r=rules[i];
  }catch(e){}}return out}
 function convSheet(sh){if(done.has(sh))return"";var own=sh.ownerNode;if(own&&own.hasAttribute&&own.hasAttribute("data-theme-skip"))return"";
  var rules;try{rules=sh.cssRules}catch(e){return""}if(!rules)return"";done.add(sh);return conv(rules)}
-function convertSheets(){var txt="";for(var i=0;i<D.styleSheets.length;i++)txt+=convSheet(D.styleSheets[i]);
- var old=D.querySelector("style[data-theme-gen]");
- if(!txt){if(old&&!old.textContent)old.remove();return}
+function convertSheets(){
+ var txt="",i,sh,own,rules;
+ for(i=0;i<D.styleSheets.length;i++){
+  sh=D.styleSheets[i];own=sh.ownerNode;
+  if(own&&own.hasAttribute&&own.hasAttribute("data-theme-skip"))continue;
+  try{rules=sh.cssRules}catch(e){continue}
+  if(!rules)continue;
+  txt+=conv(rules)
+ }
  holdMo(function(){
-  var st=old;
+  var st=D.querySelector("style[data-theme-gen]");
+  if(!txt){if(st)applyGen(st,LIGHT);return}
   if(!st){st=D.createElement("style");st.setAttribute("data-theme-skip","");st.setAttribute("data-theme-gen","");
    var head=D.head||R;head.insertBefore(st,head.firstChild)}
   if(st.textContent!==txt)st.textContent=txt;
-  st.disabled=!LIGHT;if(!LIGHT&&st.sheet)st.sheet.disabled=true
+  applyGen(st,LIGHT)
  })}
-function setGen(on){D.querySelectorAll("style[data-theme-gen]").forEach(function(s){if(s.sheet)s.sheet.disabled=!on})}
+function applyGen(st,on){st.disabled=!on;if(st.sheet)st.sheet.disabled=!on}
+function setGen(on){D.querySelectorAll("style[data-theme-gen]").forEach(function(s){applyGen(s,on)})}
 /* ---------- inline style / SVG attributes ---------- */
 var ATTRS=["style","fill","stroke","stop-color","flood-color","color","bgcolor"],orig=new Map();
 var moOpts={subtree:true,childList:true,attributes:true,attributeFilter:ATTRS};
