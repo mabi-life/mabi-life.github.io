@@ -1,4 +1,4 @@
-/* mabi-life theme v1 — 기본 다크, 화이트 모드 토글(localStorage "mabi-theme").
+/* mabi-life theme v2 — 기본 다크, 화이트 모드 토글(localStorage "mabi-theme").
    기존 CSS/인라인 색을 고치지 않고, 화이트 모드일 때만 색을 밝은 톤으로 변환해 덧씌움. */
 (function(){
 var KEY="mabi-theme",D=document,R=D.documentElement,LIGHT=false,done=new WeakSet(),cache=new Map();
@@ -62,13 +62,15 @@ function mapDecls(txt){var res=[];splitDecl(txt).forEach(function(dc){var i=dc.i
 /* ---------- stylesheet conversion ---------- */
 var PFX='html[data-theme="light"]';
 function splitSel(s){var o=[],d=0,c="";for(var i=0;i<s.length;i++){var ch=s[i];if(ch==="("||ch==="[")d++;else if(ch===")"||ch==="]")d--;if(ch===","&&d===0){o.push(c);c=""}else c+=ch}o.push(c);return o}
+function isLightScoped(x){return /html\[data-theme\s*=\s*(["']?)light\1\]/.test(x)}
 function pref(sel){return splitSel(sel).map(function(x){x=x.trim();
+ if(!x||isLightScoped(x))return "";
  if(/^:root\b/.test(x))return PFX+x.slice(5);
  if(/^html(?![\w-])/.test(x))return PFX+x.slice(4);
- return PFX+" "+x}).join(",")}
+ return PFX+" "+x}).filter(Boolean).join(",")}
 function conv(rules){var out="";for(var i=0;i<rules.length;i++){var r=rules[i];
  try{
- if(r.type===1){ if(!r.style||!r.style.length)continue;var dd=mapDecls(r.style.cssText);if(dd.length)out+=pref(r.selectorText)+"{"+dd.join(";")+"}\n";}
+ if(r.type===1){ if(!r.style||!r.style.length)continue;var sel=pref(r.selectorText);if(!sel)continue;var dd=mapDecls(r.style.cssText);if(dd.length)out+=sel+"{"+dd.join(";")+"}\n";}
  else if(r.type===4){var inner=conv(r.cssRules);if(inner)out+="@media "+r.media.mediaText+"{"+inner+"}\n";}
  else if(r.type===12){var inn=conv(r.cssRules);if(inn)out+="@supports "+r.conditionText+"{"+inn+"}\n";}
  else if(r.type===3&&r.styleSheet){out+=convSheet(r.styleSheet)}
@@ -76,7 +78,8 @@ function conv(rules){var out="";for(var i=0;i<rules.length;i++){var r=rules[i];
 function convSheet(sh){if(done.has(sh))return"";var own=sh.ownerNode;if(own&&own.hasAttribute&&own.hasAttribute("data-theme-skip"))return"";
  var rules;try{rules=sh.cssRules}catch(e){return""}if(!rules)return"";done.add(sh);return conv(rules)}
 function convertSheets(){var txt="";for(var i=0;i<D.styleSheets.length;i++)txt+=convSheet(D.styleSheets[i]);
- if(!txt)return;var st=D.createElement("style");st.setAttribute("data-theme-skip","");st.setAttribute("data-theme-gen","");st.textContent=txt;st.disabled=!LIGHT;(D.head||R).appendChild(st);
+ if(!txt)return;var st=D.createElement("style");st.setAttribute("data-theme-skip","");st.setAttribute("data-theme-gen","");st.textContent=txt;st.disabled=!LIGHT;
+ var head=D.head||R;head.insertBefore(st,head.firstChild);
  if(!LIGHT)st.sheet&&(st.sheet.disabled=true)}
 function setGen(on){D.querySelectorAll("style[data-theme-gen]").forEach(function(s){if(s.sheet)s.sheet.disabled=!on})}
 /* ---------- inline style / SVG attributes ---------- */
