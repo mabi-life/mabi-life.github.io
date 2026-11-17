@@ -3,3 +3,5 @@ Disallow: /_mock/
 Allow: /
 Sitemap: https://mabi-life.com/sitemap.xml
 
+User-agent: Googlebot-Image
+Disallow: /events/
