@@ -1,5 +1,6 @@
-/* mabi-life theme v2 — 기본 다크, 화이트 모드 토글(localStorage "mabi-theme").
-   기존 CSS/인라인 색을 고치지 않고, 화이트 모드일 때만 색을 밝은 톤으로 변환해 덧씌움. */
+/* mabi-life theme v3 — 기본 다크, 화이트 모드 토글(localStorage "mabi-theme").
+   기존 CSS/인라인 색을 고치지 않고, 화이트 모드일 때만 색을 밝은 톤으로 변환해 덧씌움.
+   변환은 원본에만 한 번 적용(재적용하면 다시 어두워짐). observer는 자기 쓰기·정규화된 값을 무시하고, 프레임당 상한을 둔다. */
 (function(){
 var KEY="mabi-theme",D=document,R=D.documentElement,LIGHT=false,done=new WeakSet(),cache=new Map();
 function stored(){try{return localStorage.getItem(KEY)==="light"?"light":"dark"}catch(e){return"dark"}}
@@ -78,30 +79,92 @@ function conv(rules){var out="";for(var i=0;i<rules.length;i++){var r=rules[i];
 function convSheet(sh){if(done.has(sh))return"";var own=sh.ownerNode;if(own&&own.hasAttribute&&own.hasAttribute("data-theme-skip"))return"";
  var rules;try{rules=sh.cssRules}catch(e){return""}if(!rules)return"";done.add(sh);return conv(rules)}
 function convertSheets(){var txt="";for(var i=0;i<D.styleSheets.length;i++)txt+=convSheet(D.styleSheets[i]);
- if(!txt)return;var st=D.createElement("style");st.setAttribute("data-theme-skip","");st.setAttribute("data-theme-gen","");st.textContent=txt;st.disabled=!LIGHT;
- var head=D.head||R;head.insertBefore(st,head.firstChild);
- if(!LIGHT)st.sheet&&(st.sheet.disabled=true)}
+ var old=D.querySelector("style[data-theme-gen]");
+ if(!txt){if(old&&!old.textContent)old.remove();return}
+ holdMo(function(){
+  var st=old;
+  if(!st){st=D.createElement("style");st.setAttribute("data-theme-skip","");st.setAttribute("data-theme-gen","");
+   var head=D.head||R;head.insertBefore(st,head.firstChild)}
+  if(st.textContent!==txt)st.textContent=txt;
+  st.disabled=!LIGHT;if(!LIGHT&&st.sheet)st.sheet.disabled=true
+ })}
 function setGen(on){D.querySelectorAll("style[data-theme-gen]").forEach(function(s){if(s.sheet)s.sheet.disabled=!on})}
 /* ---------- inline style / SVG attributes ---------- */
 var ATTRS=["style","fill","stroke","stop-color","flood-color","color","bgcolor"],orig=new Map();
+var moOpts={subtree:true,childList:true,attributes:true,attributeFilter:ATTRS};
+var holding=0,queued=null,treeQueued=null,flushing=false;
+var MUT_CAP=500;
 function skip(el){return el===R||(el.closest&&el.closest("[data-theme-skip]"))}
-function mapAttr(el,a){var v=el.getAttribute(a);if(v==null)return;var rec=orig.get(el);
- if(rec&&rec[a]&&rec[a].m===v)return;/* 이미 변환된 값 */
- var m=a==="style"?mapInline(v):mapValue(v,a==="color"?"fg":"bg");
- if(m===v){if(rec)delete rec[a];return}
- if(!rec){rec={};orig.set(el,rec)}rec[a]={o:v,m:m};el.setAttribute(a,m)}
-function mapInline(v){if(!RE.test(v)){RE.lastIndex=0;return v}RE.lastIndex=0;
- return splitDecl(v).map(function(dc){var i=dc.indexOf(":");if(i<0)return dc;var p=dc.slice(0,i).trim(),val=dc.slice(i+1);
-  if(!isColorProp(p))return dc;var kind=p.slice(0,2)==="--"?kindVar(p,val):kindOf(p);return p+":"+mapValue(val.trim(),kind)}).join(";")}
+function normStr(s){return String(s).replace(/\s+/g,"").replace(/;+$/,"").toLowerCase()}
+function sameVal(a,b){return a===b||normStr(a)===normStr(b)}
+function sameColor(a,b){
+ if(a==null||b==null)return false;
+ if(sameVal(a,b))return true;
+ var pa=parse(String(a).trim()),pb=parse(String(b).trim());
+ if(!pa||!pb)return false;
+ return Math.round(pa[0])===Math.round(pb[0])&&Math.round(pa[1])===Math.round(pb[1])&&Math.round(pa[2])===Math.round(pb[2])&&Math.abs(pa[3]-pb[3])<.002}
+function holdMo(fn){
+ if(!holding)mo.disconnect();
+ holding++;
+ try{return fn()}
+ finally{holding--;if(!holding)mo.observe(R,moOpts)}}
+function mapAttr(el,a){
+ var v=el.getAttribute(a);if(v==null)return;
+ var rec=orig.get(el);if(!rec){rec={};orig.set(el,rec)}
+ if(a==="style"){
+  if(!rec.style)rec.style={o:v,keep:{}};
+  rec[a]=rec.style;
+  if(rec.style.m!=null&&sameVal(rec.style.m,v))return;
+  var m=mapInlineKept(v,rec.style);
+  if(sameVal(m,v)){rec.style.m=v;return}
+  if(rec.style.o==null)rec.style.o=v;
+  rec.style.m=m;
+  holdMo(function(){el.setAttribute("style",m);var now=el.getAttribute("style");if(now!=null)rec.style.m=now});
+  return}
+ if(rec[a]&&(sameVal(rec[a].m,v)||sameColor(rec[a].m,v)))return;
+ var mv=mapValue(v,a==="color"?"fg":"bg");
+ if(mv===v||sameColor(mv,v)){if(rec[a])rec[a].m=v;else delete rec[a];return}
+ rec[a]={o:(rec[a]&&rec[a].o!=null)?rec[a].o:v,m:mv};
+ holdMo(function(){el.setAttribute(a,mv);var now=el.getAttribute(a);if(now!=null)rec[a].m=now})}
+function mapInlineKept(v,prev){
+ if(!RE.test(v)){RE.lastIndex=0;return v}RE.lastIndex=0;
+ var keep=prev&&prev.keep||{},next={};
+ var out=splitDecl(v).map(function(dc){
+  var i=dc.indexOf(":");if(i<0)return dc;
+  var p=dc.slice(0,i).trim(),val=dc.slice(i+1);
+  if(!isColorProp(p))return dc;
+  var raw=val.trim();
+  if(keep[p]!=null&&(sameVal(keep[p],raw)||sameColor(keep[p],raw))){next[p]=keep[p];return dc}
+  var kind=p.slice(0,2)==="--"?kindVar(p,val):kindOf(p);
+  var mapped=mapValue(raw,kind);
+  next[p]=mapped;
+  return p+":"+mapped
+ }).join(";");
+ if(prev)prev.keep=next;return out}
 function procEl(el){if(el.nodeType!==1||skip(el))return;for(var i=0;i<ATTRS.length;i++)if(el.hasAttribute(ATTRS[i]))mapAttr(el,ATTRS[i])}
-function procTree(root){if(root.nodeType!==1)return;procEl(root);var l=root.querySelectorAll("[style],[fill],[stroke],[stop-color],[flood-color],font[color],[bgcolor]");for(var i=0;i<l.length;i++)procEl(l[i])}
-function revertAll(){orig.forEach(function(rec,el){for(var a in rec){if(el.getAttribute(a)===rec[a].m)el.setAttribute(a,rec[a].o)}});orig.clear()}
+function procTree(root){if(!root||root.nodeType!==1)return;procEl(root);var l=root.querySelectorAll("[style],[fill],[stroke],[stop-color],[flood-color],font[color],[bgcolor]");for(var i=0;i<l.length;i++)procEl(l[i])}
+function revertAll(){holdMo(function(){orig.forEach(function(rec,el){ATTRS.forEach(function(a){var r=rec[a];if(!r||r.o==null)return;var cur=el.getAttribute(a);if(cur==null)return;if(cur===r.m||sameVal(cur,r.m)||(a!=="style"&&sameColor(cur,r.m)))el.setAttribute(a,r.o)})});orig.clear()})}
+function enqueueEl(el){if(!el||el.nodeType!==1)return;if(!queued)queued=new Set();queued.add(el);scheduleFlush()}
+function enqueueTree(n){if(!n||n.nodeType!==1)return;if(!treeQueued)treeQueued=new Set();treeQueued.add(n);scheduleFlush()}
+function scheduleFlush(){if(flushing)return;flushing=true;var run=function(){flushing=false;flushMut()};if(typeof requestAnimationFrame==="function")requestAnimationFrame(run);else setTimeout(run,0)}
+function flushMut(){
+ if(!LIGHT){queued=null;treeQueued=null;return}
+ var els=queued,trees=treeQueued;queued=null;treeQueued=null;
+ var leftoverE=[],leftoverT=[],n=0;
+ holdMo(function(){
+  if(trees)trees.forEach(function(el){if(n>=MUT_CAP)leftoverT.push(el);else{procTree(el);n++}});
+  if(els)els.forEach(function(el){if(n>=MUT_CAP)leftoverE.push(el);else{procEl(el);n++}})
+ });
+ if(leftoverT.length||leftoverE.length){
+  leftoverT.forEach(enqueueTree);leftoverE.forEach(enqueueEl)
+ }}
 var mo=new MutationObserver(function(ms){
+ if(holding)return;
  for(var i=0;i<ms.length;i++){var m=ms[i];
   if(m.type==="childList"){for(var j=0;j<m.addedNodes.length;j++){var n=m.addedNodes[j];
     if(n.nodeName==="STYLE"||n.nodeName==="LINK"){watchSheet(n);continue}
-    if(LIGHT)procTree(n)}}
-  else if(LIGHT&&m.type==="attributes")procEl(m.target)}});
+    if(LIGHT)enqueueTree(n)}}
+  else if(LIGHT&&m.type==="attributes")enqueueEl(m.target)}});
 function watchSheet(n){if(n.hasAttribute&&n.hasAttribute("data-theme-skip"))return;
  if(n.nodeName==="LINK"&&!n.sheet){n.addEventListener("load",function(){convertSheets()},{once:true});return}
  setTimeout(convertSheets,0)}
@@ -121,26 +184,30 @@ var CSS='nav.siteNav button.navTheme{display:inline-flex!important;align-items:c
 function paintBtn(b){b.innerHTML=(LIGHT?MOON:SUN)+'<i class="tl">'+(LIGHT?"다크 모드":"화이트 모드")+'</i>';
  b.setAttribute("aria-label",LIGHT?"다크 모드로 전환":"화이트 모드로 전환");b.title=b.getAttribute("aria-label");b.setAttribute("aria-pressed",LIGHT?"true":"false")}
 function mountBtn(){if(D.querySelector("button.navTheme"))return;
- var st=D.createElement("style");st.setAttribute("data-theme-skip","");st.textContent=CSS;D.head.appendChild(st);
- var b=D.createElement("button");b.type="button";b.className="navTheme";b.setAttribute("data-theme-skip","");paintBtn(b);
- b.addEventListener("click",function(){setTheme(LIGHT?"dark":"light",true);paintBtn(b)});
- var nav=D.querySelector("nav.siteNav");
- if(nav){var dc=nav.querySelector("a.navDiscord");if(dc)dc.after(b);else{b.style.marginLeft="auto";nav.appendChild(b)}}
- else{b.classList.add("floatTheme");D.body.appendChild(b)}
- /* kit.js가 디스코드 버튼을 나중에 만들면 그 뒤로 이동 */
- if(nav&&!nav.querySelector("a.navDiscord")){new MutationObserver(function(_,o){var dc=nav.querySelector("a.navDiscord");if(dc){b.style.marginLeft="";dc.after(b);o.disconnect()}}).observe(nav,{childList:true})}}
+ var st=D.createElement("style");st.setAttribute("data-theme-skip","");st.textContent=CSS;
+ holdMo(function(){D.head.appendChild(st);
+  var b=D.createElement("button");b.type="button";b.className="navTheme";b.setAttribute("data-theme-skip","");paintBtn(b);
+  b.addEventListener("click",function(){setTheme(LIGHT?"dark":"light",true);paintBtn(b)});
+  var nav=D.querySelector("nav.siteNav");
+  if(nav){var dc=nav.querySelector("a.navDiscord");if(dc)dc.after(b);else{b.style.marginLeft="auto";nav.appendChild(b)}}
+  else{b.classList.add("floatTheme");D.body.appendChild(b)}
+  /* kit.js가 디스코드 버튼을 나중에 만들면 그 뒤로 이동 */
+  if(nav&&!nav.querySelector("a.navDiscord")){new MutationObserver(function(_,o){var dc=nav.querySelector("a.navDiscord");if(dc){b.style.marginLeft="";dc.after(b);o.disconnect()}}).observe(nav,{childList:true})}
+ })}
 function setTheme(t,save){LIGHT=t==="light";
  if(LIGHT)R.setAttribute("data-theme","light");else R.removeAttribute("data-theme");
  if(save)try{localStorage.setItem(KEY,t)}catch(e){}
- if(LIGHT){convertSheets();setGen(true);if(D.body)procTree(D.body)}else{setGen(false);revertAll()}
+ holdMo(function(){
+  if(LIGHT){convertSheets();setGen(true);if(D.body)procTree(D.body)}else{setGen(false);revertAll()}
+ });
  var mt=D.querySelector('meta[name="theme-color"]');if(mt)mt.setAttribute("content",LIGHT?"#f3f4f7":"#14161b");
  try{window.dispatchEvent(new CustomEvent("mabi:themechange",{detail:{theme:t}}))}catch(e){}}
 window.mabiTheme={get:function(){return LIGHT?"light":"dark"},set:function(t){setTheme(t,true);var b=D.querySelector("button.navTheme");if(b)paintBtn(b)},map:function(v,kind){return LIGHT?mapValue(v,kind||"bg"):v}};
 /* ---------- boot ---------- */
 LIGHT=stored()==="light";
-mo.observe(R,{subtree:true,childList:true,attributes:true,attributeFilter:ATTRS});
-function ready(){convertSheets();if(LIGHT){setGen(true);procTree(D.body)}mountBtn();R.classList.remove("theme-pending");R.style.removeProperty("background")}
+function ready(){holdMo(function(){convertSheets();if(LIGHT){setGen(true);procTree(D.body)}mountBtn();R.classList.remove("theme-pending");R.style.removeProperty("background")})}
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",ready);else ready();
 window.addEventListener("load",function(){convertSheets();if(LIGHT)setGen(true)});
 setTimeout(function(){R.classList.remove("theme-pending")},2500);
+mo.observe(R,moOpts);
 })();
