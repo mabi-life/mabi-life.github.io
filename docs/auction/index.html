@@ -95,7 +95,7 @@ td.tLeft .tStat{align-items:flex-start}.eRow+.eRow{border-top:1px dashed #2a2350
 .hotDeal h2{margin:0 0 4px;font-size:18px;font-weight:800;color:#f7d98b}
 .hotDeal .hotLead{margin:0 0 12px;font-size:13.5px;color:var(--mu);line-height:1.55}
 .hotDeal .hotEmpty{margin:4px 0 0;font-size:14.5px;color:var(--mu)}
-.hotGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.hotGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
 .hotCard{display:block;width:100%;box-sizing:border-box;text-align:left;background:#140f28;border:1px solid #3a2f66;border-radius:12px;padding:12px 14px;color:inherit;font:inherit;cursor:pointer}
 .hotCard:hover{border-color:#f7d98b}
 .hotCard:focus-visible{outline:2px solid #f7d98b;outline-offset:2px}
@@ -119,6 +119,9 @@ html[data-theme=light] .hotMin,html[data-theme=light] .hotPct{color:#1a7a3a}
 html[data-theme=light] .hotRow{color:#4a5060}
 html[data-theme=light] .hotMore{background:#fff;border-color:#d8dbe2;color:#4a5060}
 
+.hotDrop{margin-top:4px;font-size:12.5px;color:var(--mu);line-height:1.45;word-break:keep-all}
+html[data-theme=light] .hotDrop{color:#4a5060}
+
 .aucPanel{margin:8px 0 20px;padding:14px 16px 18px;background:rgba(20,16,42,.55);border:1px solid #3a2f66;border-radius:16px;box-shadow:0 6px 22px rgba(0,0,0,.18)}
 .aucPanel .subTab{margin:0 0 12px}
 html[data-theme=light] .aucPanel{background:#f4f5f8;border-color:#d8dbe2;box-shadow:0 4px 16px rgba(20,22,27,.06)}
@@ -133,7 +136,7 @@ html[data-theme=light] .aucPanel{background:#f4f5f8;border-color:#d8dbe2;box-sha
 
 <section class="hotDeal" id="hotDeal" aria-label="핫딜 타임">
 <h2>핫딜 타임</h2>
-<p class="hotLead">지금 올라온 매물 가운데, 최근 거래 중앙값이 1천만 골드 이상이고 그보다 40% 이상 싼 것만 모았어요. 이미 팔린 체결가는 넣지 않아요.</p>
+<p class="hotLead">지금 올라온 매물 가운데, 최근 거래 중앙값이 1천만 골드 이상이고 그보다 40% 이상 싸며, 직전 갱신보다 최저가가 더 내려간 것만 모았어요. 이미 팔린 체결가나, 싸게 그대로 앉아 있는 매물은 넣지 않아요.</p>
 <div class="hotGrid" id="hotGrid"></div>
 <p class="hotEmpty" id="hotEmpty" hidden>지금은 확 싸진 매물이 없어요.</p>
 <button type="button" class="hotMore" id="hotMore" hidden>더보기</button>
@@ -342,7 +345,7 @@ const RK=r=>/^\d+$/.test(r)?+r:100+r.charCodeAt(0);
 function eLoad(){if(E)return;E=[];
  $('eInfo').textContent='인챈트 시세를 불러오는 중…';
  Promise.all([getJ(WD+'auction/enchant_data.json'+WT()),getJ(WD+'auction/enchant_history.json'+WT()).catch(()=>({t:{}})),fetch('enchant_effects.json?v=20261102').then(r=>r.ok?r.json():null).catch(()=>null),fetch('enchant_source.json?v=20261113').then(r=>r.ok?r.json():null).catch(()=>null)]).then(([d,h,f,sr])=>{
-  E=d.rows;if(sr)['브리','글렌'].forEach(k=>(sr[k]||[]).forEach(n=>EDG[n.replace(/\s/g,'')]=k));EH=h.t||{};
+  Eup=d.updated||'';E=d.rows;if(sr)['브리','글렌'].forEach(k=>(sr[k]||[]).forEach(n=>EDG[n.replace(/\s/g,'')]=k));EH=h.t||{};
   if(f){const list=Array.isArray(f)?f:f.enchants||f.rows||[];EF={};EFx={};
    list.forEach(x=>{const rk=String(x.rank).toUpperCase(),es=x.effects||[];es.on=x.on||'';EF[x.name+'|'+x.affix+'|'+rk]=es;(EFx[x.affix+'|'+rk]||(EFx[x.affix+'|'+rk]=[])).push(x);});}
   const rs=[...new Set(E.map(r=>r.rank))].sort((a,b)=>RK(a)-RK(b));$('eRk').innerHTML+=rs.map(r=>`<option value="${r}">랭크 ${r}</option>`).join('');
@@ -405,7 +408,7 @@ function cFix(){const M={},hm={},out=[],srt=(x,y)=>x[0]-y[0]||x[1]-y[1]||x[2]-y[
  C=out}
 function cLoad(){if(C)return;C=[];
  $('cInfo').textContent='에코스톤 시세를 불러오는 중…';
- Promise.all([getJ(WD+'auction/echo_data.json'+WT()),getJ(WD+'auction/echo_history.json'+WT()).catch(()=>({t:{}}))]).then(([d,h])=>{C=d.rows;CH=h.t||{};CS=d.stat||{};cFix();
+ Promise.all([getJ(WD+'auction/echo_data.json'+WT()),getJ(WD+'auction/echo_history.json'+WT()).catch(()=>({t:{}}))]).then(([d,h])=>{Cup=d.updated||'';C=d.rows;CH=h.t||{};CS=d.stat||{};cFix();
   const cn={};C.forEach(r=>cn[r.c]=(cn[r.c]||0)+r.n);
   $('cCo').innerHTML='<button data-c="" class="on">색 전체</button>'+['레드','블루','옐로','실버','블랙'].map(c=>`<button data-c="${c}" title="고유 능력: ${CS[c]||''}"><span style="color:${CCL[c]}">●</span> ${c} <small>${(CS[c]||'').replace('생명력, 마나, 스태미나','생·마·스')} · ${cn[c]||0}</small></button>`).join('');
   $('cInfo').innerHTML=`에코스톤 매물 <b>${d.listings.toLocaleString()}</b>건 · 각성 능력·Lv <b>${C.filter(r=>r.n).length}</b>종 · 갱신 ${new Date(d.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}`;cDraw();hotGot.c=1;hotRefresh()}).catch(()=>{hotGot.c=1;hotRefresh();loadErr($('cInfo'),'에코스톤 시세를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.',()=>{C=null;cLoad()})})}
@@ -446,7 +449,7 @@ function tLoad(){if(T)return;T=[];
  ]).then(([d,h])=>{
   T=(d.rows||[]).filter(r=>!tIsCoin(r.name));THI=h.t||{};
   TC=d.coins||[];TSlots=d.coinSlots||{};TCounts=d.coinCounts||{};
-  TListN=d.listings||0;TUp=d.updated||'';
+  Tup=d.updated||'';TListN=d.listings||0;TUp=d.updated||'';
   const ks=d.kinds||[...new Set(T.flatMap(r=>(r.fx||[]).map(o=>o.k).filter(Boolean)))].sort((a,b)=>a.localeCompare(b,'ko'));
   $('tKd').innerHTML='<button data-k="" class="on">효과 전체</button>'+ks.map(k=>`<button data-k="${tEsc(k)}">${tEsc(k)}</button>`).join('');
   tFillSort();tDraw();hotGot.t=1;hotRefresh();
@@ -562,43 +565,68 @@ $('tList').onclick=e=>{if(TView==='coin')return;const tr=e.target.closest('tr.r'
 
 
 
-/* 핫딜 타임: 현재 최저가 vs 최근 체결 최대 10건 중앙값, 40% 이상 할인 · 체결 3건 미만·시세 1천만 미만·(미완성)·이상 고가 제외 */
-const HOT_PCT=.4,HOT_TRADES=3,HOT_SHOW=10,HOT_MIN=10000000;
-let hotAll=[],hotOpen=false,hotGot={d:0,e:0,c:0,t:0};
+/* 핫딜 타임: 현재 최저가 vs 최근 체결 최대 10건 중앙값, 40% 이상 할인 · 직전(또는 최근 3시간) 매물 최저가보다 더 내려간 것만 · 체결 3건 미만·시세 1천만 미만·(미완성)·이상 고가 제외 */
+const HOT_PCT=.4,HOT_TRADES=3,HOT_SHOW=10,HOT_MIN=10000000,HOT_WIN=3*3600*1000;
+let hotAll=[],hotOpen=false,hotGot={d:0,e:0,c:0,t:0,f:0},Eup='',Cup='',Tup='',Floor={snaps:[]};
 function hotEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function hotMed(h){if(!h||!(h.length>=HOT_TRADES))return null;const k=h.slice(-10).map(x=>x[1]).sort((a,b)=>a-b),m=k.length,mid=m>>1;return [m%2?k[mid]:Math.round((k[mid-1]+k[mid])/2),m]}
+function hotAgo(iso){const ts=Date.parse(iso);if(!ts)return '';const m=Math.round((Date.now()-ts)/60000);if(m<2)return '방금 갱신';if(m<60)return m+'분 전 갱신';const h=Math.round(m/60);if(h<24)return h+'시간 전 갱신';return new Date(ts).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' 갱신'}
+function hotSrcUp(tab){return (tab==='relic'||tab==='idea')?((D&&D.updated)||(Idea&&Idea.updated)||''):tab==='enchant'?Eup:tab==='echo'?Cup:Tup}
+function hotEchoKeys(r){const k='c|'+cK(r),ks=[k];if(r.a===CFIX){ks.push('c|'+r.c+'|'+r.a+'|'+(2*r.l-1));ks.push('c|'+r.c+'|'+r.a+'|'+(2*r.l))}return ks}
+function hotVal(snap,keys){if(!snap||!snap.m)return null;let v=null;for(const k of keys){const x=snap.m[k];if(x&&(!v||x<v))v=x}return v}
+function hotFloor(keys,min,upd){
+ const snaps=Floor.snaps||[];
+ if(!keys||!keys.length||!min||snaps.length<1)return null;
+ const curT=Date.parse(upd)||0;
+ const past=snaps.filter(s=>{
+  if(s.u&&upd&&s.u===upd)return false;
+  const st=Date.parse(s.u||s.t);
+  if(curT&&st&&st>curT)return false;
+  return true});
+ if(!past.length)return null;
+ const prev=past[past.length-1],prevMin=hotVal(prev,keys);
+ if(!prevMin||!(min<prevMin))return null;
+ const t0=curT||Date.now(),cut=t0-HOT_WIN;
+ let win=past.filter(s=>{const ts=Date.parse(s.u||s.t);return !ts||ts>=cut});
+ if(!win.length)win=[prev];
+ let winMin=null;
+ win.forEach(s=>{const v=hotVal(s,keys);if(v&&(!winMin||v<winMin))winMin=v});
+ if(winMin&&!(min<winMin))return null;
+ return {prev:prevMin,curAt:upd||prev.u||prev.t}}
 function hotPush(list,it){
  if(!it.min||!it.ref||!(it.t>=HOT_TRADES)||!(it.ref>=HOT_MIN)||it.out)return;
  if(/미완성/.test(it.name||'')||/미완성/.test(it.label||''))return;
  const d=(it.min-it.ref)/it.ref;
  if(!(d<=-HOT_PCT))return;
- it.disc=-d;it.pct=Math.round(it.disc*100);
+ const fl=hotFloor(it.keys,it.min,it.upd||hotSrcUp(it.tab));
+ if(!fl)return;
+ it.disc=-d;it.pct=Math.round(it.disc*100);it.prev=fl.prev;it.curAt=fl.curAt;
  list.push(it)}
 function hotCollect(){
  const list=[];
  if(D&&D.skills)D.skills.forEach(s=>(s.options||[]).forEach(o=>Object.keys(o.lv||{}).forEach(l=>{
   const v=o.lv[l];if(!v||!v[0])return;
   const R=hotMed(Hs[o.name+'|'+l]);
-  hotPush(list,{tab:'relic',arc:s.name,name:o.name,lv:+l,label:o.name+' Lv'+l,kind:'유물',min:v[0],n:v[1],ref:R&&R[0],t:R&&R[1]});
+  hotPush(list,{tab:'relic',arc:s.name,name:o.name,lv:+l,label:o.name+' Lv'+l,kind:'유물',min:v[0],n:v[1],ref:R&&R[0],t:R&&R[1],keys:['r|'+o.name+'|'+l],upd:D.updated});
  })));
  if(Idea&&Idea.floor){
   const R=hotMed(Idea.t||[]);
-  hotPush(list,{tab:'idea',name:'무리아스의 유물(이데아)',label:'무리아스의 유물(이데아)',kind:'유물',min:Idea.floor,n:Idea.listings||0,ref:R&&R[0],t:R&&R[1]});
+  hotPush(list,{tab:'idea',name:'무리아스의 유물(이데아)',label:'무리아스의 유물(이데아)',kind:'유물',min:Idea.floor,n:Idea.listings||0,ref:R&&R[0],t:R&&R[1],keys:['idea'],upd:Idea.updated||(D&&D.updated)});
  }
  if(E&&E.length)E.forEach((r,i)=>{
   const R=hotMed(EH[eK(r)]);
-  hotPush(list,{tab:'enchant',idx:i,name:r.name,label:r.name+(r.rank?' · 랭크 '+r.rank:''),kind:'인챈트',min:r.min,n:r.n,ref:R&&R[0],t:R&&R[1]});
+  hotPush(list,{tab:'enchant',idx:i,name:r.name,label:r.name+(r.rank?' · 랭크 '+r.rank:''),kind:'인챈트',min:r.min,n:r.n,ref:R&&R[0],t:R&&R[1],keys:['e|'+eK(r)],upd:Eup});
  });
  if(C&&C.length)C.forEach((r,i)=>{
   const label=(r.c?r.c+' ':'')+(r.a||'각성 없음')+(r.a&&r.l?' Lv'+r.l:''),R=hotMed(CH[cK(r)]);
-  hotPush(list,{tab:'echo',idx:i,name:r.a||r.c||'',label,kind:'에코스톤',min:r.min,n:r.n,ref:R&&R[0],t:R&&R[1],color:r.c,lv:r.l});
+  hotPush(list,{tab:'echo',idx:i,name:r.a||r.c||'',label,kind:'에코스톤',min:r.min,n:r.n,ref:R&&R[0],t:R&&R[1],color:r.c,lv:r.l,keys:hotEchoKeys(r),upd:Cup});
  });
  if(T&&T.length)T.forEach((r,i)=>{
   if(r.out)return;
   const R=hotMed(THI[tK(r)]);
-  hotPush(list,{tab:'totem',idx:i,name:r.name,label:r.name,kind:'토템',min:r.min,n:r.n,ref:R&&R[0],t:R&&R[1]});
+  hotPush(list,{tab:'totem',idx:i,name:r.name,label:r.name,kind:'토템',min:r.min,n:r.n,ref:R&&R[0],t:R&&R[1],keys:['t|'+tK(r)],upd:Tup||TUp});
  });
- list.sort((a,b)=>b.disc-a.disc||a.min-b.min);
+ list.sort((a,b)=>b.disc-a.disc||(b.prev-b.min)-(a.prev-a.min)||a.min-b.min);
  return list}
 function hotMark(el){if(!el)return;el.classList.add('hotFlash');el.scrollIntoView({block:'center',behavior:'smooth'});setTimeout(()=>el.classList.remove('hotFlash'),1800)}
 function hotGo(it){
@@ -646,21 +674,21 @@ function hotRefresh(){
  if(!box)return;
  hotAll=hotCollect();
  const show=hotOpen?hotAll:hotAll.slice(0,HOT_SHOW);
- const pending=!(D&&Hs)&&!hotTried.e;
- const base=hotOpen?0:0;
  grid.innerHTML=show.map((it,i)=>`<button type="button" class="hotCard" data-h="${hotAll.indexOf(it)}">`
   +`<span class="hotKind">${hotEsc(it.kind)}</span>`
   +`<span class="hotNm">${hotEsc(it.label)}</span>`
   +`<div class="hotMin">${man(it.min)}</div>`
   +`<div class="hotRow"><span>중앙값 ${man(it.ref)} · 매물 ${it.n||0}건</span><span class="hotPct">${it.pct}% 저렴</span></div>`
+  +(it.prev?`<div class="hotDrop">직전 최저 ${man(it.prev)} → ${man(it.min)} · ${hotEsc(hotAgo(it.curAt))}</div>`:'')
   +`</button>`).join('');
  empty.hidden=!!hotAll.length;
- if(!hotAll.length)empty.textContent=(hotGot.d&&hotGot.e&&hotGot.c&&hotGot.t)?'지금은 확 싸진 매물이 없어요.':'매물을 살펴보는 중…';
+ if(!hotAll.length)empty.textContent=!(hotGot.d&&hotGot.e&&hotGot.c&&hotGot.t&&hotGot.f)?'매물을 살펴보는 중…':((Floor.snaps||[]).length<2)?'최저가가 내려가는 순간을 아직 모으는 중이에요. 다음 경매장 갱신부터 보여 줄게요.':'지금은 최저가가 새로 내려간 매물이 없어요.';
  more.hidden=hotAll.length<=HOT_SHOW;
  more.textContent=hotOpen?'접기':'더보기 · '+(hotAll.length-HOT_SHOW)+'개 더'}
 $('hotGrid').addEventListener('click',e=>{const b=e.target.closest('.hotCard');if(!b)return;const it=hotAll[+b.dataset.h];if(it)hotGo(it)});
 $('hotMore').onclick=()=>{hotOpen=!hotOpen;hotRefresh()};
-function hotPrefetch(){eLoad();cLoad();tLoad()}
+function fLoad(){getJ(WD+'auction/floor_snaps.json'+WT()).then(d=>{Floor=d&&Array.isArray(d.snaps)?d:{snaps:[]};hotGot.f=1;hotRefresh()}).catch(()=>{Floor={snaps:[]};hotGot.f=1;hotRefresh()})}
+function hotPrefetch(){fLoad();eLoad();cLoad();tLoad()}
 
 hotPrefetch();
 tab();
