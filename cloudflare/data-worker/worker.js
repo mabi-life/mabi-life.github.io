@@ -24,6 +24,13 @@ const FILES = {
   'horn_beads.json': ['horn', 120],
 };
 const SWR = 3600; // 신선도가 지난 뒤에도 이 시간(초)까지는 바로 주고 뒤에서 갱신
+// 핫딜용 매물 최저가 스냅샷. GitHub에는 없고, cron이 경매장 JSON을 받을 때 D1에만 쌓음. KV 쓰기 없음.
+const FLOOR_PATH = 'auction/floor_snaps.json';
+const FLOOR_SRC = ['auction/data.json', 'auction/idea_data.json', 'auction/enchant_data.json', 'auction/echo_data.json', 'auction/totem_data.json'];
+const FLOOR_KEEP_MS = 3 * 3600 * 1000; // 최근 3시간
+const FLOOR_MIN_SNAPS = 2;
+const FLOOR_MAX_SNAPS = 24; // 10분 갱신 기준 최대 4시간
+const EMPTY_FLOOR = new TextEncoder().encode('{"snaps":[]}');
 const BROWSER_TTL = 120; // 브라우저 캐시(private)
 const PART = 400000; // D1 한 행에 넣을 최대 글자 수(행 최대 2MB 이하로)
 const CACHE_HOST = 'https://mabi-data.cache/v2/'; // 캐시 키: Origin 미포함
@@ -91,6 +98,96 @@ async function dbWrite(env, path, sha, buf) {
   ]);
 }
 
+
+function floorTotemK(r) {
+  return r.name + '\t' + (r.fx || []).map((o) => `${o.t}:${o.k || ''}=${o.v || ''}${o.v2 ? ':' + o.v2 : ''}${o.d ? '@' + o.d : ''}`).join('/');
+}
+
+function collectFloorMins(files) {
+  const m = {};
+  const D = files['auction/data.json'];
+  if (D && D.skills) {
+    for (const s of D.skills) {
+      for (const o of s.options || []) {
+        if (/미완성/.test(o.name || '')) continue;
+        for (const [l, v] of Object.entries(o.lv || {})) {
+          if (v && v[0]) m['r|' + o.name + '|' + l] = v[0];
+        }
+      }
+    }
+  }
+  const idea = files['auction/idea_data.json'];
+  if (idea && idea.floor) m.idea = idea.floor;
+  for (const r of (files['auction/enchant_data.json'] && files['auction/enchant_data.json'].rows) || []) {
+    if (r.min && !/미완성/.test(r.name || '')) m['e|' + r.kind + '|' + r.affix + '|' + r.name + '|' + r.rank] = r.min;
+  }
+  for (const r of (files['auction/echo_data.json'] && files['auction/echo_data.json'].rows) || []) {
+    if (r.min) m['c|' + r.c + '|' + r.a + '|' + r.l] = r.min;
+  }
+  for (const r of (files['auction/totem_data.json'] && files['auction/totem_data.json'].rows) || []) {
+    if (r.out || !r.min || /미완성/.test(r.name || '')) continue;
+    m['t|' + floorTotemK(r)] = r.min;
+  }
+  return m;
+}
+
+async function shaHex(buf) {
+  const d = await crypto.subtle.digest('SHA-256', buf);
+  return [...new Uint8Array(d)].map((x) => x.toString(16).padStart(2, '0')).join('');
+}
+
+async function updateFloorSnaps(env) {
+  const files = {};
+  for (const p of FLOOR_SRC) {
+    const d = await dbRead(env, p);
+    if (!d) continue;
+    try { files[p] = JSON.parse(new TextDecoder().decode(d.bytes)); } catch (_) {}
+  }
+  if (!files['auction/data.json']) return { skipped: 'no-data' };
+  const mins = collectFloorMins(files);
+  const u = files['auction/data.json'].updated || new Date().toISOString();
+  let prev = { snaps: [] };
+  try {
+    const old = await dbRead(env, FLOOR_PATH);
+    if (old) prev = JSON.parse(new TextDecoder().decode(old.bytes));
+  } catch (_) {}
+  const snaps = Array.isArray(prev.snaps) ? prev.snaps.slice() : [];
+  if (snaps.length && snaps[snaps.length - 1].u === u) return { skipped: 'same-update', u };
+  snaps.push({ u, t: new Date().toISOString(), n: Object.keys(mins).length, m: mins });
+  const cut = Date.now() - FLOOR_KEEP_MS;
+  let kept = snaps.filter((s) => {
+    const ts = Date.parse(s.u || s.t);
+    return !ts || ts >= cut;
+  });
+  if (kept.length < FLOOR_MIN_SNAPS) kept = snaps.slice(-FLOOR_MIN_SNAPS);
+  if (kept.length > FLOOR_MAX_SNAPS) kept = kept.slice(-FLOOR_MAX_SNAPS);
+  const out = { updated: u, snaps: kept };
+  const buf = new TextEncoder().encode(JSON.stringify(out));
+  const sha = await shaHex(buf);
+  await dbWrite(env, FLOOR_PATH, sha, buf);
+  MEM.set(FLOOR_PATH, { bytes: buf, sha, at: Date.now() });
+  return { wrote: true, snaps: kept.length, items: Object.keys(mins).length, u };
+}
+
+async function getGenerated(env, ctx, path) {
+  const now = Date.now(), fresh = 300 * 1000, max = (300 + SWR) * 1000;
+  const mem = MEM.get(path);
+  if (mem && now - mem.at < fresh) return [mem.bytes, 'mem'];
+  if (mem && now - mem.at < max) { revalidate(env, ctx, path, mem); return [mem.bytes, 'mem-stale']; }
+  try {
+    const d = await dbRead(env, path);
+    if (d) {
+      const ent = { ...d, at: now };
+      MEM.set(path, ent);
+      ctx.waitUntil(cachePut(path, ent));
+      return [ent.bytes, 'd1'];
+    }
+  } catch (_) {}
+  // 첫 배포 직후처럼 스냅샷이 없으면 지금 있는 경매장 JSON으로 하나를 만들어 둠
+  ctx.waitUntil(updateFloorSnaps(env).catch(() => {}));
+  return [EMPTY_FLOOR, 'empty'];
+}
+
 // GitHub 트리의 blob sha와 D1을 비교해 바뀐 파일만 복사.
 async function syncAll(env) {
   const t0 = Date.now();
@@ -119,6 +216,14 @@ async function syncAll(env) {
     }
   }
   out.ms = Date.now() - t0;
+  try {
+    if (out.changed.some((p) => FLOOR_SRC.includes(p)) || !have.get(FLOOR_PATH)) {
+      out.floor = await updateFloorSnaps(env);
+      if (out.floor && out.floor.wrote) out.changed.push(FLOOR_PATH);
+    }
+  } catch (_) {
+    out.errors.push('floor:exc');
+  }
   await env.DB.prepare('INSERT OR REPLACE INTO meta (k, v) VALUES (?1, ?2)').bind('last_sync', JSON.stringify(out)).run();
   return out;
 }
@@ -204,9 +309,9 @@ async function health(env) {
     rdb(env).prepare("SELECT v FROM meta WHERE k = 'last_sync'").first(),
   ]);
   const ls = s ? JSON.parse(s.v) : null;
-  const files = Object.keys(FILES).map((p) => {
+  const files = [...Object.keys(FILES), FLOOR_PATH].map((p) => {
     const r = (f.results || []).find((x) => x.path === p);
-    return { path: p, stored: !!r, bytes: r ? r.bytes : 0, updated: r ? new Date(r.updated).toISOString() : null };
+    return { path: p, stored: !!r, bytes: r ? r.bytes : 0, updated: r ? new Date(r.updated).toISOString() : null, generated: p === FLOOR_PATH || undefined };
   });
   return {
     store: 'd1',
@@ -233,6 +338,17 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: hdr(origin, { 'Access-Control-Max-Age': '86400' }) });
     if (req.method !== 'GET' && req.method !== 'HEAD') return new Response('method', { status: 405, headers: hdr(origin) });
     const path = url.pathname.replace(/^\/+/, '');
+    if (path === FLOOR_PATH) {
+      const got = await getGenerated(env, ctx, path);
+      return new Response(req.method === 'HEAD' ? null : got[0], {
+        status: 200,
+        headers: hdr(origin, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': `private, max-age=${BROWSER_TTL}`,
+          'X-Data-Source': got[1],
+        }),
+      });
+    }
     const f = FILES[path];
     if (!f) return new Response('not found', { status: 404, headers: hdr(origin, { 'Cache-Control': 'no-store' }) });
     const got = await getFile(env, ctx, path, f[0], f[1]);
