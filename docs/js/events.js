@@ -45,10 +45,10 @@ function spotFig(s, i, town, ti){
   "<figcaption><strong>"+esc(s.name||"")+"</strong>"+who+"</figcaption></figure>";
 }
 
-/* 첫 마을은 예전 주소(#ev-spot-1)를 그대로, 이후 마을은 #ev-spot-<마을id>-1 */
+/* 던바튼은 예전 주소(#ev-spot-1)를 그대로, 다른 마을은 #ev-spot-<마을id>-1 */
 function spotId(town, ti, s, n){
  var k=String(s.id||n);
- return ti===0?"ev-spot-"+k:"ev-spot-"+(town.id||("t"+ti))+"-"+k;
+ return (town&&town.id==="dunbarton")?"ev-spot-"+k:"ev-spot-"+(town.id||("t"+ti))+"-"+k;
 }
 
 /* 마을 목록 — events.json 의 towns[] (없으면 예전 map/spots 하나를 마을 하나로) */
