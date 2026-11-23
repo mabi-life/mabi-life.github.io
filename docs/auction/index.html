@@ -136,7 +136,7 @@ html[data-theme=light] .aucPanel{background:#f4f5f8;border-color:#d8dbe2;box-sha
 
 <section class="hotDeal" id="hotDeal" aria-label="핫딜 타임">
 <h2>핫딜 타임</h2>
-<p class="hotLead">지금 올라온 매물 가운데, 최근 거래 중앙값이 1천만 골드 이상이고 그보다 40% 이상 싸며, 직전 갱신보다 최저가가 더 내려간 것만 모았어요. 이미 팔린 체결가나, 싸게 그대로 앉아 있는 매물은 넣지 않아요.</p>
+<p class="hotLead">지금 올라온 매물 가운데, 최근 거래 중앙값이 1천만 골드 이상이고 그보다 싸며, 최근 1시간 안에 최저가가 두 번 이상 새로 내려가고 3시간 전보다 15% 이상 내려간 것만 모았어요. 이미 팔린 체결가나, 싸게 그대로 앉아 있는 매물은 넣지 않아요.</p>
 <div class="hotGrid" id="hotGrid"></div>
 <p class="hotEmpty" id="hotEmpty" hidden>지금은 확 싸진 매물이 없어요.</p>
 <button type="button" class="hotMore" id="hotMore" hidden>더보기</button>
@@ -565,8 +565,8 @@ $('tList').onclick=e=>{if(TView==='coin')return;const tr=e.target.closest('tr.r'
 
 
 
-/* 핫딜 타임: 현재 최저가 vs 최근 체결 최대 10건 중앙값, 40% 이상 할인 · 직전(또는 최근 3시간) 매물 최저가보다 더 내려간 것만 · 체결 3건 미만·시세 1천만 미만·(미완성)·이상 고가 제외 */
-const HOT_PCT=.4,HOT_TRADES=3,HOT_SHOW=10,HOT_MIN=10000000,HOT_WIN=3*3600*1000;
+/* 핫딜 타임: 최근 체결 최대 10건 중앙값(1천만 이상)보다 싼 매물 가운데, 최근 1시간 안에 최저가가 HOT_DROPS번 이상 내려가고 3시간 전보다 HOT_FALL 이상 내려간 것만(치킨런) · 체결 3건 미만·(미완성)·이상 고가 제외 */
+const HOT_TRADES=3,HOT_SHOW=10,HOT_MIN=10000000,HOT_HOUR=1*3600*1000,HOT_WIN=3*3600*1000,HOT_DROPS=2,HOT_FALL=.15;
 let hotAll=[],hotOpen=false,hotGot={d:0,e:0,c:0,t:0,f:0},Eup='',Cup='',Tup='',Floor={snaps:[]};
 function hotEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function hotMed(h){if(!h||!(h.length>=HOT_TRADES))return null;const k=h.slice(-10).map(x=>x[1]).sort((a,b)=>a-b),m=k.length,mid=m>>1;return [m%2?k[mid]:Math.round((k[mid-1]+k[mid])/2),m]}
@@ -574,33 +574,48 @@ function hotAgo(iso){const ts=Date.parse(iso);if(!ts)return '';const m=Math.roun
 function hotSrcUp(tab){return (tab==='relic'||tab==='idea')?((D&&D.updated)||(Idea&&Idea.updated)||''):tab==='enchant'?Eup:tab==='echo'?Cup:Tup}
 function hotEchoKeys(r){const k='c|'+cK(r),ks=[k];if(r.a===CFIX){ks.push('c|'+r.c+'|'+r.a+'|'+(2*r.l-1));ks.push('c|'+r.c+'|'+r.a+'|'+(2*r.l))}return ks}
 function hotVal(snap,keys){if(!snap||!snap.m)return null;let v=null;for(const k of keys){const x=snap.m[k];if(x&&(!v||x<v))v=x}return v}
-function hotFloor(keys,min,upd){
- const snaps=Floor.snaps||[];
- if(!keys||!keys.length||!min||snaps.length<1)return null;
- const curT=Date.parse(upd)||0;
- const past=snaps.filter(s=>{
-  if(s.u&&upd&&s.u===upd)return false;
+function hotSnapSrc(s,tab){
+ const k=tab==='idea'?'idea':tab==='enchant'?'enchant':tab==='echo'?'echo':tab==='totem'?'totem':'relic';
+ return (s.src&&s.src[k])||s.u;
+}
+function hotSameCycle(s,upd,tab){
+ if(!s||!upd)return false;
+ const su=hotSnapSrc(s,tab);
+ return !!(su&&su===upd);
+}
+function hotPts(keys,min,upd,tab){
+ const snaps=Floor.snaps||[],curT=Date.parse(upd)||0,pts=[];
+ snaps.forEach(s=>{
+  if(hotSameCycle(s,upd,tab))return;
   const st=Date.parse(s.u||s.t);
-  if(curT&&st&&st>curT)return false;
-  return true});
- if(!past.length)return null;
- const prev=past[past.length-1],prevMin=hotVal(prev,keys);
- if(!prevMin||!(min<prevMin))return null;
- const t0=curT||Date.now(),cut=t0-HOT_WIN;
- let win=past.filter(s=>{const ts=Date.parse(s.u||s.t);return !ts||ts>=cut});
- if(!win.length)win=[prev];
- let winMin=null;
- win.forEach(s=>{const v=hotVal(s,keys);if(v&&(!winMin||v<winMin))winMin=v});
- if(winMin&&!(min<winMin))return null;
- return {prev:prevMin,curAt:upd||prev.u||prev.t}}
+  if(curT&&st&&st>curT)return;
+  const v=hotVal(s,keys);
+  if(v)pts.push({t:st||0,v});
+ });
+ if(min)pts.push({t:curT||Date.now(),v:min,cur:1});
+ return pts;
+}
+function hotRun(keys,min,upd,tab){
+ if(!keys||!min)return null;
+ const curT=Date.parse(upd)||Date.now();
+ const pts=hotPts(keys,min,upd,tab);
+ const win=pts.filter(p=>!p.cur&&(!p.t||p.t>=curT-HOT_WIN));
+ if(!win.length)return null;
+ const old=win[0].v;
+ if(!old||!((min-old)/old<=-HOT_FALL))return null;
+ const cut=curT-HOT_HOUR;
+ let drops=0;
+ for(let i=1;i<pts.length;i++)if(pts[i].t>=cut&&pts[i].v<pts[i-1].v)drops++;
+ if(!(drops>=HOT_DROPS))return null;
+ return {drops,old,fall:(old-min)/old,curAt:upd||''};
+}
 function hotPush(list,it){
  if(!it.min||!it.ref||!(it.t>=HOT_TRADES)||!(it.ref>=HOT_MIN)||it.out)return;
  if(/미완성/.test(it.name||'')||/미완성/.test(it.label||''))return;
- const d=(it.min-it.ref)/it.ref;
- if(!(d<=-HOT_PCT))return;
- const fl=hotFloor(it.keys,it.min,it.upd||hotSrcUp(it.tab));
- if(!fl)return;
- it.disc=-d;it.pct=Math.round(it.disc*100);it.prev=fl.prev;it.curAt=fl.curAt;
+ if(!(it.min<it.ref))return;
+ const run=hotRun(it.keys,it.min,it.upd||hotSrcUp(it.tab),it.tab);
+ if(!run)return;
+ it.drops=run.drops;it.old=run.old;it.fall=run.fall;it.pct=Math.round(it.fall*100);it.curAt=run.curAt;
  list.push(it)}
 function hotCollect(){
  const list=[];
@@ -626,7 +641,7 @@ function hotCollect(){
   const R=hotMed(THI[tK(r)]);
   hotPush(list,{tab:'totem',idx:i,name:r.name,label:r.name,kind:'토템',min:r.min,n:r.n,ref:R&&R[0],t:R&&R[1],keys:['t|'+tK(r)],upd:Tup||TUp});
  });
- list.sort((a,b)=>b.disc-a.disc||(b.prev-b.min)-(a.prev-a.min)||a.min-b.min);
+ list.sort((a,b)=>b.drops-a.drops||b.fall-a.fall||a.min-b.min);
  return list}
 function hotMark(el){if(!el)return;el.classList.add('hotFlash');el.scrollIntoView({block:'center',behavior:'smooth'});setTimeout(()=>el.classList.remove('hotFlash'),1800)}
 function hotGo(it){
@@ -678,11 +693,11 @@ function hotRefresh(){
   +`<span class="hotKind">${hotEsc(it.kind)}</span>`
   +`<span class="hotNm">${hotEsc(it.label)}</span>`
   +`<div class="hotMin">${man(it.min)}</div>`
-  +`<div class="hotRow"><span>중앙값 ${man(it.ref)} · 매물 ${it.n||0}건</span><span class="hotPct">${it.pct}% 저렴</span></div>`
-  +(it.prev?`<div class="hotDrop">직전 최저 ${man(it.prev)} → ${man(it.min)} · ${hotEsc(hotAgo(it.curAt))}</div>`:'')
+  +`<div class="hotRow"><span>중앙값 ${man(it.ref)} · 매물 ${it.n||0}건</span></div>`
+  +(it.drops?`<div class="hotDrop">1시간 동안 ${it.drops}번 갱신 · 3시간 전 대비 −${it.pct}%</div>`:'')
   +`</button>`).join('');
  empty.hidden=!!hotAll.length;
- if(!hotAll.length)empty.textContent=!(hotGot.d&&hotGot.e&&hotGot.c&&hotGot.t&&hotGot.f)?'매물을 살펴보는 중…':((Floor.snaps||[]).length<2)?'최저가가 내려가는 순간을 아직 모으는 중이에요. 다음 경매장 갱신부터 보여 줄게요.':'지금은 최저가가 새로 내려간 매물이 없어요.';
+ if(!hotAll.length)empty.textContent=!(hotGot.d&&hotGot.e&&hotGot.c&&hotGot.t&&hotGot.f)?'매물을 살펴보는 중…':((Floor.snaps||[]).length<2)?'최저가가 내려가는 순간을 아직 모으는 중이에요. 다음 경매장 갱신부터 보여 줄게요.':'지금은 최저가 경쟁이 붙은 매물이 없어요.';
  more.hidden=hotAll.length<=HOT_SHOW;
  more.textContent=hotOpen?'접기':'더보기 · '+(hotAll.length-HOT_SHOW)+'개 더'}
 $('hotGrid').addEventListener('click',e=>{const b=e.target.closest('.hotCard');if(!b)return;const it=hotAll[+b.dataset.h];if(it)hotGo(it)});
