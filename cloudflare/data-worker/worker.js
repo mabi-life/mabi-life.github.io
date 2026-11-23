@@ -146,6 +146,14 @@ async function updateFloorSnaps(env) {
   if (!files['auction/data.json']) return { skipped: 'no-data' };
   const mins = collectFloorMins(files);
   const u = files['auction/data.json'].updated || new Date().toISOString();
+  const srcUp = (p) => (files[p] && files[p].updated) || null;
+  const src = {
+    relic: srcUp('auction/data.json'),
+    idea: srcUp('auction/idea_data.json'),
+    enchant: srcUp('auction/enchant_data.json'),
+    echo: srcUp('auction/echo_data.json'),
+    totem: srcUp('auction/totem_data.json')
+  };
   let prev = { snaps: [] };
   try {
     const old = await dbRead(env, FLOOR_PATH);
@@ -153,7 +161,7 @@ async function updateFloorSnaps(env) {
   } catch (_) {}
   const snaps = Array.isArray(prev.snaps) ? prev.snaps.slice() : [];
   if (snaps.length && snaps[snaps.length - 1].u === u) return { skipped: 'same-update', u };
-  snaps.push({ u, t: new Date().toISOString(), n: Object.keys(mins).length, m: mins });
+  snaps.push({ u, t: new Date().toISOString(), n: Object.keys(mins).length, m: mins, src });
   const cut = Date.now() - FLOOR_KEEP_MS;
   let kept = snaps.filter((s) => {
     const ts = Date.parse(s.u || s.t);
