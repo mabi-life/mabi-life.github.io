@@ -136,7 +136,7 @@ html[data-theme=light] .aucPanel{background:#f4f5f8;border-color:#d8dbe2;box-sha
 
 <section class="hotDeal" id="hotDeal" aria-label="핫딜 타임">
 <h2>핫딜 타임</h2>
-<p class="hotLead">지금 올라온 매물 가운데, 최근 거래 중앙값이 1천만 골드 이상이고 그보다 싸며, 최근 1시간 안에 최저가가 두 번 이상 새로 내려가고 3시간 전보다 15% 이상 내려간 것만 모았어요. 이미 팔린 체결가나, 싸게 그대로 앉아 있는 매물은 넣지 않아요.</p>
+<p class="hotLead">최근 거래 중앙값이 1천만 골드 이상이고 그보다 싼 매물 가운데, 최근 2시간 안에 최저가가 두 번 이상 내려간 것만 모았어요. 세 건이 안 되면 1시간 안에 한 번 내려가고 중앙값보다 10% 이상 싼 매물로 채워요. 토템과 이미 팔린 체결가, 싸게 그대로 앉아 있는 매물은 넣지 않아요.</p>
 <div class="hotGrid" id="hotGrid"></div>
 <p class="hotEmpty" id="hotEmpty" hidden>지금은 확 싸진 매물이 없어요.</p>
 <button type="button" class="hotMore" id="hotMore" hidden>더보기</button>
@@ -565,8 +565,8 @@ $('tList').onclick=e=>{if(TView==='coin')return;const tr=e.target.closest('tr.r'
 
 
 
-/* 핫딜 타임: 최근 체결 최대 10건 중앙값(1천만 이상)보다 싼 매물 가운데, 최근 1시간 안에 최저가가 HOT_DROPS번 이상 내려가고 3시간 전보다 HOT_FALL 이상 내려간 것만(치킨런) · 체결 3건 미만·(미완성)·이상 고가 제외 */
-const HOT_TRADES=3,HOT_SHOW=10,HOT_MIN=10000000,HOT_HOUR=1*3600*1000,HOT_WIN=3*3600*1000,HOT_DROPS=2,HOT_FALL=.15;
+/* 핫딜 타임: 최근 체결 최대 10건 중앙값(1천만 이상)보다 싼 매물 가운데, 최근 2시간 안에 최저가가 HOT_DROPS번 이상 내려간 것만(치킨런). 3건 미만이면 1시간 1번+중앙값 대비 HOT_FILL_FALL 이상 하락으로 채움 · 체결 3건 미만·(미완성)·토템 제외 */
+const HOT_TRADES=3,HOT_SHOW=10,HOT_MIN=10000000,HOT_HOUR=1*3600*1000,HOT_TWO=2*3600*1000,HOT_DROPS=2,HOT_FILL=3,HOT_FILL_FALL=.10;
 let hotAll=[],hotOpen=false,hotGot={d:0,e:0,c:0,t:0,f:0},Eup='',Cup='',Tup='',Floor={snaps:[]};
 function hotEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function hotMed(h){if(!h||!(h.length>=HOT_TRADES))return null;const k=h.slice(-10).map(x=>x[1]).sort((a,b)=>a-b),m=k.length,mid=m>>1;return [m%2?k[mid]:Math.round((k[mid-1]+k[mid])/2),m]}
@@ -595,52 +595,50 @@ function hotPts(keys,min,upd,tab){
  if(min)pts.push({t:curT||Date.now(),v:min,cur:1});
  return pts;
 }
+function hotDrops(pts,cut){let n=0;for(let i=1;i<pts.length;i++)if(pts[i].t>=cut&&pts[i].v<pts[i-1].v)n++;return n}
 function hotRun(keys,min,upd,tab){
  if(!keys||!min)return null;
  const curT=Date.parse(upd)||Date.now();
  const pts=hotPts(keys,min,upd,tab);
- const win=pts.filter(p=>!p.cur&&(!p.t||p.t>=curT-HOT_WIN));
- if(!win.length)return null;
- const old=win[0].v;
- if(!old||!((min-old)/old<=-HOT_FALL))return null;
- const cut=curT-HOT_HOUR;
- let drops=0;
- for(let i=1;i<pts.length;i++)if(pts[i].t>=cut&&pts[i].v<pts[i-1].v)drops++;
- if(!(drops>=HOT_DROPS))return null;
- return {drops,old,fall:(old-min)/old,curAt:upd||''};
+ return {drops2:hotDrops(pts,curT-HOT_TWO),drops1:hotDrops(pts,curT-HOT_HOUR),curAt:upd||''};
 }
 function hotPush(list,it){
- if(!it.min||!it.ref||!(it.t>=HOT_TRADES)||!(it.ref>=HOT_MIN)||it.out)return;
+ if(!it.min||!it.ref||!(it.t>=HOT_TRADES)||!(it.ref>=HOT_MIN))return;
  if(/미완성/.test(it.name||'')||/미완성/.test(it.label||''))return;
  if(!(it.min<it.ref))return;
  const run=hotRun(it.keys,it.min,it.upd||hotSrcUp(it.tab),it.tab);
  if(!run)return;
- it.drops=run.drops;it.old=run.old;it.fall=run.fall;it.pct=Math.round(it.fall*100);it.curAt=run.curAt;
+ it.drops2=run.drops2;it.drops1=run.drops1;it.fall=(it.ref-it.min)/it.ref;it.pct=Math.round(it.fall*100);it.curAt=run.curAt;
  list.push(it)}
 function hotCollect(){
- const list=[];
+ const cand=[];
  if(D&&D.skills)D.skills.forEach(s=>(s.options||[]).forEach(o=>Object.keys(o.lv||{}).forEach(l=>{
   const v=o.lv[l];if(!v||!v[0])return;
   const R=hotMed(Hs[o.name+'|'+l]);
-  hotPush(list,{tab:'relic',arc:s.name,name:o.name,lv:+l,label:o.name+' Lv'+l,kind:'유물',min:v[0],n:v[1],ref:R&&R[0],t:R&&R[1],keys:['r|'+o.name+'|'+l],upd:D.updated});
+  hotPush(cand,{tab:'relic',arc:s.name,name:o.name,lv:+l,label:o.name+' Lv'+l,kind:'유물',min:v[0],n:v[1],ref:R&&R[0],t:R&&R[1],keys:['r|'+o.name+'|'+l],upd:D.updated});
  })));
  if(Idea&&Idea.floor){
   const R=hotMed(Idea.t||[]);
-  hotPush(list,{tab:'idea',name:'무리아스의 유물(이데아)',label:'무리아스의 유물(이데아)',kind:'유물',min:Idea.floor,n:Idea.listings||0,ref:R&&R[0],t:R&&R[1],keys:['idea'],upd:Idea.updated||(D&&D.updated)});
+  hotPush(cand,{tab:'idea',name:'무리아스의 유물(이데아)',label:'무리아스의 유물(이데아)',kind:'유물',min:Idea.floor,n:Idea.listings||0,ref:R&&R[0],t:R&&R[1],keys:['idea'],upd:Idea.updated||(D&&D.updated)});
  }
  if(E&&E.length)E.forEach((r,i)=>{
   const R=hotMed(EH[eK(r)]);
-  hotPush(list,{tab:'enchant',idx:i,name:r.name,label:r.name+(r.rank?' · 랭크 '+r.rank:''),kind:'인챈트',min:r.min,n:r.n,ref:R&&R[0],t:R&&R[1],keys:['e|'+eK(r)],upd:Eup});
+  hotPush(cand,{tab:'enchant',idx:i,name:r.name,label:r.name+(r.rank?' · 랭크 '+r.rank:''),kind:'인챈트',min:r.min,n:r.n,ref:R&&R[0],t:R&&R[1],keys:['e|'+eK(r)],upd:Eup});
  });
  if(C&&C.length)C.forEach((r,i)=>{
   const label=(r.c?r.c+' ':'')+(r.a||'각성 없음')+(r.a&&r.l?' Lv'+r.l:''),R=hotMed(CH[cK(r)]);
-  hotPush(list,{tab:'echo',idx:i,name:r.a||r.c||'',label,kind:'에코스톤',min:r.min,n:r.n,ref:R&&R[0],t:R&&R[1],color:r.c,lv:r.l,keys:hotEchoKeys(r),upd:Cup});
+  hotPush(cand,{tab:'echo',idx:i,name:r.a||r.c||'',label,kind:'에코스톤',min:r.min,n:r.n,ref:R&&R[0],t:R&&R[1],color:r.c,lv:r.l,keys:hotEchoKeys(r),upd:Cup});
  });
- if(T&&T.length)T.forEach((r,i)=>{
-  if(r.out)return;
-  const R=hotMed(THI[tK(r)]);
-  hotPush(list,{tab:'totem',idx:i,name:r.name,label:r.name,kind:'토템',min:r.min,n:r.n,ref:R&&R[0],t:R&&R[1],keys:['t|'+tK(r)],upd:Tup||TUp});
- });
+ const primary=cand.filter(it=>it.drops2>=HOT_DROPS);
+ primary.forEach(it=>{it.via='run';it.drops=it.drops2});
+ let list=primary.slice();
+ if(list.length<HOT_FILL){
+  const have=new Set(list.map(it=>it.tab+'|'+it.keys.join(',')));
+  const fill=cand.filter(it=>!have.has(it.tab+'|'+it.keys.join(','))&&it.drops1>=1&&it.fall>=HOT_FILL_FALL);
+  fill.forEach(it=>{it.via='fill';it.drops=it.drops1});
+  fill.sort((a,b)=>b.drops-a.drops||b.fall-a.fall||a.min-b.min);
+  list=list.concat(fill.slice(0,HOT_FILL-list.length));
+ }
  list.sort((a,b)=>b.drops-a.drops||b.fall-a.fall||a.min-b.min);
  return list}
 function hotMark(el){if(!el)return;el.classList.add('hotFlash');el.scrollIntoView({block:'center',behavior:'smooth'});setTimeout(()=>el.classList.remove('hotFlash'),1800)}
@@ -694,10 +692,10 @@ function hotRefresh(){
   +`<span class="hotNm">${hotEsc(it.label)}</span>`
   +`<div class="hotMin">${man(it.min)}</div>`
   +`<div class="hotRow"><span>중앙값 ${man(it.ref)} · 매물 ${it.n||0}건</span></div>`
-  +(it.drops?`<div class="hotDrop">1시간 동안 ${it.drops}번 갱신 · 3시간 전 대비 −${it.pct}%</div>`:'')
+  +(it.drops?`<div class="hotDrop">${it.via==='fill'?1:2}시간 동안 ${it.drops}번 갱신 · 중앙값 대비 −${it.pct}%</div>`:'')
   +`</button>`).join('');
  empty.hidden=!!hotAll.length;
- if(!hotAll.length)empty.textContent=!(hotGot.d&&hotGot.e&&hotGot.c&&hotGot.t&&hotGot.f)?'매물을 살펴보는 중…':((Floor.snaps||[]).length<2)?'최저가가 내려가는 순간을 아직 모으는 중이에요. 다음 경매장 갱신부터 보여 줄게요.':'지금은 최저가 경쟁이 붙은 매물이 없어요.';
+ if(!hotAll.length)empty.textContent=!(hotGot.d&&hotGot.e&&hotGot.c&&hotGot.f)?'매물을 살펴보는 중…':((Floor.snaps||[]).length<2)?'최저가가 내려가는 순간을 아직 모으는 중이에요. 다음 경매장 갱신부터 보여 줄게요.':'지금은 최저가 경쟁이 붙은 매물이 없어요.';
  more.hidden=hotAll.length<=HOT_SHOW;
  more.textContent=hotOpen?'접기':'더보기 · '+(hotAll.length-HOT_SHOW)+'개 더'}
 $('hotGrid').addEventListener('click',e=>{const b=e.target.closest('.hotCard');if(!b)return;const it=hotAll[+b.dataset.h];if(it)hotGo(it)});
