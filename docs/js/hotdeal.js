@@ -164,16 +164,29 @@
   }
   function showBanner(list) {
     const el = document.getElementById('hotAlert');
-    if (!el) return;
+    const badge = document.getElementById('hotBadge');
+    const n = (list && list.length) || 0;
     const text = bannerText(list);
-    if (!text) { el.hidden = true; el.textContent = ''; el.removeAttribute('aria-label'); return; }
-    el.textContent = text;
-    el.hidden = false;
-    el.setAttribute('aria-label', text);
+    if (el) {
+      const tx = el.querySelector('.hotAlertTx') || el;
+      if (!text) {
+        el.hidden = true;
+        if (tx !== el) tx.textContent = '';
+        else el.textContent = '';
+        el.removeAttribute('aria-label');
+      } else {
+        tx.textContent = text;
+        el.hidden = false;
+        el.setAttribute('aria-label', text);
+      }
+    }
+    if (badge) {
+      if (!n) { badge.hidden = true; badge.textContent = ''; }
+      else { badge.hidden = false; badge.textContent = '핫딜 ' + n; }
+    }
   }
   function bootHome() {
-    const el = document.getElementById('hotAlert');
-    if (!el) return;
+    if (!document.getElementById('hotAlert') && !document.getElementById('hotBadge')) return;
     const q = WT();
     Promise.all([
       getJ(WD + 'auction/data.json' + q).catch(() => null),
@@ -199,7 +212,7 @@
   }
 
   global.HotDeal = { HOT, collect, med, qualify, dropLine, bannerText, showBanner, bootHome, eK, cK, CFIX, applyCFix, echoKeys, getJ, WD, WT };
-  if (document.getElementById('hotAlert')) {
+  if (document.getElementById('hotAlert') || document.getElementById('hotBadge')) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootHome);
     else bootHome();
   }
