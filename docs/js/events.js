@@ -17,6 +17,17 @@ function daysLeft(end){
 }
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 
+/* who 를 쉼표로 나누면 마리 수. 「복주머니 모모」는 1, 「모모, 모모」는 2 */
+function momoCount(s){
+ if(!s||!s.who)return 1;
+ var n=String(s.who).split(",").map(function(x){return x.trim()}).filter(Boolean).length;
+ return n||1;
+}
+function mulMark(s){
+ var c=momoCount(s);
+ return c>=2?'<em class="evMul" aria-hidden="true">×'+c+"</em>":"";
+}
+
 function phaseOf(ev, now){
  var start=parseWhen(ev.start), end=parseWhen(ev.end), shop=parseWhen(ev.shop_end);
  if(start&&now<start)return null;
@@ -42,7 +53,7 @@ function spotFig(s, i, town, ti){
  var tag=isNew?'<em class="evAdded">'+esc(s.tag_label||"추가")+"</em>":"";
  var alt=esc("마비노기 "+(town.name||"")+" "+(s.name||"").replace(/\u00a0/g," ")+(s.who?" — "+s.who:""));
  return '<figure class="evSpot'+(isNew?" evSpotNew":"")+'" id="'+id+'">'+
-  '<span class="evN" aria-hidden="true">'+esc(String(n))+"</span>"+
+  '<span class="evN" aria-hidden="true">'+esc(String(n))+"</span>"+mulMark(s)+
   (s.photo?'<img src="'+esc(s.photo)+'" alt="'+alt+'" width="800" height="800" loading="lazy" onerror="this.hidden=true">':"")+
   "<figcaption><strong>"+esc(s.name||"")+"</strong>"+who+tag+"</figcaption></figure>";
 }
@@ -80,9 +91,13 @@ function galleryBlock(town, ti){
  if(spots.length&&map.src){
   pins='<ol class="evPins">'+spots.map(function(s,i){
    var n=s.n||(i+1);
-   var title=esc(n+". "+(s.name||""));
-   var cls=s.tag==="new"?' class="evPinNew"':"";
-   return '<li><a href="#'+esc(spotId(town, ti, s, n))+'"'+cls+' style="left:'+Number(s.x)+'%;top:'+Number(s.y)+'%" title="'+title+'">'+esc(String(n))+"</a></li>";
+   var c=momoCount(s);
+   var title=esc(n+". "+(s.name||"")+(c>=2?" · "+c+"마리":""));
+   var acls=s.tag==="new"?' class="evPinNew"':"";
+   var licls="evPin"+(c>=2?" evPinMul":"")+(Number(s.x)>=85?" evPinMulL":"");
+   return '<li class="'+licls+'" style="left:'+Number(s.x)+'%;top:'+Number(s.y)+'%">'+
+    '<a href="#'+esc(spotId(town, ti, s, n))+'"'+acls+' title="'+title+'">'+esc(String(n))+"</a>"+
+    mulMark(s)+"</li>";
   }).join("")+"</ol>";
  }
  var over=extra.length?'<div class="evOver">'+extra.map(function(s,i){return spotFig(s,i+8,town,ti)}).join("")+"</div>":"";
