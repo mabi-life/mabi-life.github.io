@@ -152,19 +152,19 @@
 .events .evOver .evSpot figcaption span{font-size:9.5px}
 .events .evOver .evSpot .evN{width:20px;height:20px;font-size:11px}
 
-/* 이멘 마하: 아래쪽 물 부분 */
+/* 이멘 마하: 9번 핀(콘서트홀 입구) 아래, 지도 왼쪽 */
 .events .evGallery[data-town="emainmaha"] .evOver{
-  left:0;right:0;top:69%;bottom:2%;
-  justify-content:flex-end;align-items:flex-end;
-  padding:0 5% 0 0;
+  left:9%;top:57%;right:auto;bottom:auto;width:24%;
+  justify-content:flex-start;align-items:flex-start;padding:0;
 }
+.events .evGallery[data-town="emainmaha"] .evOver .evSpot{width:100%;flex-basis:100%}
 
-/* 던바튼: 왼쪽 아래 빈 도로 */
+/* 던바튼: 오른쪽 위 빈 공간 */
 .events .evGallery[data-town="dunbarton"] .evOver{
-  left:5%;width:40%;top:auto;bottom:2%;
-  justify-content:flex-start;align-items:flex-end;
+  left:64%;top:3%;right:auto;bottom:auto;width:28%;
+  justify-content:flex-end;align-items:flex-start;
 }
-.events .evGallery[data-town="dunbarton"] .evOver .evSpot{width:68%;flex-basis:68%}
+.events .evGallery[data-town="dunbarton"] .evOver .evSpot{width:100%;flex-basis:100%}
 
 @media (max-width:1099px){
   .events .evOver{
