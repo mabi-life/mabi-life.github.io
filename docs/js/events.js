@@ -64,9 +64,18 @@ function galleryBlock(town, ti){
  var spots=Array.isArray(town.spots)?town.spots:[];
  var map=town.map||{};
  if(!map.src&&!spots.length)return "";
- var mid=Math.ceil(spots.length/2);
- var left=spots.slice(0,mid);
- var right=spots.slice(mid);
+ /* 좌우 각 4장(2×2). 8장 미만은 반으로 나눔. 넘는 장은 지도 빈자리에 겹침 */
+ var left,right,extra;
+ if(spots.length>8){
+  left=spots.slice(0,4);
+  right=spots.slice(4,8);
+  extra=spots.slice(8);
+ }else{
+  var mid=Math.ceil(spots.length/2);
+  left=spots.slice(0,mid);
+  right=spots.slice(mid);
+  extra=[];
+ }
  var pins="";
  if(spots.length&&map.src){
   pins='<ol class="evPins">'+spots.map(function(s,i){
@@ -76,15 +85,18 @@ function galleryBlock(town, ti){
    return '<li><a href="#'+esc(spotId(town, ti, s, n))+'"'+cls+' style="left:'+Number(s.x)+'%;top:'+Number(s.y)+'%" title="'+title+'">'+esc(String(n))+"</a></li>";
   }).join("")+"</ol>";
  }
+ var over=extra.length?'<div class="evOver">'+extra.map(function(s,i){return spotFig(s,i+8,town,ti)}).join("")+"</div>":"";
  var mapHtml="";
  if(map.src){
   var cap=map.caption?'<figcaption>'+esc(map.caption)+"</figcaption>":"";
-  mapHtml='<figure class="evMap"><div class="evMapBox"><img src="'+esc(map.src)+'" alt="'+esc(map.alt||map.caption||"지도")+'" width="'+(Number(map.w)||462)+'" height="'+(Number(map.h)||410)+'">'+pins+"</div>"+cap+"</figure>";
+  mapHtml='<figure class="evMap"><div class="evMapBox"><img src="'+esc(map.src)+'" alt="'+esc(map.alt||map.caption||"지도")+'" width="'+(Number(map.w)||462)+'" height="'+(Number(map.h)||410)+'">'+pins+over+"</div>"+cap+"</figure>";
  }
  if(!spots.length)return mapHtml?'<div class="evGallery evGallerySolo">'+mapHtml+"</div>":"";
  var L='<div class="evSpots evSpotsL">'+left.map(function(s,i){return spotFig(s,i,town,ti)}).join("")+"</div>";
- var R='<div class="evSpots evSpotsR">'+right.map(function(s,i){return spotFig(s,i+mid,town,ti)}).join("")+"</div>";
- return '<div class="evGallery">'+L+mapHtml+R+"</div>";
+ var R='<div class="evSpots evSpotsR">'+right.map(function(s,i){return spotFig(s,left.length+i,town,ti)}).join("")+"</div>";
+ var gcls="evGallery"+(extra.length?" evGalleryOver":"");
+ var tid=town.id?' data-town="'+esc(town.id)+'"':"";
+ return '<div class="'+gcls+'"'+tid+">"+L+mapHtml+R+"</div>";
 }
 
 /* 마을 하나 = 제목 줄 + 지도·사진. 주차가 늘면 같은 카드 안에서 아래로 쌓임 */

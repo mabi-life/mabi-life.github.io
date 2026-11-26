@@ -141,3 +141,37 @@
   color:#7eb8c9;border:1px solid #3a5a63;background:rgba(126,184,201,.12);
   border-radius:999px;padding:0 6px;
 }
+
+/* 8장을 넘는 사진은 지도 빈자리에 겹침. 좁은 화면에선 지도 아래로 */
+.events .evOver{position:absolute;z-index:2;display:flex;gap:8px;pointer-events:none;box-sizing:border-box}
+.events .evOver .evSpot{
+  pointer-events:auto;width:22%;flex:0 0 22%;
+  box-shadow:0 2px 10px rgba(0,0,0,.5);
+}
+.events .evOver .evSpot figcaption{padding:3px 6px 4px;font-size:10px}
+.events .evOver .evSpot figcaption span{font-size:9.5px}
+.events .evOver .evSpot .evN{width:20px;height:20px;font-size:11px}
+
+/* 이멘 마하: 아래쪽 물 부분 */
+.events .evGallery[data-town="emainmaha"] .evOver{
+  left:0;right:0;top:69%;bottom:2%;
+  justify-content:flex-end;align-items:flex-end;
+  padding:0 5% 0 0;
+}
+
+/* 던바튼: 왼쪽 아래 빈 도로 */
+.events .evGallery[data-town="dunbarton"] .evOver{
+  left:5%;width:40%;top:auto;bottom:2%;
+  justify-content:flex-start;align-items:flex-end;
+}
+.events .evGallery[data-town="dunbarton"] .evOver .evSpot{width:68%;flex-basis:68%}
+
+@media (max-width:1099px){
+  .events .evOver{
+    position:static;display:grid;grid-template-columns:1fr 1fr;
+    gap:8px;margin-top:8px;width:auto;left:auto;right:auto;top:auto;bottom:auto;
+    padding:0;pointer-events:auto;
+  }
+  .events .evOver .evSpot,
+  .events .evGallery[data-town="dunbarton"] .evOver .evSpot{width:auto;flex:none;flex-basis:auto}
+}
