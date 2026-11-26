@@ -38,11 +38,13 @@ function spotFig(s, i, town, ti){
  var n=s.n||(i+1);
  var id=esc(spotId(town, ti, s, n));
  var who=s.who?'<span>'+esc(s.who)+"</span>":"";
+ var isNew=s.tag==="new";
+ var tag=isNew?'<em class="evAdded">'+esc(s.tag_label||"추가")+"</em>":"";
  var alt=esc("마비노기 "+(town.name||"")+" "+(s.name||"").replace(/\u00a0/g," ")+(s.who?" — "+s.who:""));
- return '<figure class="evSpot" id="'+id+'">'+
+ return '<figure class="evSpot'+(isNew?" evSpotNew":"")+'" id="'+id+'">'+
   '<span class="evN" aria-hidden="true">'+esc(String(n))+"</span>"+
-  (s.photo?'<img src="'+esc(s.photo)+'" alt="'+alt+'" width="800" height="800" loading="lazy">':"")+
-  "<figcaption><strong>"+esc(s.name||"")+"</strong>"+who+"</figcaption></figure>";
+  (s.photo?'<img src="'+esc(s.photo)+'" alt="'+alt+'" width="800" height="800" loading="lazy" onerror="this.hidden=true">':"")+
+  "<figcaption><strong>"+esc(s.name||"")+"</strong>"+who+tag+"</figcaption></figure>";
 }
 
 /* 던바튼은 예전 주소(#ev-spot-1)를 그대로, 다른 마을은 #ev-spot-<마을id>-1 */
@@ -70,7 +72,8 @@ function galleryBlock(town, ti){
   pins='<ol class="evPins">'+spots.map(function(s,i){
    var n=s.n||(i+1);
    var title=esc(n+". "+(s.name||""));
-   return '<li><a href="#'+esc(spotId(town, ti, s, n))+'" style="left:'+Number(s.x)+'%;top:'+Number(s.y)+'%" title="'+title+'">'+esc(String(n))+"</a></li>";
+   var cls=s.tag==="new"?' class="evPinNew"':"";
+   return '<li><a href="#'+esc(spotId(town, ti, s, n))+'"'+cls+' style="left:'+Number(s.x)+'%;top:'+Number(s.y)+'%" title="'+title+'">'+esc(String(n))+"</a></li>";
   }).join("")+"</ol>";
  }
  var mapHtml="";
