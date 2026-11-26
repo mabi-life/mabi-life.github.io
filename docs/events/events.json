@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-19",
+  "updated": "2026-11-26",
   "events": [
     {
       "id": "2026-1112-momojeon",
@@ -19,6 +19,19 @@
         "모모 조사 코인은 멜리의 습득물 보관소에서 교환하고, 주간 한도는 목요일 오전 7시에 리셋됩니다."
       ],
       "towns": [
+        {
+          "id": "emainmaha",
+          "name": "이멘 마하",
+          "since": "3주차부터",
+          "map": {
+            "src": "/events/emainmaha.png",
+            "alt": "마비노기 이멘 마하 지도와 모모 위치",
+            "caption": "이멘 마하 모모 위치",
+            "w": 462,
+            "h": 410
+          },
+          "spots": []
+        },
         {
           "id": "tirchonaill",
           "name": "티르 코네일",

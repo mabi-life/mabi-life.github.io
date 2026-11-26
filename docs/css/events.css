@@ -24,6 +24,7 @@
 
 /* 지도 가운데, 사진 좌우 2×2 */
 .events .evGallery{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.42fr) minmax(0,1fr);gap:10px;align-items:center;margin:0}
+.events .evGallery.evGallerySolo .evMap{grid-column:2}
 .events .evMap{margin:0;padding:0;border-radius:8px;overflow:hidden;border:1px solid #333846;background:#1a1c20}
 .events .evMapBox{position:relative;line-height:0}
 .events .evMapBox img{display:block;width:100%;height:auto}

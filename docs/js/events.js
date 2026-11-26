@@ -78,7 +78,7 @@ function galleryBlock(town, ti){
   var cap=map.caption?'<figcaption>'+esc(map.caption)+"</figcaption>":"";
   mapHtml='<figure class="evMap"><div class="evMapBox"><img src="'+esc(map.src)+'" alt="'+esc(map.alt||map.caption||"지도")+'" width="'+(Number(map.w)||462)+'" height="'+(Number(map.h)||410)+'">'+pins+"</div>"+cap+"</figure>";
  }
- if(!spots.length)return mapHtml;
+ if(!spots.length)return mapHtml?'<div class="evGallery evGallerySolo">'+mapHtml+"</div>":"";
  var L='<div class="evSpots evSpotsL">'+left.map(function(s,i){return spotFig(s,i,town,ti)}).join("")+"</div>";
  var R='<div class="evSpots evSpotsR">'+right.map(function(s,i){return spotFig(s,i+mid,town,ti)}).join("")+"</div>";
  return '<div class="evGallery">'+L+mapHtml+R+"</div>";
