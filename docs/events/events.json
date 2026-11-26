@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-19",
+  "updated": "2026-11-26",
   "events": [
     {
       "id": "2026-1112-momojeon",
@@ -19,6 +19,101 @@
         "모모 조사 코인은 멜리의 습득물 보관소에서 교환하고, 주간 한도는 목요일 오전 7시에 리셋됩니다."
       ],
       "towns": [
+        {
+          "id": "emainmaha",
+          "name": "이멘 마하",
+          "since": "3주차부터",
+          "map": {
+            "src": "/events/emainmaha.png",
+            "alt": "마비노기 이멘 마하 지도와 모모 위치",
+            "caption": "이멘 마하 모모 위치",
+            "w": 462,
+            "h": 410
+          },
+          "spots": [
+            {
+              "id": "1",
+              "n": 1,
+              "name": "인형공방",
+              "who": "모모",
+              "photo": "/events/emain/01.jpg",
+              "x": 11.97,
+              "y": 41.29
+            },
+            {
+              "id": "2",
+              "n": 2,
+              "name": "인형공방 뒷편",
+              "who": "모모",
+              "photo": "/events/emain/02.jpg",
+              "x": 15.96,
+              "y": 40.41
+            },
+            {
+              "id": "3",
+              "n": 3,
+              "name": "무기점 뒤 골목",
+              "who": "모모",
+              "photo": "/events/emain/03.jpg",
+              "x": 33.22,
+              "y": 42.4
+            },
+            {
+              "id": "4",
+              "n": 4,
+              "name": "광장",
+              "who": "모모",
+              "photo": "/events/emain/04.jpg",
+              "x": 50.81,
+              "y": 47.36
+            },
+            {
+              "id": "5",
+              "n": 5,
+              "name": "광장 우측 입간판 옆",
+              "who": "모모",
+              "photo": "/events/emain/05.jpg",
+              "x": 62.42,
+              "y": 46.76
+            },
+            {
+              "id": "6",
+              "n": 6,
+              "name": "광장 우측",
+              "who": "모모",
+              "photo": "/events/emain/06.jpg",
+              "x": 61.82,
+              "y": 53.92
+            },
+            {
+              "id": "7",
+              "n": 7,
+              "name": "전망대 좌측",
+              "who": "모모",
+              "photo": "/events/emain/07.jpg",
+              "x": 64.58,
+              "y": 63.92
+            },
+            {
+              "id": "8",
+              "n": 8,
+              "name": "레스토랑",
+              "who": "모모, 모모",
+              "photo": "/events/emain/08.jpg",
+              "x": 33.78,
+              "y": 56.53
+            },
+            {
+              "id": "9",
+              "n": 9,
+              "name": "콘서트홀 입구",
+              "who": "모모",
+              "photo": "/events/emain/09.jpg",
+              "x": 20.85,
+              "y": 54.75
+            }
+          ]
+        },
         {
           "id": "tirchonaill",
           "name": "티르 코네일",
@@ -175,6 +270,17 @@
               "photo": "/events/spots/04.jpg",
               "x": 59.64,
               "y": 77.75
+            },
+            {
+              "id": "9",
+              "n": 9,
+              "name": "품점 위쪽 우물",
+              "who": "복주머니 모모",
+              "photo": "/events/spots/09.jpg",
+              "x": 35.66,
+              "y": 25.57,
+              "tag": "new",
+              "tag_label": "3주차 추가"
             }
           ]
         }

@@ -24,6 +24,7 @@
 
 /* 지도 가운데, 사진 좌우 2×2 */
 .events .evGallery{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.42fr) minmax(0,1fr);gap:10px;align-items:center;margin:0}
+.events .evGallery.evGallerySolo .evMap{grid-column:2}
 .events .evMap{margin:0;padding:0;border-radius:8px;overflow:hidden;border:1px solid #333846;background:#1a1c20}
 .events .evMapBox{position:relative;line-height:0}
 .events .evMapBox img{display:block;width:100%;height:auto}
@@ -129,3 +130,48 @@
 /* 정적 대체 문구(자바스크립트 꺼짐·로딩 전) */
 .events .evIntro{margin:8px 0 0}
 .events .evIntro p{margin:0;font-size:13.5px;line-height:1.7;color:#c9cdd8;word-break:keep-all}
+
+/* 새로 추가된 자리 — 금색과 구분되는 청록 핀·배지. tag:"new" */
+.events .evPins a.evPinNew{background:#7eb8c9}
+.events .evPins a.evPinNew:hover{background:#9bcee0}
+.events .evSpot.evSpotNew .evN{background:#7eb8c9}
+.events .evSpot figcaption .evAdded{
+  display:inline-block;margin-top:3px;
+  font-style:normal;font-size:10px;font-weight:700;line-height:1.3;
+  color:#7eb8c9;border:1px solid #3a5a63;background:rgba(126,184,201,.12);
+  border-radius:999px;padding:0 6px;
+}
+
+/* 8장을 넘는 사진은 지도 빈자리에 겹침. 좁은 화면에선 지도 아래로 */
+.events .evOver{position:absolute;z-index:2;display:flex;gap:8px;pointer-events:none;box-sizing:border-box}
+.events .evOver .evSpot{
+  pointer-events:auto;width:22%;flex:0 0 22%;
+  box-shadow:0 2px 10px rgba(0,0,0,.5);
+}
+.events .evOver .evSpot figcaption{padding:3px 6px 4px;font-size:10px}
+.events .evOver .evSpot figcaption span{font-size:9.5px}
+.events .evOver .evSpot .evN{width:20px;height:20px;font-size:11px}
+
+/* 이멘 마하: 아래쪽 물 부분 */
+.events .evGallery[data-town="emainmaha"] .evOver{
+  left:0;right:0;top:69%;bottom:2%;
+  justify-content:flex-end;align-items:flex-end;
+  padding:0 5% 0 0;
+}
+
+/* 던바튼: 왼쪽 아래 빈 도로 */
+.events .evGallery[data-town="dunbarton"] .evOver{
+  left:5%;width:40%;top:auto;bottom:2%;
+  justify-content:flex-start;align-items:flex-end;
+}
+.events .evGallery[data-town="dunbarton"] .evOver .evSpot{width:68%;flex-basis:68%}
+
+@media (max-width:1099px){
+  .events .evOver{
+    position:static;display:grid;grid-template-columns:1fr 1fr;
+    gap:8px;margin-top:8px;width:auto;left:auto;right:auto;top:auto;bottom:auto;
+    padding:0;pointer-events:auto;
+  }
+  .events .evOver .evSpot,
+  .events .evGallery[data-town="dunbarton"] .evOver .evSpot{width:auto;flex:none;flex-basis:auto}
+}
