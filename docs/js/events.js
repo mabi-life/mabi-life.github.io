@@ -25,7 +25,7 @@ function momoCount(s){
 }
 function mulMark(s){
  var c=momoCount(s);
- return c>=2?'<em class="evMul" aria-hidden="true">×'+c+"</em>":"";
+ return c>=2?'<em class="evMul" aria-hidden="true"><i>x</i><b>'+c+"</b></em>":"";
 }
 
 function phaseOf(ev, now){
