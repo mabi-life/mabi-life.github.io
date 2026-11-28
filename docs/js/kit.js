@@ -4,7 +4,7 @@ P={"/":["홈","00",""],"/alba/":["알바","01"],"/barter/":["물교","02"],"/dun
 
 /* 도구별 블로그 사용기 주소. 값을 채우면 사용법 안내 끝에 링크가 보여요. 비우면 숨깁니다. */
 var TOOL_BLOG={
-  alba:"https://blog.naver.com/forgetwulf/224473288199",
+  alba:"",
   barter:"https://blog.naver.com/forgetwulf/224479329911",
   dungeon:"",
   schedule:"",
@@ -19,16 +19,15 @@ function applyToolBlog(path){
   if(!m||!(m[1] in TOOL_BLOG))return;
   var box=document.querySelector("details.toolGuide > section.toolAbout");
   if(!box)return;
-  var p=box.querySelector("p.toolBlogLink");
-  if(!p){p=document.createElement("p");p.className="toolBlogLink";box.appendChild(p)}
   var url=TOOL_BLOG[m[1]];
-  if(url){
-    p.hidden=false;
-    p.innerHTML='<a href="'+url+'" target="_blank" rel="noopener">'+TOOL_BLOG_LABEL+"</a>";
-  }else{
-    p.hidden=true;
-    p.innerHTML='<a target="_blank" rel="noopener">'+TOOL_BLOG_LABEL+"</a>";
+  var p=box.querySelector("p.toolBlogLink");
+  if(!url){
+    if(p){p.hidden=true;p.innerHTML=""}
+    return;
   }
+  if(!p){p=document.createElement("p");p.className="toolBlogLink";box.appendChild(p)}
+  p.hidden=false;
+  p.innerHTML='<a href="'+url+'" target="_blank" rel="noopener">'+TOOL_BLOG_LABEL+"</a>";
 }
 function go(){var path=location.pathname.replace(/index\.html$/,"");var pg=P[path]||P["/"];var b=document.body;
 b.style.setProperty("--kit",C[pg[0]]);
